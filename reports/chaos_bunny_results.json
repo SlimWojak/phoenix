@@ -1,0 +1,108 @@
+{
+  "verdict": "PASS",
+  "boar_confidence": 1.0,
+  "gaps_result": {
+    "vector_name": "GAPS",
+    "detected": true,
+    "silent_failure": false,
+    "health_state": "HALT",
+    "quality_score": 0.9723076923076923,
+    "anomalies_found": 10,
+    "details": {
+      "gaps_injected": 10,
+      "gaps_detected": 8,
+      "bars_removed": 175
+    }
+  },
+  "latency_result": {
+    "vector_name": "LATENCY",
+    "detected": true,
+    "silent_failure": false,
+    "health_state": "HEALTHY",
+    "quality_score": 0.998,
+    "anomalies_found": 1,
+    "details": {
+      "latency_injected_seconds": 120,
+      "latency_detected": true
+    }
+  },
+  "spike_result": {
+    "vector_name": "SPIKE",
+    "detected": true,
+    "silent_failure": false,
+    "health_state": "HALT",
+    "quality_score": 0.996,
+    "anomalies_found": 3,
+    "details": {
+      "spike_injected_pips": 50.0,
+      "spike_bar": 250,
+      "spikes_detected": 1
+    }
+  },
+  "sequence_result": {
+    "vector_name": "SEQUENCE",
+    "detected": true,
+    "silent_failure": false,
+    "health_state": "HALT",
+    "quality_score": 0.99,
+    "anomalies_found": 6,
+    "details": {
+      "sequence_errors_injected": 1,
+      "sequence_errors_detected": 2,
+      "zero_tolerance_enforced": true
+    }
+  },
+  "correlated_result": {
+    "vector_name": "CORRELATED_CHAOS",
+    "detected": true,
+    "silent_failure": false,
+    "health_state": "HALT",
+    "quality_score": 0.9918367346938776,
+    "anomalies_found": 5,
+    "details": {
+      "vectors_injected": [
+        "GAP",
+        "SPIKE",
+        "LATENCY"
+      ],
+      "vectors_detected": 3,
+      "correlated_detected": true,
+      "escalated_to": "HALT"
+    }
+  },
+  "recovery_result": {
+    "vector_name": "RECOVERY_LAG",
+    "detected": true,
+    "silent_failure": false,
+    "health_state": "HEALTHY",
+    "quality_score": 0.998,
+    "anomalies_found": 1,
+    "details": {
+      "cycles_to_recovery": 2,
+      "threshold_cycles": 5,
+      "recovered": true,
+      "within_threshold": true
+    }
+  },
+  "vectors_passed": 6,
+  "vectors_failed": 0,
+  "silent_failures": 0,
+  "thresholds": {
+    "healthy": 0.95,
+    "degraded": 0.7,
+    "critical": 0.7,
+    "gap_minutes": 2,
+    "latency_seconds": 60,
+    "spike_pips": 50,
+    "recovery_max_cycles": 5,
+    "rationale": {
+      "healthy_0.95": "Normal operation, 5% tolerance for market gaps",
+      "degraded_0.70": "30% issue threshold \u2014 beyond this, entries blocked",
+      "spike_50_pips": "Single-bar 50+ pip move rare outside news \u2014 flag for review"
+    }
+  },
+  "test_window": "2026-01-23 13:40:00+00:00 \u2192 2026-01-23 21:59:00+00:00",
+  "total_bars": 500,
+  "test_isolation_acknowledged": true,
+  "mitigation_deferred": "live_shadow_mode (S27+)"
+}
