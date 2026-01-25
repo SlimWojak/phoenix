@@ -1,0 +1,71 @@
+{
+  "verdict": "PASS",
+  "chf_peg_result": {
+    "event_id": "CHF_PEG",
+    "event_name": "SNB EUR/CHF Floor Removal",
+    "data_source": "SYNTHETIC (20% move simulated)",
+    "crashed": false,
+    "quality_reflects_chaos": true,
+    "recovery_observed": true,
+    "silent_failure": false,
+    "quality_score_before": 0.9944444444444445,
+    "quality_score_min": 0.5833333333333333,
+    "quality_score_after": 0.9833333333333333,
+    "recovery_bars": 60,
+    "anomalies_detected": 37,
+    "health_states_observed": [
+      "HEALTHY",
+      "HALT"
+    ],
+    "bars_tested": 1440,
+    "event_window": "2026-01-22 12:32:00+00:00 \u2192 2026-01-23 21:59:00+00:00",
+    "verdict": "PASS"
+  },
+  "jpy_carry_result": {
+    "event_id": "JPY_CARRY",
+    "event_name": "BOJ Rate Shock / Carry Unwind",
+    "data_source": "REAL (2024-08)",
+    "crashed": false,
+    "quality_reflects_chaos": true,
+    "recovery_observed": true,
+    "silent_failure": false,
+    "quality_score_before": 0.13214285714285712,
+    "quality_score_min": 0.0,
+    "quality_score_after": 0.9833333333333333,
+    "recovery_bars": 2400,
+    "anomalies_detected": 4436,
+    "health_states_observed": [
+      "HEALTHY",
+      "HALT"
+    ],
+    "bars_tested": 10080,
+    "event_window": "2024-08-01 00:00:00+00:00 \u2192 2024-08-09 23:59:00+00:00",
+    "verdict": "PASS"
+  },
+  "gbp_flash_result": {
+    "event_id": "GBP_FLASH",
+    "event_name": "GBP Flash Crash (Asia Session)",
+    "data_source": "SYNTHETIC (6% crash simulated)",
+    "crashed": false,
+    "quality_reflects_chaos": false,
+    "recovery_observed": false,
+    "silent_failure": true,
+    "quality_score_before": 0.9833333333333333,
+    "quality_score_min": 0.9833333333333333,
+    "quality_score_after": 0.9833333333333333,
+    "recovery_bars": 60,
+    "anomalies_detected": 12,
+    "health_states_observed": [
+      "HEALTHY",
+      "HALT"
+    ],
+    "bars_tested": 1440,
+    "event_window": "2026-01-22 12:48:00+00:00 \u2192 2026-01-23 21:59:00+00:00",
+    "verdict": "FAIL (SILENT)"
+  },
+  "events_passed": 2,
+  "events_failed": 1,
+  "crashes": 0,
+  "silent_failures": 1,
+  "test_date": "2026-01-25 15:40 UTC"
+}
