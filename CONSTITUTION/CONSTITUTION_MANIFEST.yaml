@@ -1,0 +1,154 @@
+# CONSTITUTION MANIFEST
+# Phoenix Constitutional Architecture Graph (CAG)
+#
+# Reference: docs/CONSTITUTION_AS_CODE.md
+# Version: 0.1 (skeleton)
+# Status: Sprint 26 — Foundation Proof
+
+version: "0.1"
+schema_version: "1.0"
+created: "2026-01-25"
+status: "skeleton"
+
+# =============================================================================
+# TAXONOMY
+# =============================================================================
+
+taxonomy:
+  modules:
+    description: "Organ definitions (River, CSO, Execution)"
+    path: "./modules/"
+    format: "YAML per module"
+    
+  seams:
+    description: "Inter-module contracts"
+    path: "./seams/"
+    format: "YAML per seam"
+    
+  scenarios:
+    description: "Behavioral test scenarios"
+    path: "./scenarios/"
+    format: "YAML per scenario"
+    
+  environment:
+    description: "Runtime context (dev, test, prod)"
+    path: "./environment/"
+    format: "YAML per env"
+    
+  roles:
+    description: "Agent/human role definitions"
+    path: "./roles/"
+    format: "YAML per role"
+    
+  dependencies:
+    description: "External dependency contracts"
+    path: "./dependencies/"
+    format: "YAML per dependency"
+    
+  wiring:
+    description: "Module interconnection graph"
+    path: "./wiring/"
+    format: "YAML topology files"
+    
+  invariants:
+    description: "Constitutional invariants"
+    path: "./invariants/"
+    format: "YAML per invariant class"
+    
+  state:
+    description: "State machine definitions"
+    path: "./state/"
+    format: "YAML per module state"
+    
+  tests:
+    description: "Constitution test mappings"
+    path: "./tests/"
+    format: "YAML test→invariant maps"
+
+# =============================================================================
+# MODULES (to be populated)
+# =============================================================================
+
+modules:
+  river:
+    status: "defined"
+    contract: "../contracts/ICT_DATA_CONTRACT.md"
+    tier: "T0"
+    
+  governance:
+    status: "implemented"
+    contract: "../contracts/GOVERNANCE_INTERFACE_CONTRACT.md"
+    tier: "T0"
+    
+  cso:
+    status: "skeleton"
+    contract: "../cso/contract.py"
+    tier: "T1"
+    
+  execution:
+    status: "pending"
+    contract: null
+    tier: "T2"
+
+# =============================================================================
+# INVARIANT REGISTRY (to be populated)
+# =============================================================================
+
+invariants:
+  halt:
+    - INV-HALT-1  # halt_local < 50ms
+    - INV-HALT-2  # halt_cascade < 500ms
+    
+  governance:
+    - INV-GOV-1   # all organs inherit GovernanceInterface
+    - INV-GOV-2   # tier violations escalate
+    - INV-GOV-NO-T1-WRITE-EXEC
+    - INV-GOV-HALT-BEFORE-ACTION
+    
+  contract:
+    - INV-CONTRACT-1  # deterministic state machine
+    - INV-CONTRACT-2  # schema versioned
+    - INV-CONTRACT-3  # every MUST has test
+    - INV-CONTRACT-4  # no silent failures
+    - INV-CONTRACT-5  # quality telemetry
+    
+  data:
+    - INV-DATA-1  # single source of truth
+    - INV-DATA-2  # no synthetic without flag
+    
+  cso:
+    - INV-CSO-1   # no signal during warmup
+    - INV-CSO-2   # 4Q Gate for non-NEUTRAL
+    - INV-CSO-3   # calibrated confidence
+    - INV-CSO-4   # every decision → bead
+    
+  dynasty:
+    - INV-DYNASTY-1  # every decision emits bead
+    - INV-DYNASTY-2  # state_hash verified
+    - INV-DYNASTY-3  # outcome within 24h
+    - INV-DYNASTY-4  # daily reference persist
+    - INV-DYNASTY-5  # beads immutable
+
+# =============================================================================
+# MIGRATION TRIGGERS (from CONSTITUTION_AS_CODE.md v1.1)
+# =============================================================================
+
+migration_triggers:
+  yaml_to_cue:
+    contract_count_threshold: 15
+    inheritance_depth_threshold: 3
+    status: "not_triggered"
+    
+  dead_man_switch:
+    cto_escalation_hours: 12
+    sovereign_escalation_hours: 24
+    status: "active"
+
+# =============================================================================
+# VALIDATION
+# =============================================================================
+
+validation:
+  blast_radius_script: "../scripts/blast_radius.py"
+  schema_verify_script: "../contracts/verify_schema.py"
+  test_mapping: "./tests/invariant_test_map.yaml"
