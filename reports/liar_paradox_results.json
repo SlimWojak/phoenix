@@ -1,0 +1,22 @@
+{
+  "verdict": "PASS",
+  "injection_detected": true,
+  "detection_method": "HASH_MISMATCH",
+  "detection_latency_cycles": 1,
+  "injection_bar_index": 500,
+  "injection_timestamp": "2026-01-23 13:40:00+00:00",
+  "injection_field": "close",
+  "injection_delta_pips": 1.0,
+  "original_value": 1.173985,
+  "corrupted_value": 1.174085,
+  "anomalies_found": 71,
+  "quality_score": 0.929,
+  "integrity_result": {
+    "is_valid": false,
+    "is_corrupted": true,
+    "anomaly_suspected": true,
+    "message": "CORRUPTION_DETECTED: 2 critical anomalies"
+  },
+  "total_bars_tested": 1000,
+  "test_window": "2026-01-23 05:20:00+00:00 \u2192 2026-01-23 21:59:00+00:00"
+}
