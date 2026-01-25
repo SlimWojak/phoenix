@@ -1,0 +1,1070 @@
+{
+  "test_window_start": "2025-11-17 00:00:00+00:00",
+  "test_window_end": "2025-11-21 00:00:00+00:00",
+  "symbol": "EURUSD",
+  "dukascopy_bars": 5760,
+  "ibkr_bars": 4380,
+  "aligned_bars": 4380,
+  "excluded_bars": 1380,
+  "markers_tested": 108,
+  "markers_passed": 59,
+  "markers_failed": 49,
+  "total_xor_sum": 7491,
+  "marker_results": [
+    {
+      "marker": "dealing_range_premium",
+      "xor_sum": 0,
+      "total_bars": 4380,
+      "divergence_rate": 0.0,
+      "divergent_timestamps": []
+    },
+    {
+      "marker": "dealing_range_discount",
+      "xor_sum": 0,
+      "total_bars": 4380,
+      "divergence_rate": 0.0,
+      "divergent_timestamps": []
+    },
+    {
+      "marker": "ipda_20d_premium",
+      "xor_sum": 0,
+      "total_bars": 4380,
+      "divergence_rate": 0.0,
+      "divergent_timestamps": []
+    },
+    {
+      "marker": "ipda_20d_discount",
+      "xor_sum": 0,
+      "total_bars": 4380,
+      "divergence_rate": 0.0,
+      "divergent_timestamps": []
+    },
+    {
+      "marker": "ipda_20d_consolidating",
+      "xor_sum": 0,
+      "total_bars": 4380,
+      "divergence_rate": 0.0,
+      "divergent_timestamps": []
+    },
+    {
+      "marker": "ipda_40d_premium",
+      "xor_sum": 0,
+      "total_bars": 4380,
+      "divergence_rate": 0.0,
+      "divergent_timestamps": []
+    },
+    {
+      "marker": "in_ote_bull",
+      "xor_sum": 13,
+      "total_bars": 4380,
+      "divergence_rate": 0.0029680365296803654,
+      "divergent_timestamps": [
+        "2025-11-19 19:32:00+00:00",
+        "2025-11-19 21:04:00+00:00",
+        "2025-11-19 21:24:00+00:00",
+        "2025-11-20 02:47:00+00:00",
+        "2025-11-20 02:51:00+00:00"
+      ]
+    },
+    {
+      "marker": "in_ote_bear",
+      "xor_sum": 2,
+      "total_bars": 4380,
+      "divergence_rate": 0.00045662100456621003,
+      "divergent_timestamps": [
+        "2025-11-18 13:04:00+00:00",
+        "2025-11-19 13:58:00+00:00"
+      ]
+    },
+    {
+      "marker": "in_htf_pda",
+      "xor_sum": 0,
+      "total_bars": 4380,
+      "divergence_rate": 0.0,
+      "divergent_timestamps": []
+    },
+    {
+      "marker": "counter_trend_allowed",
+      "xor_sum": 0,
+      "total_bars": 4380,
+      "divergence_rate": 0.0,
+      "divergent_timestamps": []
+    },
+    {
+      "marker": "is_dst_us",
+      "xor_sum": 0,
+      "total_bars": 4380,
+      "divergence_rate": 0.0,
+      "divergent_timestamps": []
+    },
+    {
+      "marker": "is_asia_session",
+      "xor_sum": 0,
+      "total_bars": 4380,
+      "divergence_rate": 0.0,
+      "divergent_timestamps": []
+    },
+    {
+      "marker": "is_london_session",
+      "xor_sum": 0,
+      "total_bars": 4380,
+      "divergence_rate": 0.0,
+      "divergent_timestamps": []
+    },
+    {
+      "marker": "is_ny_session",
+      "xor_sum": 0,
+      "total_bars": 4380,
+      "divergence_rate": 0.0,
+      "divergent_timestamps": []
+    },
+    {
+      "marker": "is_session_overlap",
+      "xor_sum": 0,
+      "total_bars": 4380,
+      "divergence_rate": 0.0,
+      "divergent_timestamps": []
+    },
+    {
+      "marker": "is_kz_asia",
+      "xor_sum": 0,
+      "total_bars": 4380,
+      "divergence_rate": 0.0,
+      "divergent_timestamps": []
+    },
+    {
+      "marker": "is_kz_lokz",
+      "xor_sum": 0,
+      "total_bars": 4380,
+      "divergence_rate": 0.0,
+      "divergent_timestamps": []
+    },
+    {
+      "marker": "is_kz_nykz",
+      "xor_sum": 0,
+      "total_bars": 4380,
+      "divergence_rate": 0.0,
+      "divergent_timestamps": []
+    },
+    {
+      "marker": "kz_active",
+      "xor_sum": 0,
+      "total_bars": 4380,
+      "divergence_rate": 0.0,
+      "divergent_timestamps": []
+    },
+    {
+      "marker": "is_manipulation_hour",
+      "xor_sum": 0,
+      "total_bars": 4380,
+      "divergence_rate": 0.0,
+      "divergent_timestamps": []
+    },
+    {
+      "marker": "is_how_low_day",
+      "xor_sum": 0,
+      "total_bars": 4380,
+      "divergence_rate": 0.0,
+      "divergent_timestamps": []
+    },
+    {
+      "marker": "is_trading_hours",
+      "xor_sum": 0,
+      "total_bars": 4380,
+      "divergence_rate": 0.0,
+      "divergent_timestamps": []
+    },
+    {
+      "marker": "above_weekly_open",
+      "xor_sum": 772,
+      "total_bars": 4380,
+      "divergence_rate": 0.17625570776255708,
+      "divergent_timestamps": [
+        "2025-11-17 22:18:00+00:00",
+        "2025-11-17 22:19:00+00:00",
+        "2025-11-17 22:20:00+00:00",
+        "2025-11-17 22:21:00+00:00",
+        "2025-11-17 22:22:00+00:00"
+      ]
+    },
+    {
+      "marker": "above_midnight_open",
+      "xor_sum": 296,
+      "total_bars": 4380,
+      "divergence_rate": 0.06757990867579909,
+      "divergent_timestamps": [
+        "2025-11-17 22:18:00+00:00",
+        "2025-11-17 22:19:00+00:00",
+        "2025-11-17 22:20:00+00:00",
+        "2025-11-17 22:21:00+00:00",
+        "2025-11-17 22:22:00+00:00"
+      ]
+    },
+    {
+      "marker": "above_asia_range",
+      "xor_sum": 11,
+      "total_bars": 4380,
+      "divergence_rate": 0.002511415525114155,
+      "divergent_timestamps": [
+        "2025-11-18 15:05:00+00:00",
+        "2025-11-18 15:40:00+00:00",
+        "2025-11-19 05:05:00+00:00",
+        "2025-11-19 05:31:00+00:00",
+        "2025-11-19 05:32:00+00:00"
+      ]
+    },
+    {
+      "marker": "below_asia_range",
+      "xor_sum": 6,
+      "total_bars": 4380,
+      "divergence_rate": 0.0013698630136986301,
+      "divergent_timestamps": [
+        "2025-11-18 18:43:00+00:00",
+        "2025-11-18 18:49:00+00:00",
+        "2025-11-18 19:33:00+00:00",
+        "2025-11-18 19:40:00+00:00",
+        "2025-11-19 10:03:00+00:00"
+      ]
+    },
+    {
+      "marker": "inside_asia_range",
+      "xor_sum": 17,
+      "total_bars": 4380,
+      "divergence_rate": 0.0038812785388127853,
+      "divergent_timestamps": [
+        "2025-11-18 15:05:00+00:00",
+        "2025-11-18 15:40:00+00:00",
+        "2025-11-18 18:43:00+00:00",
+        "2025-11-18 18:49:00+00:00",
+        "2025-11-18 19:33:00+00:00"
+      ]
+    },
+    {
+      "marker": "above_pdh",
+      "xor_sum": 0,
+      "total_bars": 4380,
+      "divergence_rate": 0.0,
+      "divergent_timestamps": []
+    },
+    {
+      "marker": "below_pdl",
+      "xor_sum": 256,
+      "total_bars": 4380,
+      "divergence_rate": 0.058447488584474884,
+      "divergent_timestamps": [
+        "2025-11-18 10:26:00+00:00",
+        "2025-11-18 10:27:00+00:00",
+        "2025-11-18 10:28:00+00:00",
+        "2025-11-18 10:29:00+00:00",
+        "2025-11-18 10:30:00+00:00"
+      ]
+    },
+    {
+      "marker": "between_pd_levels",
+      "xor_sum": 256,
+      "total_bars": 4380,
+      "divergence_rate": 0.058447488584474884,
+      "divergent_timestamps": [
+        "2025-11-18 10:26:00+00:00",
+        "2025-11-18 10:27:00+00:00",
+        "2025-11-18 10:28:00+00:00",
+        "2025-11-18 10:29:00+00:00",
+        "2025-11-18 10:30:00+00:00"
+      ]
+    },
+    {
+      "marker": "in_pd_fvg_bull",
+      "xor_sum": 0,
+      "total_bars": 4380,
+      "divergence_rate": 0.0,
+      "divergent_timestamps": []
+    },
+    {
+      "marker": "in_pd_fvg_bear",
+      "xor_sum": 0,
+      "total_bars": 4380,
+      "divergence_rate": 0.0,
+      "divergent_timestamps": []
+    },
+    {
+      "marker": "in_pd_ob_bull",
+      "xor_sum": 0,
+      "total_bars": 4380,
+      "divergence_rate": 0.0,
+      "divergent_timestamps": []
+    },
+    {
+      "marker": "in_pd_ob_bear",
+      "xor_sum": 0,
+      "total_bars": 4380,
+      "divergence_rate": 0.0,
+      "divergent_timestamps": []
+    },
+    {
+      "marker": "in_ifvg_bull",
+      "xor_sum": 0,
+      "total_bars": 4380,
+      "divergence_rate": 0.0,
+      "divergent_timestamps": []
+    },
+    {
+      "marker": "in_ifvg_bear",
+      "xor_sum": 0,
+      "total_bars": 4380,
+      "divergence_rate": 0.0,
+      "divergent_timestamps": []
+    },
+    {
+      "marker": "in_bpr",
+      "xor_sum": 0,
+      "total_bars": 4380,
+      "divergence_rate": 0.0,
+      "divergent_timestamps": []
+    },
+    {
+      "marker": "above_pwh",
+      "xor_sum": 0,
+      "total_bars": 4380,
+      "divergence_rate": 0.0,
+      "divergent_timestamps": []
+    },
+    {
+      "marker": "below_pwl",
+      "xor_sum": 0,
+      "total_bars": 4380,
+      "divergence_rate": 0.0,
+      "divergent_timestamps": []
+    },
+    {
+      "marker": "above_london_high",
+      "xor_sum": 16,
+      "total_bars": 4380,
+      "divergence_rate": 0.0036529680365296802,
+      "divergent_timestamps": [
+        "2025-11-20 21:49:00+00:00",
+        "2025-11-20 21:59:00+00:00",
+        "2025-11-20 22:15:00+00:00",
+        "2025-11-20 22:17:00+00:00",
+        "2025-11-20 22:42:00+00:00"
+      ]
+    },
+    {
+      "marker": "below_london_low",
+      "xor_sum": 10,
+      "total_bars": 4380,
+      "divergence_rate": 0.00228310502283105,
+      "divergent_timestamps": [
+        "2025-11-18 00:06:00+00:00",
+        "2025-11-18 00:08:00+00:00",
+        "2025-11-18 00:09:00+00:00",
+        "2025-11-18 00:11:00+00:00",
+        "2025-11-18 00:12:00+00:00"
+      ]
+    },
+    {
+      "marker": "above_ny_high",
+      "xor_sum": 4,
+      "total_bars": 4380,
+      "divergence_rate": 0.0009132420091324201,
+      "divergent_timestamps": [
+        "2025-11-18 04:26:00+00:00",
+        "2025-11-18 08:06:00+00:00",
+        "2025-11-18 08:27:00+00:00",
+        "2025-11-18 15:16:00+00:00"
+      ]
+    },
+    {
+      "marker": "below_ny_low",
+      "xor_sum": 4,
+      "total_bars": 4380,
+      "divergence_rate": 0.0009132420091324201,
+      "divergent_timestamps": [
+        "2025-11-18 10:20:00+00:00",
+        "2025-11-18 11:16:00+00:00",
+        "2025-11-18 18:37:00+00:00",
+        "2025-11-18 20:31:00+00:00"
+      ]
+    },
+    {
+      "marker": "sweep_detected",
+      "xor_sum": 324,
+      "total_bars": 4380,
+      "divergence_rate": 0.07397260273972603,
+      "divergent_timestamps": [
+        "2025-11-17 22:15:00+00:00",
+        "2025-11-17 22:16:00+00:00",
+        "2025-11-17 22:17:00+00:00",
+        "2025-11-17 22:18:00+00:00",
+        "2025-11-17 22:19:00+00:00"
+      ]
+    },
+    {
+      "marker": "sweep_is_valid",
+      "xor_sum": 201,
+      "total_bars": 4380,
+      "divergence_rate": 0.04589041095890411,
+      "divergent_timestamps": [
+        "2025-11-17 22:15:00+00:00",
+        "2025-11-17 22:16:00+00:00",
+        "2025-11-17 22:17:00+00:00",
+        "2025-11-17 22:21:00+00:00",
+        "2025-11-17 22:22:00+00:00"
+      ]
+    },
+    {
+      "marker": "sweep_during_kz",
+      "xor_sum": 37,
+      "total_bars": 4380,
+      "divergence_rate": 0.008447488584474886,
+      "divergent_timestamps": [
+        "2025-11-18 01:00:00+00:00",
+        "2025-11-18 01:01:00+00:00",
+        "2025-11-18 01:02:00+00:00",
+        "2025-11-18 01:05:00+00:00",
+        "2025-11-18 01:06:00+00:00"
+      ]
+    },
+    {
+      "marker": "sweep_during_session",
+      "xor_sum": 198,
+      "total_bars": 4380,
+      "divergence_rate": 0.045205479452054796,
+      "divergent_timestamps": [
+        "2025-11-18 00:06:00+00:00",
+        "2025-11-18 00:07:00+00:00",
+        "2025-11-18 00:08:00+00:00",
+        "2025-11-18 00:09:00+00:00",
+        "2025-11-18 00:10:00+00:00"
+      ]
+    },
+    {
+      "marker": "sweep_into_pda",
+      "xor_sum": 485,
+      "total_bars": 4380,
+      "divergence_rate": 0.11073059360730593,
+      "divergent_timestamps": [
+        "2025-11-17 22:15:00+00:00",
+        "2025-11-17 22:16:00+00:00",
+        "2025-11-17 22:17:00+00:00",
+        "2025-11-17 22:18:00+00:00",
+        "2025-11-17 22:19:00+00:00"
+      ]
+    },
+    {
+      "marker": "sweep_mss_confirmed",
+      "xor_sum": 0,
+      "total_bars": 4380,
+      "divergence_rate": 0.0,
+      "divergent_timestamps": []
+    },
+    {
+      "marker": "sweep_displacement_confirmed",
+      "xor_sum": 0,
+      "total_bars": 4380,
+      "divergence_rate": 0.0,
+      "divergent_timestamps": []
+    },
+    {
+      "marker": "sweep_fvg_created",
+      "xor_sum": 0,
+      "total_bars": 4380,
+      "divergence_rate": 0.0,
+      "divergent_timestamps": []
+    },
+    {
+      "marker": "sweep_is_setup",
+      "xor_sum": 0,
+      "total_bars": 4380,
+      "divergence_rate": 0.0,
+      "divergent_timestamps": []
+    },
+    {
+      "marker": "in_5m_fvg_up",
+      "xor_sum": 262,
+      "total_bars": 4380,
+      "divergence_rate": 0.059817351598173515,
+      "divergent_timestamps": [
+        "2025-11-17 22:29:00+00:00",
+        "2025-11-17 22:31:00+00:00",
+        "2025-11-17 22:32:00+00:00",
+        "2025-11-17 22:34:00+00:00",
+        "2025-11-17 22:39:00+00:00"
+      ]
+    },
+    {
+      "marker": "in_5m_fvg_down",
+      "xor_sum": 135,
+      "total_bars": 4380,
+      "divergence_rate": 0.030821917808219176,
+      "divergent_timestamps": [
+        "2025-11-17 22:18:00+00:00",
+        "2025-11-17 22:19:00+00:00",
+        "2025-11-17 22:20:00+00:00",
+        "2025-11-17 22:21:00+00:00",
+        "2025-11-17 22:22:00+00:00"
+      ]
+    },
+    {
+      "marker": "5m_fvg_up_created",
+      "xor_sum": 77,
+      "total_bars": 4380,
+      "divergence_rate": 0.017579908675799085,
+      "divergent_timestamps": [
+        "2025-11-17 22:16:00+00:00",
+        "2025-11-17 22:17:00+00:00",
+        "2025-11-17 22:18:00+00:00",
+        "2025-11-17 22:19:00+00:00",
+        "2025-11-17 22:20:00+00:00"
+      ]
+    },
+    {
+      "marker": "5m_fvg_down_created",
+      "xor_sum": 78,
+      "total_bars": 4380,
+      "divergence_rate": 0.01780821917808219,
+      "divergent_timestamps": [
+        "2025-11-17 22:31:00+00:00",
+        "2025-11-17 22:32:00+00:00",
+        "2025-11-17 22:33:00+00:00",
+        "2025-11-17 22:34:00+00:00",
+        "2025-11-17 22:35:00+00:00"
+      ]
+    },
+    {
+      "marker": "in_15m_fvg_up",
+      "xor_sum": 79,
+      "total_bars": 4380,
+      "divergence_rate": 0.018036529680365298,
+      "divergent_timestamps": [
+        "2025-11-17 23:32:00+00:00",
+        "2025-11-18 04:59:00+00:00",
+        "2025-11-18 05:04:00+00:00",
+        "2025-11-18 05:05:00+00:00",
+        "2025-11-18 05:47:00+00:00"
+      ]
+    },
+    {
+      "marker": "in_15m_fvg_down",
+      "xor_sum": 114,
+      "total_bars": 4380,
+      "divergence_rate": 0.026027397260273973,
+      "divergent_timestamps": [
+        "2025-11-17 22:15:00+00:00",
+        "2025-11-17 22:16:00+00:00",
+        "2025-11-17 22:17:00+00:00",
+        "2025-11-17 22:18:00+00:00",
+        "2025-11-17 22:19:00+00:00"
+      ]
+    },
+    {
+      "marker": "15m_fvg_up_created",
+      "xor_sum": 34,
+      "total_bars": 4380,
+      "divergence_rate": 0.007762557077625571,
+      "divergent_timestamps": [
+        "2025-11-19 22:15:00+00:00",
+        "2025-11-19 22:16:00+00:00",
+        "2025-11-19 22:31:00+00:00",
+        "2025-11-19 22:32:00+00:00",
+        "2025-11-19 22:33:00+00:00"
+      ]
+    },
+    {
+      "marker": "15m_fvg_down_created",
+      "xor_sum": 48,
+      "total_bars": 4380,
+      "divergence_rate": 0.010958904109589041,
+      "divergent_timestamps": [
+        "2025-11-18 21:31:00+00:00",
+        "2025-11-18 21:32:00+00:00",
+        "2025-11-18 21:33:00+00:00",
+        "2025-11-18 21:34:00+00:00",
+        "2025-11-18 21:35:00+00:00"
+      ]
+    },
+    {
+      "marker": "in_1h_fvg_up",
+      "xor_sum": 12,
+      "total_bars": 4380,
+      "divergence_rate": 0.0027397260273972603,
+      "divergent_timestamps": [
+        "2025-11-19 23:44:00+00:00",
+        "2025-11-19 23:45:00+00:00",
+        "2025-11-19 23:46:00+00:00",
+        "2025-11-19 23:47:00+00:00",
+        "2025-11-19 23:48:00+00:00"
+      ]
+    },
+    {
+      "marker": "in_1h_fvg_down",
+      "xor_sum": 33,
+      "total_bars": 4380,
+      "divergence_rate": 0.007534246575342466,
+      "divergent_timestamps": [
+        "2025-11-18 18:46:00+00:00",
+        "2025-11-18 18:55:00+00:00",
+        "2025-11-18 19:31:00+00:00",
+        "2025-11-18 19:35:00+00:00",
+        "2025-11-18 20:24:00+00:00"
+      ]
+    },
+    {
+      "marker": "1h_fvg_up_created",
+      "xor_sum": 0,
+      "total_bars": 4380,
+      "divergence_rate": 0.0,
+      "divergent_timestamps": []
+    },
+    {
+      "marker": "1h_fvg_down_created",
+      "xor_sum": 0,
+      "total_bars": 4380,
+      "divergence_rate": 0.0,
+      "divergent_timestamps": []
+    },
+    {
+      "marker": "in_4h_fvg_up",
+      "xor_sum": 0,
+      "total_bars": 4380,
+      "divergence_rate": 0.0,
+      "divergent_timestamps": []
+    },
+    {
+      "marker": "in_4h_fvg_down",
+      "xor_sum": 0,
+      "total_bars": 4380,
+      "divergence_rate": 0.0,
+      "divergent_timestamps": []
+    },
+    {
+      "marker": "4h_fvg_up_created",
+      "xor_sum": 0,
+      "total_bars": 4380,
+      "divergence_rate": 0.0,
+      "divergent_timestamps": []
+    },
+    {
+      "marker": "4h_fvg_down_created",
+      "xor_sum": 0,
+      "total_bars": 4380,
+      "divergence_rate": 0.0,
+      "divergent_timestamps": []
+    },
+    {
+      "marker": "in_daily_fvg_up",
+      "xor_sum": 0,
+      "total_bars": 4380,
+      "divergence_rate": 0.0,
+      "divergent_timestamps": []
+    },
+    {
+      "marker": "in_daily_fvg_down",
+      "xor_sum": 0,
+      "total_bars": 4380,
+      "divergence_rate": 0.0,
+      "divergent_timestamps": []
+    },
+    {
+      "marker": "daily_fvg_up_created",
+      "xor_sum": 0,
+      "total_bars": 4380,
+      "divergence_rate": 0.0,
+      "divergent_timestamps": []
+    },
+    {
+      "marker": "daily_fvg_down_created",
+      "xor_sum": 0,
+      "total_bars": 4380,
+      "divergence_rate": 0.0,
+      "divergent_timestamps": []
+    },
+    {
+      "marker": "in_weekly_fvg_up",
+      "xor_sum": 0,
+      "total_bars": 4380,
+      "divergence_rate": 0.0,
+      "divergent_timestamps": []
+    },
+    {
+      "marker": "in_weekly_fvg_down",
+      "xor_sum": 0,
+      "total_bars": 4380,
+      "divergence_rate": 0.0,
+      "divergent_timestamps": []
+    },
+    {
+      "marker": "weekly_fvg_up_created",
+      "xor_sum": 0,
+      "total_bars": 4380,
+      "divergence_rate": 0.0,
+      "divergent_timestamps": []
+    },
+    {
+      "marker": "weekly_fvg_down_created",
+      "xor_sum": 0,
+      "total_bars": 4380,
+      "divergence_rate": 0.0,
+      "divergent_timestamps": []
+    },
+    {
+      "marker": "in_monthly_fvg_up",
+      "xor_sum": 0,
+      "total_bars": 4380,
+      "divergence_rate": 0.0,
+      "divergent_timestamps": []
+    },
+    {
+      "marker": "in_monthly_fvg_down",
+      "xor_sum": 0,
+      "total_bars": 4380,
+      "divergence_rate": 0.0,
+      "divergent_timestamps": []
+    },
+    {
+      "marker": "monthly_fvg_up_created",
+      "xor_sum": 0,
+      "total_bars": 4380,
+      "divergence_rate": 0.0,
+      "divergent_timestamps": []
+    },
+    {
+      "marker": "monthly_fvg_down_created",
+      "xor_sum": 0,
+      "total_bars": 4380,
+      "divergence_rate": 0.0,
+      "divergent_timestamps": []
+    },
+    {
+      "marker": "entry_fvg_present",
+      "xor_sum": 284,
+      "total_bars": 4380,
+      "divergence_rate": 0.06484018264840183,
+      "divergent_timestamps": [
+        "2025-11-17 22:15:00+00:00",
+        "2025-11-17 22:16:00+00:00",
+        "2025-11-17 22:17:00+00:00",
+        "2025-11-17 22:18:00+00:00",
+        "2025-11-17 22:19:00+00:00"
+      ]
+    },
+    {
+      "marker": "htf_fvg_present",
+      "xor_sum": 44,
+      "total_bars": 4380,
+      "divergence_rate": 0.01004566210045662,
+      "divergent_timestamps": [
+        "2025-11-18 18:46:00+00:00",
+        "2025-11-18 18:55:00+00:00",
+        "2025-11-18 19:31:00+00:00",
+        "2025-11-18 19:35:00+00:00",
+        "2025-11-18 20:24:00+00:00"
+      ]
+    },
+    {
+      "marker": "displacement_up",
+      "xor_sum": 52,
+      "total_bars": 4380,
+      "divergence_rate": 0.011872146118721462,
+      "divergent_timestamps": [
+        "2025-11-17 22:52:00+00:00",
+        "2025-11-17 23:00:00+00:00",
+        "2025-11-17 23:23:00+00:00",
+        "2025-11-18 00:57:00+00:00",
+        "2025-11-18 01:21:00+00:00"
+      ]
+    },
+    {
+      "marker": "displacement_down",
+      "xor_sum": 50,
+      "total_bars": 4380,
+      "divergence_rate": 0.01141552511415525,
+      "divergent_timestamps": [
+        "2025-11-17 23:18:00+00:00",
+        "2025-11-17 23:40:00+00:00",
+        "2025-11-17 23:44:00+00:00",
+        "2025-11-18 00:00:00+00:00",
+        "2025-11-18 02:48:00+00:00"
+      ]
+    },
+    {
+      "marker": "is_displacement",
+      "xor_sum": 102,
+      "total_bars": 4380,
+      "divergence_rate": 0.023287671232876714,
+      "divergent_timestamps": [
+        "2025-11-17 22:52:00+00:00",
+        "2025-11-17 23:00:00+00:00",
+        "2025-11-17 23:18:00+00:00",
+        "2025-11-17 23:23:00+00:00",
+        "2025-11-17 23:40:00+00:00"
+      ]
+    },
+    {
+      "marker": "is_higher_high",
+      "xor_sum": 97,
+      "total_bars": 4380,
+      "divergence_rate": 0.02214611872146119,
+      "divergent_timestamps": [
+        "2025-11-17 22:20:00+00:00",
+        "2025-11-17 22:26:00+00:00",
+        "2025-11-17 22:29:00+00:00",
+        "2025-11-17 22:48:00+00:00",
+        "2025-11-17 22:52:00+00:00"
+      ]
+    },
+    {
+      "marker": "is_lower_high",
+      "xor_sum": 196,
+      "total_bars": 4380,
+      "divergence_rate": 0.04474885844748858,
+      "divergent_timestamps": [
+        "2025-11-17 22:19:00+00:00",
+        "2025-11-17 22:20:00+00:00",
+        "2025-11-17 22:21:00+00:00",
+        "2025-11-17 22:22:00+00:00",
+        "2025-11-17 22:23:00+00:00"
+      ]
+    },
+    {
+      "marker": "is_higher_low",
+      "xor_sum": 111,
+      "total_bars": 4380,
+      "divergence_rate": 0.025342465753424658,
+      "divergent_timestamps": [
+        "2025-11-17 22:17:00+00:00",
+        "2025-11-17 22:22:00+00:00",
+        "2025-11-17 22:39:00+00:00",
+        "2025-11-17 22:47:00+00:00",
+        "2025-11-17 22:51:00+00:00"
+      ]
+    },
+    {
+      "marker": "is_lower_low",
+      "xor_sum": 184,
+      "total_bars": 4380,
+      "divergence_rate": 0.04200913242009133,
+      "divergent_timestamps": [
+        "2025-11-17 22:24:00+00:00",
+        "2025-11-17 22:31:00+00:00",
+        "2025-11-17 22:34:00+00:00",
+        "2025-11-17 22:39:00+00:00",
+        "2025-11-17 22:47:00+00:00"
+      ]
+    },
+    {
+      "marker": "structure_break_up",
+      "xor_sum": 118,
+      "total_bars": 4380,
+      "divergence_rate": 0.026940639269406392,
+      "divergent_timestamps": [
+        "2025-11-17 22:18:00+00:00",
+        "2025-11-17 22:19:00+00:00",
+        "2025-11-17 23:01:00+00:00",
+        "2025-11-17 23:02:00+00:00",
+        "2025-11-17 23:03:00+00:00"
+      ]
+    },
+    {
+      "marker": "structure_break_down",
+      "xor_sum": 169,
+      "total_bars": 4380,
+      "divergence_rate": 0.03858447488584475,
+      "divergent_timestamps": [
+        "2025-11-17 22:29:00+00:00",
+        "2025-11-17 22:30:00+00:00",
+        "2025-11-17 22:31:00+00:00",
+        "2025-11-17 22:58:00+00:00",
+        "2025-11-17 23:37:00+00:00"
+      ]
+    },
+    {
+      "marker": "in_premium",
+      "xor_sum": 48,
+      "total_bars": 4380,
+      "divergence_rate": 0.010958904109589041,
+      "divergent_timestamps": [
+        "2025-11-17 22:15:00+00:00",
+        "2025-11-17 22:50:00+00:00",
+        "2025-11-17 22:59:00+00:00",
+        "2025-11-17 23:44:00+00:00",
+        "2025-11-17 23:54:00+00:00"
+      ]
+    },
+    {
+      "marker": "in_discount",
+      "xor_sum": 42,
+      "total_bars": 4380,
+      "divergence_rate": 0.009589041095890411,
+      "divergent_timestamps": [
+        "2025-11-17 22:15:00+00:00",
+        "2025-11-17 22:50:00+00:00",
+        "2025-11-17 22:59:00+00:00",
+        "2025-11-17 23:44:00+00:00",
+        "2025-11-17 23:54:00+00:00"
+      ]
+    },
+    {
+      "marker": "in_ote",
+      "xor_sum": 15,
+      "total_bars": 4380,
+      "divergence_rate": 0.003424657534246575,
+      "divergent_timestamps": [
+        "2025-11-18 13:04:00+00:00",
+        "2025-11-19 13:58:00+00:00",
+        "2025-11-19 19:32:00+00:00",
+        "2025-11-19 21:04:00+00:00",
+        "2025-11-19 21:24:00+00:00"
+      ]
+    },
+    {
+      "marker": "in_15m_ob_bull",
+      "xor_sum": 158,
+      "total_bars": 4380,
+      "divergence_rate": 0.036073059360730596,
+      "divergent_timestamps": [
+        "2025-11-17 22:15:00+00:00",
+        "2025-11-17 22:16:00+00:00",
+        "2025-11-17 22:17:00+00:00",
+        "2025-11-17 22:23:00+00:00",
+        "2025-11-17 22:29:00+00:00"
+      ]
+    },
+    {
+      "marker": "in_15m_ob_bear",
+      "xor_sum": 282,
+      "total_bars": 4380,
+      "divergence_rate": 0.06438356164383562,
+      "divergent_timestamps": [
+        "2025-11-17 23:02:00+00:00",
+        "2025-11-17 23:04:00+00:00",
+        "2025-11-17 23:05:00+00:00",
+        "2025-11-17 23:06:00+00:00",
+        "2025-11-17 23:07:00+00:00"
+      ]
+    },
+    {
+      "marker": "in_1h_ob_bull",
+      "xor_sum": 262,
+      "total_bars": 4380,
+      "divergence_rate": 0.059817351598173515,
+      "divergent_timestamps": [
+        "2025-11-18 04:00:00+00:00",
+        "2025-11-18 04:01:00+00:00",
+        "2025-11-18 04:02:00+00:00",
+        "2025-11-18 04:03:00+00:00",
+        "2025-11-18 04:04:00+00:00"
+      ]
+    },
+    {
+      "marker": "in_1h_ob_bear",
+      "xor_sum": 176,
+      "total_bars": 4380,
+      "divergence_rate": 0.04018264840182648,
+      "divergent_timestamps": [
+        "2025-11-18 10:06:00+00:00",
+        "2025-11-18 10:08:00+00:00",
+        "2025-11-18 10:09:00+00:00",
+        "2025-11-18 12:12:00+00:00",
+        "2025-11-18 12:15:00+00:00"
+      ]
+    },
+    {
+      "marker": "in_ob_bull",
+      "xor_sum": 287,
+      "total_bars": 4380,
+      "divergence_rate": 0.06552511415525114,
+      "divergent_timestamps": [
+        "2025-11-17 22:15:00+00:00",
+        "2025-11-17 22:16:00+00:00",
+        "2025-11-17 22:17:00+00:00",
+        "2025-11-17 22:23:00+00:00",
+        "2025-11-17 22:29:00+00:00"
+      ]
+    },
+    {
+      "marker": "in_ob_bear",
+      "xor_sum": 422,
+      "total_bars": 4380,
+      "divergence_rate": 0.09634703196347032,
+      "divergent_timestamps": [
+        "2025-11-17 23:02:00+00:00",
+        "2025-11-17 23:04:00+00:00",
+        "2025-11-17 23:05:00+00:00",
+        "2025-11-17 23:06:00+00:00",
+        "2025-11-17 23:07:00+00:00"
+      ]
+    },
+    {
+      "marker": "htf_unanimous",
+      "xor_sum": 0,
+      "total_bars": 4380,
+      "divergence_rate": 0.0,
+      "divergent_timestamps": []
+    },
+    {
+      "marker": "entry_direction_unanimous",
+      "xor_sum": 0,
+      "total_bars": 4380,
+      "divergence_rate": 0.0,
+      "divergent_timestamps": []
+    },
+    {
+      "marker": "conflicting_signals",
+      "xor_sum": 612,
+      "total_bars": 4380,
+      "divergence_rate": 0.13972602739726028,
+      "divergent_timestamps": [
+        "2025-11-17 22:15:00+00:00",
+        "2025-11-17 22:16:00+00:00",
+        "2025-11-17 22:17:00+00:00",
+        "2025-11-17 22:20:00+00:00",
+        "2025-11-17 22:21:00+00:00"
+      ]
+    },
+    {
+      "marker": "htf_supports_long",
+      "xor_sum": 0,
+      "total_bars": 4380,
+      "divergence_rate": 0.0,
+      "divergent_timestamps": []
+    },
+    {
+      "marker": "htf_supports_short",
+      "xor_sum": 0,
+      "total_bars": 4380,
+      "divergence_rate": 0.0,
+      "divergent_timestamps": []
+    },
+    {
+      "marker": "entry_matches_htf_long",
+      "xor_sum": 0,
+      "total_bars": 4380,
+      "divergence_rate": 0.0,
+      "divergent_timestamps": []
+    },
+    {
+      "marker": "entry_matches_htf_short",
+      "xor_sum": 0,
+      "total_bars": 4380,
+      "divergence_rate": 0.0,
+      "divergent_timestamps": []
+    },
+    {
+      "marker": "mmm_htf_aligned",
+      "xor_sum": 0,
+      "total_bars": 4380,
+      "divergence_rate": 0.0,
+      "divergent_timestamps": []
+    }
+  ],
+  "exclusions": {
+    "dukascopy_total": 5760,
+    "ibkr_total": 4380,
+    "aligned": 4380,
+    "excluded_no_match": 1380
+  },
+  "verdict": "FAIL",
+  "failure_reasons": [
+    "Total XOR sum = 7491 (expected 0)"
+  ]
+}
