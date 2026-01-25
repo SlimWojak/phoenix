@@ -1,0 +1,13 @@
+.env
+__pycache__/
+*.pyc
+.DS_Store
+.venv/
+.pytest_cache/
+*.jsonl
+
+# Hive temp files
+hive/next_check_note.txt
+
+# The kingdom is now properly aligned. Ascension begins. 🍌🔥
+
