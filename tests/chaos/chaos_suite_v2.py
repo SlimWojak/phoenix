@@ -12,7 +12,6 @@ VECTORS:
 - zombie_bleed: halt orphans workers
 """
 
-import pytest
 import sys
 from pathlib import Path
 from dataclasses import dataclass
