@@ -22,12 +22,18 @@ from .layers import (
     l1_time_sessions,
     l2_reference_levels,
     l3_sweeps,
+    l4_structure_breaks,
+    l5_order_blocks,
+    l6_fvg_imbalances,
 )
 
 __all__ = [
     'l1_time_sessions',
     'l2_reference_levels',
     'l3_sweeps',
+    'l4_structure_breaks',
+    'l5_order_blocks',
+    'l6_fvg_imbalances',
 ]
 
 __version__ = '1.0.0'
@@ -43,6 +49,9 @@ def get_all_columns() -> list:
     columns.extend(l1_time_sessions.LAYER_1_COLUMNS)
     columns.extend(l2_reference_levels.LAYER_2_COLUMNS)
     columns.extend(l3_sweeps.LAYER_3_COLUMNS)
+    columns.extend(l4_structure_breaks.LAYER_4_COLUMNS)
+    columns.extend(l5_order_blocks.LAYER_5_COLUMNS)
+    columns.extend(l6_fvg_imbalances.LAYER_6_COLUMNS)
     return columns
 
 

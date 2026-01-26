@@ -1,0 +1,10 @@
+# Intake directory gitignore
+
+# Keep the structure
+!olya/README.md
+!processed/.gitkeep
+
+# Ignore temporary files
+*.tmp
+*.bak
+.DS_Store
