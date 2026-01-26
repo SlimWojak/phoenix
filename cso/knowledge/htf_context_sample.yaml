@@ -1,0 +1,394 @@
+# HTF Context Sample — Transformed Signals from Olya's Methodology
+# VERSION: 1.0
+# SPRINT: S27.0
+# SOURCE: docs/olya_skills/LAYER_0_HTF_CONTEXT_CLEAN.md
+# CONTRACT: OLYA_SIGNAL_CONTRACT.yaml
+
+schema_version: "1.0.0"
+transform_date: "2026-01-23"
+source_doc: "LAYER_0_HTF_CONTEXT_CLEAN.md"
+source_lines: 2072
+
+# =============================================================================
+# SIGNALS (5 Representative Patterns)
+# =============================================================================
+
+signals:
+
+  # ---------------------------------------------------------------------------
+  # SIGNAL 1: Weekly MSS Detection
+  # ---------------------------------------------------------------------------
+  - name: "Weekly MSS Confirmation"
+    id: "SIG-OLYA-001"
+    timeframe: HTF
+    description: |
+      Weekly Market Structure Shift establishes macro direction.
+      Creates weekly swing boundaries used as expansion limits.
+      ALL three conditions must be true for confirmation.
+    
+    conditions:
+      - type: price_action
+        operator: break
+        target: prior_weekly_swing_high  # bullish
+        note: "Close beyond prior MSS-defined swing"
+      
+      - type: imbalance
+        operator: qualitative
+        target: displacement
+        note: "Forceful exit + removes structure + one-sided intent"
+      
+      - type: imbalance
+        operator: exists
+        target: fvg
+        note: "FVG created OR respected (universal definition)"
+    
+    confluence:
+      - "SIG-OLYA-002"  # Daily MSS aligned
+    
+    weight: 1.0
+    
+    invalidation:
+      type: price_action
+      operator: break
+      target: new_weekly_swing_low
+      note: "New MSS in opposite direction"
+    
+    source_ref: "L42-95:detect_weekly_mss"
+    
+    output:
+      weekly_mss_exists: true
+      weekly_mss_direction: bullish  # or bearish
+      weekly_swing_high: float
+      weekly_swing_low: float
+
+  # ---------------------------------------------------------------------------
+  # SIGNAL 2: Displacement (Qualitative, Universal)
+  # ---------------------------------------------------------------------------
+  - name: "Displacement Confirmation"
+    id: "SIG-OLYA-002"
+    timeframe: HTF  # Universal: applies to all timeframes
+    description: |
+      Displacement is QUALITATIVE (NO pip thresholds).
+      Same 5-component check for Weekly, Daily, H4, H1, 15m, 5m.
+      Only context/weight scales with timeframe.
+    
+    conditions:
+      - type: price_action
+        operator: qualitative
+        target: forceful_balance_exit
+        note: "Price forcefully EXITS prior balance"
+      
+      - type: structure
+        operator: qualitative
+        target: structure_removal
+        note: "Removes structure of that timeframe"
+      
+      - type: imbalance
+        operator: exists
+        target: fvg
+        note: "Leaves imbalance (FVG created OR respected)"
+      
+      - type: price_action
+        operator: qualitative
+        target: one_sided_intent
+        note: "Strong bodies >70%, no hesitation"
+      
+      - type: price_action
+        operator: qualitative
+        target: no_rotation
+        note: "No rotation back into balance"
+    
+    confluence:
+      - "SIG-OLYA-003"  # FVG present
+    
+    weight: 0.9
+    
+    invalidation:
+      type: price_action
+      operator: within
+      target: prior_balance_range
+      note: "Price returns to balance"
+    
+    source_ref: "L159-210:check_displacement_qualitative"
+    
+    output:
+      displacement_confirmed: true
+      displacement_direction: bullish  # or bearish
+
+  # ---------------------------------------------------------------------------
+  # SIGNAL 3: FVG Detection (Universal)
+  # ---------------------------------------------------------------------------
+  - name: "Fair Value Gap Formation"
+    id: "SIG-OLYA-003"
+    timeframe: HTF  # Universal: same logic all timeframes
+    description: |
+      FVG detection is UNIVERSAL across all timeframes.
+      NO pip thresholds. NO body checks. NO timeframe scaling.
+      Bullish: Candle A high < Candle C low
+      Bearish: Candle A low > Candle C high
+    
+    conditions:
+      # Bullish FVG
+      - type: imbalance
+        operator: forms
+        target: gap_between_candles
+        parameters:
+          bullish: "candle_a.high < candle_c.low"
+          bearish: "candle_a.low > candle_c.high"
+        note: "Simple 3-candle gap check"
+    
+    confluence: []
+    
+    weight: 0.7
+    
+    invalidation:
+      type: price_action
+      operator: within
+      target: fvg_zone
+      tolerance: 0.5  # 50% CE level (Consequent Encroachment)
+      note: "FVG mitigated past CE"
+    
+    source_ref: "L217-275:check_fvg_created_universal"
+    
+    output:
+      fvg_exists: true
+      fvg_direction: bullish  # or bearish
+      fvg_top: float
+      fvg_bottom: float
+      fvg_mid: float  # CE level
+
+  # ---------------------------------------------------------------------------
+  # SIGNAL 4: Liquidity Level Classification
+  # ---------------------------------------------------------------------------
+  - name: "Liquidity Target Valid"
+    id: "SIG-OLYA-004"
+    timeframe: HTF
+    description: |
+      Three-state liquidity classification determines if target is valid.
+      NOT_DELIVERED or LIQUIDITY_RUN = valid objective.
+      DELIVERED_WITH_CONSEQUENCE = invalid, exclude from targets.
+    
+    conditions:
+      # State 1 (Highest Quality)
+      - type: liquidity
+        operator: exists
+        target: level_never_touched
+        status: NOT_DELIVERED
+        note: "Liquidity fully intact"
+      
+      # State 2 (Valid)
+      - type: liquidity
+        operator: exists
+        target: level_touched_no_consequence
+        status: LIQUIDITY_RUN
+        note: "Probed but no structural consequence"
+    
+    # Disqualifier
+    disqualify_if:
+      type: structure
+      operator: exists
+      target: consequence_at_level
+      status: DELIVERED_WITH_CONSEQUENCE
+      consequences:
+        - displacement_from_level
+        - mss_from_level
+        - fvg_from_level
+        - structure_change_from_level
+    
+    weight: 0.8
+    
+    source_ref: "L830-930:classify_liquidity_level_status"
+    
+    output:
+      level_valid: true
+      level_status: NOT_DELIVERED  # or LIQUIDITY_RUN
+      level_quality: highest  # or valid
+
+  # ---------------------------------------------------------------------------
+  # SIGNAL 5: Daily Bias Synthesis (Composite)
+  # ---------------------------------------------------------------------------
+  - name: "Daily Bias Determined"
+    id: "SIG-OLYA-005"
+    timeframe: HTF
+    description: |
+      Daily bias from 3 Questions Framework.
+      Q1: Where is price now? (Premium/Discount)
+      Q2: Where is price likely to go? (Objective)
+      Q3: Where is price coming from? (HTF direction)
+      Synthesis determines: long_only, short_only, or none.
+    
+    conditions:
+      # Q1: Location
+      - type: range
+        operator: within
+        target: premium_or_discount
+        note: "NOT equilibrium (no edge at 50%)"
+      
+      # Q2: Objective
+      - type: liquidity
+        operator: exists
+        target: external_draw_on_liquidity
+        status: valid  # NOT_DELIVERED or LIQUIDITY_RUN
+        note: "Clear target exists"
+      
+      # Q3: HTF Direction
+      - type: structure
+        operator: exists
+        target: htf_order_flow
+        values: [bullish, bearish]
+        note: "HH+HL = bullish, LH+LL = bearish"
+    
+    synthesis:
+      all_bullish:
+        q1_zone: discount
+        q2_dol: resistance_above
+        q3_direction: bullish
+        output: long_only
+      
+      all_bearish:
+        q1_zone: premium
+        q2_dol: support_below
+        q3_direction: bearish
+        output: short_only
+      
+      conflicting:
+        output: none
+    
+    weight: 1.0
+    
+    invalidation:
+      type: range
+      operator: within
+      target: equilibrium
+      note: "Price at 50% = no trade"
+    
+    source_ref: "L1386-1490:synthesize_daily_bias"
+    
+    output:
+      trade_bias: long_only  # or short_only, none
+      q1_zone: premium  # or discount
+      q2_objective: {...}
+      q3_htf_direction: bullish  # or bearish
+
+# =============================================================================
+# INVARIANTS (Extracted from Source)
+# =============================================================================
+
+invariants:
+
+  - id: "INV-OLYA-001"
+    rule: "Structure exists ONLY after MSS"
+    violation: "Defining swings/ranges without MSS"
+    enforcement: "Check mss_exists before creating structure"
+    source_ref: "L26-32:GLOBAL_RULE"
+
+  - id: "INV-OLYA-002"
+    rule: "Swings are created BY MSS, not detected independently"
+    violation: "Using arbitrary peaks/troughs as swings"
+    enforcement: "Swing creation only in MSS detection path"
+    source_ref: "L26-32:GLOBAL_RULE"
+
+  - id: "INV-OLYA-003"
+    rule: "Ranges are created BY MSS boundaries"
+    violation: "Using PDH/PDL as primary range source"
+    enforcement: "Range.method must be 'mss_boundaries' first"
+    source_ref: "L26-32:GLOBAL_RULE, L287-340:define_weekly_range"
+
+  - id: "INV-OLYA-004"
+    rule: "Bootstrap uses PDH/PDL/PWH/PWL ONLY as initial boundaries"
+    violation: "Using arbitrary levels or recent swings for first MSS"
+    enforcement: "First MSS checks only 4 bootstrap boundaries"
+    source_ref: "L100-155:detect_first_weekly_mss"
+
+  - id: "INV-OLYA-005"
+    rule: "Displacement has NO pip thresholds (qualitative only)"
+    violation: "Using fixed pip distances for displacement"
+    enforcement: "Displacement check has no numeric thresholds"
+    source_ref: "L159-210:check_displacement_qualitative"
+
+  - id: "INV-OLYA-006"
+    rule: "FVG detection is UNIVERSAL across all timeframes"
+    violation: "Scaling FVG logic by timeframe"
+    enforcement: "Same function for Weekly through 5m"
+    source_ref: "L217-275:check_fvg_created_universal"
+
+  - id: "INV-OLYA-007"
+    rule: "BOS = MSS (identical, use MSS terminology only)"
+    violation: "Using 'BOS' anywhere in code"
+    enforcement: "Grep 'BOS' should return empty"
+    source_ref: "L287-340:GAP2 resolution"
+
+  - id: "INV-OLYA-008"
+    rule: "Daily bias is set at 00:00 NY and frozen until next day"
+    violation: "Re-biasing intraday based on price action"
+    enforcement: "Bias computation runs once at midnight"
+    source_ref: "L1580:ABSOLUTE_PROHIBITIONS"
+
+  - id: "INV-OLYA-009"
+    rule: "No trading from equilibrium (50% of structural range)"
+    violation: "Taking trades when price at equilibrium"
+    enforcement: "tradeable=False when zone='equilibrium'"
+    source_ref: "L1580:ABSOLUTE_PROHIBITIONS"
+
+  - id: "INV-OLYA-010"
+    rule: "MMXM lookback starts from last Daily MSS only"
+    violation: "Using MMXM patterns from before last MSS"
+    enforcement: "Filter MMXM by date >= last_mss_date"
+    source_ref: "L620:get_mmxm_lookback_start"
+
+  - id: "INV-OLYA-011"
+    rule: "Post-expansion requires delivery WITH displacement (not grind)"
+    violation: "Triggering post-expansion on slow grind to level"
+    enforcement: "check_delivery_displacement must return True"
+    source_ref: "L1108-1185:check_post_expansion_status"
+
+# =============================================================================
+# COMPOSITE GATES (Decision Points)
+# =============================================================================
+
+composite_gates:
+
+  - name: "Layer 0 Tradeable Gate"
+    id: "GATE-OLYA-001"
+    description: "All conditions for Layer 0 to output tradeable=True"
+    
+    signals_required:
+      - "SIG-OLYA-001"  # Weekly MSS (or confirmed none needed)
+      - "SIG-OLYA-005"  # Daily Bias determined
+      - "SIG-OLYA-004"  # Objective valid (liquidity status)
+    
+    additional_checks:
+      - state: "NOT NO_STRUCTURE"
+      - zone: "NOT equilibrium"
+      - objective: "EXISTS and status != DELIVERED_WITH_CONSEQUENCE"
+    
+    output_if_pass:
+      tradeable: true
+      state: FULL_CONTEXT
+    
+    output_if_fail:
+      tradeable: false
+      reason: "Missing required signal or failed check"
+
+# =============================================================================
+# METADATA
+# =============================================================================
+
+metadata:
+  patterns_extracted: 5
+  invariants_extracted: 11
+  composite_gates: 1
+  coverage:
+    - weekly_context: true
+    - daily_mss: true
+    - displacement: true
+    - fvg: true
+    - liquidity_classification: true
+    - daily_bias: true
+  gaps_covered:
+    - GAP1_bootstrap: "SIG-OLYA-001, INV-OLYA-004"
+    - GAP2_bos_mss: "INV-OLYA-007"
+    - GAP3_displacement: "SIG-OLYA-002, INV-OLYA-005"
+    - GAP4_fvg_universal: "SIG-OLYA-003, INV-OLYA-006"
+    - GAP7_liquidity_status: "SIG-OLYA-004"
+    - GAP8_post_expansion: "INV-OLYA-011"

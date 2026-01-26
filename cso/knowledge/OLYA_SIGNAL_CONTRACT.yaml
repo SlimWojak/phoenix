@@ -1,0 +1,158 @@
+# OLYA_SIGNAL_CONTRACT — Schema Definition
+# VERSION: 1.0
+# SPRINT: S27.0
+# PURPOSE: Machine-readable format for Olya's ICT methodology
+
+schema_version: "1.0.0"
+created: "2026-01-23"
+source: "docs/olya_skills/LAYER_0_HTF_CONTEXT_CLEAN.md"
+
+# =============================================================================
+# SCHEMA DEFINITION
+# =============================================================================
+
+types:
+  
+  timeframe:
+    enum:
+      - HTF    # Weekly, Daily (macro context)
+      - ITF    # H4, H1 (intermediate, rebalance)
+      - LTF    # 15m, 5m, 1m (execution)
+  
+  condition_type:
+    enum:
+      - price_action    # Close, high, low relative to level
+      - structure       # MSS, HH/HL/LH/LL, swings
+      - time            # Session, kill zone, day of week
+      - liquidity       # Pools, sweeps, equal highs/lows
+      - range           # Premium, discount, equilibrium
+      - imbalance       # FVG, OB, iFVG, BPR
+  
+  operator:
+    enum:
+      - above           # Price > level
+      - below           # Price < level
+      - sweep           # Price crossed then rejected
+      - break           # Close beyond level (MSS)
+      - hold            # PDA respected (no acceptance)
+      - within          # Price inside zone
+      - exists          # Pattern present
+      - forms           # Pattern just created
+      - qualitative     # No numeric threshold (displacement)
+  
+  liquidity_status:
+    enum:
+      - NOT_DELIVERED             # Never touched (highest priority)
+      - LIQUIDITY_RUN             # Touched, no consequence (valid)
+      - DELIVERED_WITH_CONSEQUENCE # Consequence at level (invalid)
+  
+  warmup_state:
+    enum:
+      - NO_STRUCTURE    # No MSS exists
+      - WEEKLY_ONLY     # Weekly MSS, no daily
+      - NO_RANGE        # MSS exists, no range
+      - NO_OBJECTIVE    # Range exists, no target
+      - EQUILIBRIUM     # Price at 50% (no edge)
+      - FULL_CONTEXT    # All valid, tradeable
+
+# =============================================================================
+# SIGNAL SCHEMA
+# =============================================================================
+
+signal_schema:
+  required:
+    - name: string           # Human-readable signal name
+    - id: string             # Machine ID (SIG-OLYA-*)
+    - timeframe: timeframe   # HTF, ITF, LTF
+    - description: string    # What this signal represents
+    - conditions: list[condition]  # ALL must be true
+    - weight: float          # 0.0-1.0 (contribution to decision)
+    - source_ref: string     # Line range from original doc
+    
+  optional:
+    - confluence: list[signal_ref]  # Other signals that strengthen
+    - invalidation: condition       # What breaks the signal
+    - cooldown: duration            # Minimum time between signals
+    - max_per_period: integer       # Max occurrences per period
+
+# =============================================================================
+# CONDITION SCHEMA
+# =============================================================================
+
+condition_schema:
+  required:
+    - type: condition_type
+    - operator: operator
+    - target: string         # What to check (level, pattern, etc.)
+    
+  optional:
+    - tolerance: float       # Acceptable deviation (pips or %)
+    - lookback: integer      # Bars to examine
+    - immediate: boolean     # Must occur within 1-3 bars
+
+# =============================================================================
+# INVARIANT SCHEMA
+# =============================================================================
+
+invariant_schema:
+  required:
+    - id: string             # INV-OLYA-*
+    - rule: string           # Quoted, testable statement
+    - violation: string      # What breaks it
+    
+  optional:
+    - source_ref: string     # Original doc reference
+    - enforcement: string    # How to enforce in code
+
+# =============================================================================
+# COMPOSITE SIGNAL (Decision Gate)
+# =============================================================================
+
+composite_schema:
+  required:
+    - name: string
+    - id: string
+    - signals_required: list[signal_ref]  # ALL must fire
+    - output: string         # Result when all fire
+    
+  optional:
+    - signals_optional: list[signal_ref]  # Boost confidence if present
+    - fallback: string       # Output if signals partial
+
+# =============================================================================
+# VALIDATION RULES
+# =============================================================================
+
+validation:
+  - "Every signal must have source_ref to original doc"
+  - "No pip thresholds for displacement (qualitative only)"
+  - "FVG detection is universal (no timeframe scaling)"
+  - "MSS creates structure, swings, and ranges"
+  - "Liquidity levels must have status classification"
+  - "Bootstrap uses PDH/PDL/PWH/PWL only"
+
+# =============================================================================
+# EXAMPLE
+# =============================================================================
+
+example_signal:
+  name: "Weekly MSS Bullish"
+  id: "SIG-OLYA-001"
+  timeframe: HTF
+  description: "Weekly Market Structure Shift to bullish"
+  conditions:
+    - type: price_action
+      operator: break
+      target: prior_weekly_swing_high
+    - type: imbalance
+      operator: qualitative
+      target: displacement
+    - type: imbalance
+      operator: exists
+      target: fvg
+  weight: 1.0
+  source_ref: "LAYER_0_HTF_CONTEXT_CLEAN.md:42-95"
+  invalidation:
+    type: price_action
+    operator: break
+    target: new_swing_low
