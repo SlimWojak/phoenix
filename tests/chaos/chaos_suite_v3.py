@@ -387,11 +387,13 @@ class ChaosSuiteV3(ChaosSuiteV2):
         n = 1000
         base = 1.0850
         
-        # Gradual drift, then sudden 200 pip move in 50 bars
-        normal_drift = np.random.randn(800) * 0.0001
-        unwind = np.linspace(0, -0.0200, 200)  # 200 pip drop
+        # Gradual drift, then sudden 200 pip move over 200 bars
+        # FIX: unwind must be RETURNS (per-bar), not cumulative values
+        normal_drift = np.random.randn(800) * 0.0001  # ~1 pip std per bar
+        unwind_per_bar = -0.0200 / 200  # -1 pip per bar for 200 bars
+        unwind_returns = np.full(200, unwind_per_bar)  # Constant -1 pip per bar
         
-        returns = np.concatenate([normal_drift, unwind])
+        returns = np.concatenate([normal_drift, unwind_returns])
         prices = base + np.cumsum(returns)
         
         return pd.DataFrame({
@@ -409,12 +411,18 @@ class ChaosSuiteV3(ChaosSuiteV2):
         base = 1.0850
         
         # Normal, crash, recovery
-        pre_crash = np.random.randn(400) * 0.0001
-        crash = np.linspace(0, -0.0150, 100)  # 150 pip crash
-        recovery = np.linspace(0, 0.0140, 100)  # 140 pip recovery
+        # FIX: crash and recovery must be RETURNS (per-bar), not cumulative
+        pre_crash = np.random.randn(400) * 0.0001  # ~1 pip std per bar
+        
+        crash_per_bar = -0.0150 / 100  # -1.5 pips per bar for 100 bars
+        crash_returns = np.full(100, crash_per_bar)
+        
+        recovery_per_bar = 0.0140 / 100  # +1.4 pips per bar for 100 bars
+        recovery_returns = np.full(100, recovery_per_bar)
+        
         post_crash = np.random.randn(400) * 0.0001
         
-        returns = np.concatenate([pre_crash, crash, recovery, post_crash])
+        returns = np.concatenate([pre_crash, crash_returns, recovery_returns, post_crash])
         prices = base + np.cumsum(returns)
         
         return pd.DataFrame({
@@ -422,6 +430,86 @@ class ChaosSuiteV3(ChaosSuiteV2):
             'close': prices,
             'pattern': 'flash_crash',
         })
+    
+    def _validate_price_data(self, df: 'pd.DataFrame', symbol: str = 'EURUSD') -> Dict:
+        """
+        Bounds check for price data — fail-closed validation.
+        
+        Returns validation result with details on any violations.
+        This is the defense layer that should catch regime stress issues.
+        """
+        import numpy as np
+        
+        validation = {
+            "valid": True,
+            "violations": [],
+            "telemetry": {},
+        }
+        
+        close = df['close']
+        
+        # Bounds: FX majors typically 0.5 - 2.5 range
+        PRICE_MIN = 0.5
+        PRICE_MAX = 2.5
+        
+        # Physics: Max single-bar move for FX (circuit breaker equivalent)
+        MAX_SINGLE_BAR_PCT = 0.05  # 5% — extreme but possible in crisis
+        MAX_SINGLE_BAR_PIPS = 500  # 500 pips absolute max
+        
+        # Check 1: Price bounds
+        if close.min() < PRICE_MIN:
+            validation["valid"] = False
+            validation["violations"].append({
+                "type": "PRICE_BELOW_MIN",
+                "value": close.min(),
+                "threshold": PRICE_MIN,
+                "severity": "CRITICAL"
+            })
+        
+        if close.max() > PRICE_MAX:
+            validation["valid"] = False
+            validation["violations"].append({
+                "type": "PRICE_ABOVE_MAX",
+                "value": close.max(),
+                "threshold": PRICE_MAX,
+                "severity": "CRITICAL"
+            })
+        
+        # Check 2: Single-bar move limits (physics check)
+        returns = close.pct_change().abs()
+        max_return = returns.max()
+        
+        if max_return > MAX_SINGLE_BAR_PCT:
+            # This is a halt-worthy event, but not corruption
+            validation["telemetry"]["extreme_move_detected"] = True
+            validation["telemetry"]["max_return_pct"] = float(max_return)
+        
+        # Check 3: NaN in price data
+        nan_count = close.isna().sum()
+        if nan_count > 0:
+            validation["violations"].append({
+                "type": "NAN_IN_PRICE",
+                "count": int(nan_count),
+                "severity": "HIGH"
+            })
+        
+        # Check 4: Inf values
+        inf_count = np.isinf(close).sum()
+        if inf_count > 0:
+            validation["valid"] = False
+            validation["violations"].append({
+                "type": "INF_IN_PRICE",
+                "count": int(inf_count),
+                "severity": "CRITICAL"
+            })
+        
+        # Telemetry for monitoring
+        validation["telemetry"]["price_min"] = float(close.min())
+        validation["telemetry"]["price_max"] = float(close.max())
+        validation["telemetry"]["price_range"] = float(close.max() - close.min())
+        validation["telemetry"]["bars"] = len(df)
+        
+        return validation
     
     def _test_regime_survival(self, data: 'pd.DataFrame', pattern_name: str) -> Dict:
         """Test system survival under regime stress."""
@@ -431,29 +519,41 @@ class ChaosSuiteV3(ChaosSuiteV2):
             "survived": True,
             "data_corruption": False,
             "halt_triggered": False,
+            "bounds_check": None,
         }
         
         try:
-            # Check 1: Data integrity (no NaN injection from processing)
+            # STEP 1: Bounds validation BEFORE processing (fail-closed)
+            bounds_check = self._validate_price_data(data)
+            result["bounds_check"] = bounds_check
+            
+            if not bounds_check["valid"]:
+                # Bounds check caught corruption — this is GOOD
+                # System should REJECT this data, not process it
+                result["data_corruption"] = True
+                result["survived"] = False
+                result["rejection_reason"] = bounds_check["violations"]
+                return result
+            
+            # STEP 2: Processing (only if bounds check passes)
             nan_before = data['close'].isna().sum()
             
-            # Simulate processing
             processed = data.copy()
             processed['return'] = processed['close'].pct_change()
             processed['vol'] = processed['return'].rolling(20).std()
             
-            # Check for corruption
+            # STEP 3: Post-processing validation
             nan_after = processed['close'].isna().sum()
             if nan_after > nan_before:
                 result["data_corruption"] = True
                 result["survived"] = False
             
-            # Check 2: Extreme move detection (would trigger halt)
+            # Check for extreme moves (halt trigger)
             max_move = processed['return'].abs().max()
             if max_move > 0.01:  # >1% move
                 result["halt_triggered"] = True
             
-            # Check 3: Values in valid range
+            # Final bounds check on processed data
             if processed['close'].min() < 0 or processed['close'].max() > 10:
                 result["data_corruption"] = True
                 result["survived"] = False
