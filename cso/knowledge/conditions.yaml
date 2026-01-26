@@ -209,6 +209,22 @@ signals:
     ref: "NEX:L10:52-104"
 
 # =============================================================================
+# OTE (Optimal Trade Entry Zone)
+# =============================================================================
+
+  ote:
+    id: "SIG-COND-050"
+    name: "Optimal Trade Entry"
+    definition: "Fibonacci retracement zone representing high-probability entry"
+    fib_levels: {start: 0.62, end: 0.79}
+    calculation: "Retracement zone from recent swing high to swing low"
+    usage:
+      long: "Enter in OTE zone when retracing from swing low"
+      short: "Enter in OTE zone when retracing from swing high"
+    note: "OTE is evaluator logic, not enrichment column"
+    ref: "NEX:L8:295-315"
+
+# =============================================================================
 # COMPOSITE GATES
 # =============================================================================
 

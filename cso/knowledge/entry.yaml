@@ -289,13 +289,14 @@ mmm_entry_patterns:
 # =============================================================================
 # OTE (Optimal Trade Entry)
 # =============================================================================
+# NOTE: OTE DEFINITION moved to conditions.yaml (SIG-COND-050)
+# This section references it for entry triggers only
 
-ote:
+ote_trigger:
   id: "SIG-ENTRY-050"
-  name: "Optimal Trade Entry"
-  fib_levels: {start: 0.62, end: 0.79}
-  calculation: "Retracement zone from recent swing"
-  note: "OTE is evaluator logic, not enrichment column"
+  name: "OTE Entry Trigger"
+  definition_ref: "conditions.yaml:SIG-COND-050"
+  trigger: "Price enters OTE zone (0.62-0.79 fib)"
   ref: "NEX:L8:295-315"
 
 # =============================================================================
