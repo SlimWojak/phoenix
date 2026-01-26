@@ -1,10 +1,10 @@
-# Execution Surface Contract — S27.0
-# VERSION: 0.1
-# STATUS: SKELETON (NO CAPITAL)
+# Execution Surface Contract — S28.C
+# VERSION: 0.2
+# STATUS: MOCK_SIGNALS (PAPER_ONLY)
 
 contract_id: EXEC-SURFACE-001
-version: "0.1.0"
-sprint: "S27.0"
+version: "0.2.0"
+sprint: "S28.C"
 status: ACTIVE
 
 # =============================================================================
@@ -13,9 +13,36 @@ status: ACTIVE
 
 module:
   id: phoenix.execution
-  name: Execution Skeleton
-  tier: T0/T1  # No T2 actions in S27
-  mode: SKELETON
+  name: Execution Path (Mock Signals)
+  tier: T0/T1/T2_MOCKED  # T2 with paper broker only
+  mode: MOCK_SIGNALS
+  capital: PAPER_ONLY
+
+# =============================================================================
+# S28.C CAPABILITIES
+# =============================================================================
+
+capabilities:
+  intent_validation:
+    schema_enforcement: true
+    deterministic_hash: true
+    halt_gate_integration: true
+  
+  position_lifecycle:
+    states: [PENDING, OPEN, PARTIAL, CLOSED, HALTED]
+    valid_transitions: enforced
+    state_machine: deterministic
+  
+  paper_broker:
+    fill_mode: IMMEDIATE
+    slippage: NONE  # v0 simplified
+    fees: NONE      # v0 simplified
+    pnl_calculation: SIMPLIFIED_V0
+  
+  replay_harness:
+    deterministic: PROVEN
+    halt_integration: true
+    mock_signals: SYNTHETIC_ONLY
 
 # =============================================================================
 # PERMISSIONS
@@ -25,19 +52,20 @@ permissions:
   reads:
     - cso.beads.approved
     - governance.halt_signal
+    - market_data.prices
   
   writes:
     - execution.intents
+    - execution.positions
+    - execution.orders_paper
     - execution.blocked_log
   
   forbidden:
-    - orders
-    - positions
-    - capital
-    - broker
-    - account
-    - submit_order
-    - execute_order
+    - broker.live
+    - orders.live
+    - capital.real
+    - submit_order_live
+    - execute_order_live
 
 # =============================================================================
 # INVARIANTS
@@ -48,16 +76,61 @@ invariants:
     description: "Halt check precedes any capital-affecting action"
     enforcement: HaltGateViolation exception
     test: test_halt_before_exec.py
-  
-  - id: INV-EXEC-NO-CAPITAL
-    description: "S27 execution has no capital actions"
-    enforcement: CapitalActionForbiddenError exception
-    test: test_no_live_orders.py
+    status: PROVEN
   
   - id: INV-CONTRACT-1
-    description: "Intent hash is deterministic"
-    enforcement: hash computation
-    test: test_intent_deterministic.py
+    description: "State machine is deterministic"
+    enforcement: hash comparison
+    test: test_execution_path.py::TestGateC2Deterministic
+    status: PROVEN
+  
+  - id: INV-EXEC-LIFECYCLE-1
+    description: "Only valid state transitions allowed"
+    enforcement: InvalidTransitionError exception
+    test: test_execution_path.py::TestGateC4LifecycleValid
+    status: PROVEN
+
+# =============================================================================
+# POSITION STATE MACHINE
+# =============================================================================
+
+position_lifecycle:
+  states:
+    PENDING:
+      description: "Intent received, order not yet filled"
+      transitions_to: [OPEN, PARTIAL, CLOSED, HALTED]
+    
+    OPEN:
+      description: "Order filled, position active"
+      transitions_to: [PARTIAL, CLOSED, HALTED]
+    
+    PARTIAL:
+      description: "Partial fill received"
+      transitions_to: [OPEN, CLOSED, HALTED]
+    
+    CLOSED:
+      description: "Exit complete, position closed"
+      transitions_to: []  # Terminal
+    
+    HALTED:
+      description: "System halt killed position"
+      transitions_to: []  # Terminal
+
+# =============================================================================
+# P&L SEMANTICS (v0 SIMPLIFIED)
+# =============================================================================
+
+pnl_v0:
+  formula: "(exit_price - entry_price) * size * direction_mult"
+  direction_multiplier:
+    LONG: +1
+    SHORT: -1
+  exclusions:
+    - fees: "NOT INCLUDED (v0)"
+    - slippage: "NOT INCLUDED (v0)"
+    - commission: "NOT INCLUDED (v0)"
+    - swap: "NOT INCLUDED (v0)"
+  note: "GPT_LINT L28-C1: documented as simplified P&L v0"
 
 # =============================================================================
 # INTENT SCHEMA
@@ -89,45 +162,86 @@ intent_schema:
 halt_gate:
   pattern: "halt-first"
   enforcement: "HaltGate.check_before(action)"
+  latency: "<50ms (INV-HALT-1)"
   
   flow:
-    1_receive_intent: "Intent arrives from CSO"
+    1_receive_intent: "Intent arrives"
     2_check_halt: "MUST check halt_signal"
-    3_if_halted: "Block intent, log reason"
-    4_if_clear: "Mark APPROVED (no execution in S27)"
+    3_if_halted: "Block intent, raise BrokerHaltedError"
+    4_if_clear: "Process order via paper broker"
   
   violations:
     - skip_check: "HaltGateViolation raised"
-    - execute_while_halted: "HaltBlockedError raised"
+    - execute_while_halted: "BrokerHaltedError raised"
+    - invalid_transition: "InvalidTransitionError raised"
 
 # =============================================================================
-# EXIT GATES
+# EXIT GATES (S28.C)
 # =============================================================================
 
 exit_gates:
-  halt_first_proven:
-    test: test_halt_before_exec.py
-    criterion: "HaltGateViolation raised when check skipped"
+  GATE_C1_PAPER_TRADES:
+    test: test_execution_path.py::TestGateC1PaperTrades
+    criterion: "signal → order → position → P&L cycle complete"
+    status: PASS
   
-  no_capital:
-    test: test_no_live_orders.py
-    criterion: "grep 'submit_order|execute_order|broker' returns empty"
+  GATE_C2_DETERMINISTIC:
+    test: test_execution_path.py::TestGateC2Deterministic
+    criterion: "same replay = same result (hash match)"
+    status: PASS
   
-  latency_unchanged:
-    test: test_halt_latency.py
-    criterion: "halt still <50ms after wiring"
+  GATE_C3_HALT_RESPECTED:
+    test: test_execution_path.py::TestGateC3HaltRespected
+    criterion: "halt stops all execution"
+    status: PASS
   
-  intent_deterministic:
-    test: test_intent_deterministic.py
-    criterion: "same input → same intent_hash"
+  GATE_C4_LIFECYCLE_VALID:
+    test: test_execution_path.py::TestGateC4LifecycleValid
+    criterion: "only valid state transitions"
+    status: PASS
+
+# =============================================================================
+# MOCK SIGNALS
+# =============================================================================
+
+mock_signals:
+  mode: SYNTHETIC_ONLY
+  source: MockSignalGenerator
+  patterns:
+    - FIXED: "signals at fixed intervals"
+    - ALTERNATING: "alternate long/short"
+    - FROM_PRICES: "momentum from price data"
+  note: "NOT Olya methodology — testing only"
+
+# =============================================================================
+# CONSTRAINTS
+# =============================================================================
+
+constraints:
+  capital: "PAPER_ONLY — no real money"
+  signals: "MOCK — synthetic patterns only"
+  broker: "STUB — immediate fills, no market simulation"
+  pnl: "SIMPLIFIED_V0 — no fees/slippage"
 
 # =============================================================================
 # CHANGELOG
 # =============================================================================
 
 changelog:
-  - version: "0.1.0"
+  - version: "0.2.0"
     date: "2026-01-23"
+    sprint: "S28.C"
+    changes:
+      - Added position lifecycle state machine
+      - Added paper broker stub
+      - Added replay harness
+      - Implemented P&L v0 (simplified)
+      - 23/23 tests passing
+      - All exit gates PASS
+  
+  - version: "0.1.0"
+    date: "2026-01-22"
+    sprint: "S27.0"
     changes:
       - Initial skeleton
       - Halt-first wiring

@@ -1,25 +1,26 @@
 """
-Phoenix Execution — Halt-first execution skeleton.
+Phoenix Execution — Halt-first execution with paper broker.
 
-SPRINT: S27.0
-STATUS: SKELETON
-CAPITAL: DISABLED
+SPRINT: S28.C
+STATUS: MOCK_SIGNALS
+CAPITAL: PAPER_ONLY
 
-S27 CONSTRAINTS:
-- Halt-first wiring (halt check before ANY action)
-- Intent objects only (no actual orders)
-- NO broker connections
-- NO capital mutation
+S28.C CAPABILITIES:
+- Intent schema enforcement
+- Position lifecycle state machine
+- Paper broker stub (immediate fills)
+- Deterministic replay harness
+- Halt integration
 
-FORBIDDEN:
-- submit_order
-- execute_order
-- broker.connect
-- capital.allocate
+CONSTRAINTS:
+- PAPER ONLY — no real broker connection
+- Mock signals only (NOT Olya methodology)
+- Simplified P&L v0 (no fees, no slippage)
 
 INVARIANTS:
 - INV-GOV-HALT-BEFORE-ACTION: halt check precedes any action
-- INV-EXEC-NO-CAPITAL: no capital actions in S27
+- INV-CONTRACT-1: deterministic state machine
+- INV-EXEC-LIFECYCLE-1: valid state transitions only
 """
 
 from .intent import (
@@ -41,6 +42,35 @@ from .halt_gate import (
     halt_gated,
 )
 
+from .position import (
+    Position,
+    PositionState,
+    PositionRegistry,
+    InvalidTransitionError,
+    PositionMutationError,
+    VALID_TRANSITIONS,
+    validate_transition,
+)
+
+from .broker_stub import (
+    PaperBrokerStub,
+    OrderResult,
+    ExitResult,
+    FillType,
+    BrokerHaltedError,
+    OrderRejectedError,
+    PnLCalculator,
+)
+
+from .replay import (
+    ReplayHarness,
+    ReplayResult,
+    ReplayState,
+    MockSignal,
+    MockSignalGenerator,
+    DeterminismVerifier,
+)
+
 __all__ = [
     # Intent
     'ExecutionIntent',
@@ -57,9 +87,32 @@ __all__ = [
     'HaltBlockedError',
     'ExecutionGateCoordinator',
     'halt_gated',
+    # Position
+    'Position',
+    'PositionState',
+    'PositionRegistry',
+    'InvalidTransitionError',
+    'PositionMutationError',
+    'VALID_TRANSITIONS',
+    'validate_transition',
+    # Broker
+    'PaperBrokerStub',
+    'OrderResult',
+    'ExitResult',
+    'FillType',
+    'BrokerHaltedError',
+    'OrderRejectedError',
+    'PnLCalculator',
+    # Replay
+    'ReplayHarness',
+    'ReplayResult',
+    'ReplayState',
+    'MockSignal',
+    'MockSignalGenerator',
+    'DeterminismVerifier',
 ]
 
-__version__ = '0.1.0'
+__version__ = '0.2.0'  # S28.C
 
 
 # =============================================================================
