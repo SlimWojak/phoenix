@@ -1,0 +1,59 @@
+# CSO Role — Chief Strategy Officer (Methodology)
+# VERSION: 1.0
+# STATUS: CANON
+
+role:
+  id: ROLE-CSO
+  name: Chief Strategy Officer
+  alias: CSO
+  type: AI_MODULE
+  
+  description: |
+    Olya's methodology encoded as machine-readable invariants.
+    Passive observer in S27-S28 (DRAFT beads only).
+    Drinks from River, emits signals when methodology conditions met.
+    
+  tier: T1
+  mode: PASSIVE_OBSERVER
+  
+  authorities:
+    - methodology: "ICT trading methodology interpretation"
+    - signal_generation: "Emit DRAFT beads when conditions met"
+    - validation: "Validate against methodology invariants"
+    
+  permissions:
+    reads:
+      - river_data: "Enriched market data"
+      - knowledge_base: "cso/knowledge/*.yaml"
+      - methodology_docs: "docs/olya_skills/"
+    writes:
+      - beads: "DRAFT status only (not CERTIFIED)"
+      - telemetry: "comprehension_hash emission"
+    forbidden:
+      - execution_state
+      - orders
+      - positions
+      - capital_allocation
+    
+  constraints:
+    - passive_only: "OBSERVE, do not execute"
+    - draft_beads: "Status must be DRAFT, never CERTIFIED"
+    - methodology_fidelity: "Must match Olya's documented patterns"
+    
+  knowledge_sources:
+    foundation: cso/knowledge/foundation.yaml
+    context: cso/knowledge/context.yaml
+    conditions: cso/knowledge/conditions.yaml
+    entry: cso/knowledge/entry.yaml
+    management: cso/knowledge/management.yaml
+    
+  signal_count: 59  # From 5-drawer extraction
+  invariant_count: 15+
+  
+  related_roles:
+    - Sovereign: "Olya provides methodology to G"
+    - CTO: "Implements CSO module"
+    
+  invariants:
+    INV-GOV-NO-T1-WRITE-EXEC: "CSO cannot write execution_state"
+    INV-DYNASTY-5: "Beads immutable once written"

@@ -1,0 +1,44 @@
+# INV-HALT-2 — Cascade Halt Latency Invariant
+# VERSION: 1.0
+# STATUS: PROVEN
+
+invariant:
+  id: INV-HALT-2
+  name: Cascade Halt Latency (SLO)
+  
+  description: |
+    Halt cascade to all dependents must complete in < 500ms.
+    This is an SLO (not hard invariant) — allows for network/IPC.
+    All registered workers must acknowledge within this window.
+    
+  threshold:
+    value: 500
+    unit: milliseconds
+    type: slo
+    
+  enforcement:
+    type: timing
+    mechanism: "propagate_halt() measures cascade completion"
+    violation: "HaltCascadeViolation (logged, not raised)"
+    
+  tests:
+    - test_file: tests/test_halt_propagation.py
+      description: "Measures cascade to all dependents"
+    - test_file: tests/test_halt_propagation_multiprocess.py
+      description: "Measures cascade across processes"
+      
+  proven:
+    sprint: S26
+    value: 22.59
+    unit: milliseconds
+    evidence: "test_halt_propagation_multiprocess.py cascade = 22.59ms"
+    
+  implementation:
+    file: governance/halt.py
+    method: HaltCoordinator.propagate()
+    
+  related_invariants:
+    - INV-HALT-1
+    
+  severity: HIGH
+  violation_action: LOG_AND_CONTINUE

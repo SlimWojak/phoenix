@@ -1,9 +1,10 @@
 # SKILL.md — Phoenix Operating Patterns
 
 **Skill:** Phoenix Constitutional Trading System
-**Version:** 1.0
-**Updated:** 2026-01-27
+**Version:** 2.0
+**Updated:** 2026-01-23
 **Jurisdiction:** ~/echopeso/phoenix (sibling to ~/echopeso/god_mode)
+**Sprint:** S28.D STEEL_PIPES (Complete)
 
 ---
 
@@ -283,18 +284,21 @@ FILTER_PATTERN:
 ├── GEMINI.md                   # Owl orientation
 ├── README.md                   # Project overview
 │
-├── CONSTITUTION/               # The Law
+├── CONSTITUTION/               # The Law (S28.D populated)
 │   ├── CONSTITUTION_MANIFEST.yaml
-│   ├── modules/                # Module surface contracts
-│   ├── seams/                  # Inter-module boundaries
-│   ├── scenarios/              # Temporal sequences
-│   ├── environment/            # External assumptions
-│   ├── roles/                  # Agentic authorities
-│   ├── dependencies/           # What relies on what
-│   ├── wiring/                 # Signal flow
-│   ├── invariants/             # Cross-cutting laws
-│   ├── state/                  # Active contracts, epochs
-│   └── tests/                  # Contract enforcement
+│   ├── invariants/             # 6 proven invariants
+│   │   ├── INV-HALT-1.yaml
+│   │   ├── INV-HALT-2.yaml
+│   │   ├── INV-CONTRACT-1.yaml
+│   │   ├── INV-DATA-CANON.yaml
+│   │   ├── INV-GOV-HALT-BEFORE-ACTION.yaml
+│   │   └── INV-EXEC-LIFECYCLE-1.yaml
+│   ├── roles/                  # 3 role definitions
+│   │   ├── sovereign.role.yaml
+│   │   ├── cto.role.yaml
+│   │   └── cso.role.yaml
+│   └── wiring/                 # Signal flow
+│       └── halt_propagation.wiring.yaml
 │
 ├── contracts/                  # Data contracts
 │   ├── ICT_DATA_CONTRACT.md
@@ -302,47 +306,54 @@ FILTER_PATTERN:
 │   ├── truth_teller.py
 │   └── mirror_markers.py
 │
-├── governance/                 # Skeleton (Track B)
-│   ├── interface.py            # GovernanceInterface ABC
-│   ├── types.py
-│   ├── halt.py
-│   ├── telemetry.py
-│   ├── tokens.py
-│   └── errors.py
+├── governance/                 # GovernanceInterface (S26-S28)
+│   ├── interface.py            # ABC for all organs
+│   ├── halt.py                 # <50ms halt
+│   ├── telemetry.py            # Quality reporting
+│   ├── tokens.py               # T2 approval
+│   └── errors.py               # Error classification
 │
-├── cso/                        # Oracle prep (Track C)
-│   ├── __init__.py
-│   └── contract.py
+├── monitoring/                 # Observability (S28.B)
+│   ├── alerts.py               # Thresholds + debounce + auto-halt
+│   └── dashboard.py            # Web health view
 │
-├── dispatcher/                 # Hands (Track D)
+├── execution/                  # Execution path (S28.C)
+│   ├── position.py             # Lifecycle state machine
+│   ├── broker_stub.py          # Paper broker
+│   ├── replay.py               # Deterministic harness
+│   ├── intent.py               # Order intents
+│   └── halt_gate.py            # Halt-first pattern
+│
+├── cso/                        # Chief Strategy Officer
+│   ├── knowledge/              # 5-drawer methodology (59 signals)
+│   │   ├── foundation.yaml
+│   │   ├── context.yaml
+│   │   ├── conditions.yaml
+│   │   ├── entry.yaml
+│   │   ├── management.yaml
+│   │   └── index.yaml
+│   ├── observer.py             # Passive observer
+│   └── beads.py                # Decision artifacts
+│
+├── enrichment/                 # Data enrichment (L1-L6)
+│   └── layers/                 # ICT marker calculation
+│
+├── dispatcher/                 # Worker coordination
 │   ├── dispatcher.py
 │   ├── worker_base.py
-│   ├── tmux_control.py
-│   ├── heartbeat.py
-│   └── types.py
+│   └── tmux_control.py
 │
 ├── docs/                       # Core documents
 │   ├── VISION_v4.md
 │   ├── PHOENIX_MANIFESTO.md
-│   ├── CONSTITUTION_AS_CODE.md
-│   ├── PHOENIX_FOUNDATION_OVERVIEW.md
-│   └── SPRINT_26.md
+│   ├── ADVISOR_ORIENTATION.md  # Bootstrap guide
+│   └── *_REPORT.md             # Sprint reports
 │
-├── reports/                    # Sprint outputs
-│   ├── MIRROR_TEST_REPORT.md
-│   ├── LIAR_PARADOX_REPORT.md
-│   ├── CHAOS_BUNNY_REPORT.md
-│   ├── HISTORICAL_NUKES_REPORT.md
-│   ├── NEX_SALVAGE_REPORT.md
-│   └── TRACK_*_REPORT.md
-│
-└── tests/                      # Enforcement
-    ├── test_halt_latency.py
-    ├── test_halt_propagation.py
-    ├── test_mirror.py
-    ├── test_liar_paradox.py
-    ├── test_chaos_bunny.py
-    └── ...
+└── tests/                      # 60+ tests
+    ├── test_halt_*.py
+    ├── test_execution_path.py
+    ├── test_monitoring.py
+    └── chaos/                  # Chaos suite v3
 ```
 
 ### God_Mode Integration Points
@@ -385,35 +396,53 @@ ORIENTATION_PRIORITY:
     - relevant contracts/
 ```
 
-### Sprint 26 Proven State
+### Sprint 28 Proven State
 
 ```yaml
-FOUNDATION_STATUS:
-  track_a_river: COMPLETE
-    - schema: 472 cols, hash b848ffe506fd3fff
-    - truth_teller: awake
-    - chaos: 6/6 vectors
-    
-  track_b_skeleton: COMPLETE
-    - halt: 0.003ms (p99)
-    - tiers: enforced
-    - tests: 8/8
-    
-  track_c_oracle: COMPLETE
-    - nex_salvage: 75% subsumable
-    - ict_coverage: 85%
-    - cso_contract: drafted
-    
-  track_d_hands: COMPLETE
-    - dispatcher: operational
-    - cascade: 22.59ms
-    - orphan_cleanup: implemented
+S28_STATUS: STEEL_PIPES (Complete)
 
-S27_UNLOCKED:
-  - CSO implementation
-  - NEX subsumption (L1-L6)
-  - Olya calibration
-  - Execution skeleton
+TRACK_A_CHAOS_V3:
+  vectors: 4/4 pass (100%)
+  regime_nukes: bounds checking implemented
+  correlated_lies: detection proven
+  petabyte_sim: latency maintained
+
+TRACK_B_MONITORING:
+  dashboard: operational
+  alerts: threshold + debounce
+  auto_halt: >3 CRITICAL → halt
+  bead_emission: on CRITICAL
+
+TRACK_C_EXECUTION:
+  position_lifecycle: PENDING→OPEN→CLOSED/HALTED
+  paper_broker: P&L v0 (simplified)
+  replay_harness: deterministic (hash match)
+  tests: 23/23 pass
+
+TRACK_D_CONSOLIDATION:
+  constitution: 6 invariants + 3 roles + 1 wiring
+  docs: stale refs cleaned
+  readme: current
+
+METHODOLOGY:
+  architecture: 5-drawer model
+  signals: 59 (foundation/context/conditions/entry/management)
+  location: cso/knowledge/*.yaml
+  status: DRAFT v0, pending Olya validation
+
+INVARIANTS_PROVEN:
+  INV-HALT-1: 0.003ms
+  INV-HALT-2: 22.59ms
+  INV-CONTRACT-1: hash match
+  INV-DATA-CANON: XOR == 0
+  INV-GOV-HALT-BEFORE-ACTION: tests pass
+  INV-EXEC-LIFECYCLE-1: enforced
+
+S29_UNLOCKED:
+  - CSO active implementation
+  - Real methodology signals
+  - P&L v1 (fees/slippage)
+  - Live broker integration
 ```
 
 ---

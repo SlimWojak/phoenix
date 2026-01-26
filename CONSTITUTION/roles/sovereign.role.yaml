@@ -1,0 +1,48 @@
+# Sovereign Role — G (Human)
+# VERSION: 1.0
+# STATUS: CANON
+
+role:
+  id: ROLE-SOVEREIGN
+  name: Sovereign
+  alias: G
+  type: HUMAN
+  
+  description: |
+    The human principal with absolute authority over capital.
+    Vision setter, veto holder, final arbiter.
+    Forge amplifies judgment, never replaces it.
+    
+  tier: T2+
+  
+  authorities:
+    - vision: "Sets strategic direction"
+    - veto: "Can halt any operation"
+    - capital: "All capital decisions require sovereign approval"
+    - deployment: "Approves production deployments"
+    - invariant_creation: "Can create new invariants"
+    
+  permissions:
+    reads: ALL
+    writes:
+      - approval_tokens
+      - halt_signal (override)
+      - invariants (create/modify)
+    forbidden: NONE
+    
+  constraints:
+    - must_acknowledge_risk: "T2 actions require explicit acknowledgment"
+    - audit_trail: "All sovereign actions logged to boardroom"
+    
+  interfaces:
+    - telegram: "Takopi bridge for mobile access"
+    - cli: "Direct terminal access"
+    - cursor: "IDE with CTO assistance"
+    
+  related_roles:
+    - CTO: "Synthesizes advisor input for sovereign review"
+    - CSO: "Provides methodology (Olya's track)"
+    
+  invariants:
+    INV-SOVEREIGN-1: "Human sovereignty over capital is absolute"
+    INV-SOVEREIGN-2: "T2 (capital-affecting) requires human gate"

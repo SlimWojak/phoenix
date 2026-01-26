@@ -1,0 +1,85 @@
+# Halt Propagation Wiring
+# VERSION: 1.0
+# STATUS: PROVEN
+
+wiring:
+  id: WIRING-HALT-PROPAGATION
+  name: Halt Signal Propagation
+  
+  description: |
+    How halt signals flow from trigger to all dependents.
+    Two-phase: local set (fast) + cascade propagation (async).
+    
+  topology: directed_acyclic_graph
+  direction: upstream → downstream
+  
+  flow:
+    1_trigger:
+      source: "Any module can trigger halt"
+      method: "request_halt()"
+      latency: "< 50ms (INV-HALT-1)"
+      
+    2_local_set:
+      action: "Set local halt flag"
+      io: NONE
+      logging: NONE
+      propagation: NONE
+      result: "HaltSignalSetResult"
+      
+    3_cascade:
+      method: "propagate_halt(halt_id)"
+      latency: "< 500ms SLO (INV-HALT-2)"
+      pattern: "parallel fan-out to dependents"
+      
+    4_acknowledge:
+      method: "acknowledge_halt(halt_id)"
+      timeout: "50ms per hop"
+      retry: "max 2, 10ms backoff"
+      failure_mode: "log + continue (don't block cascade)"
+      
+  example_flow: |
+    River.request_halt()
+      → River.propagate_halt()
+        → Enrichment.acknowledge_halt()
+          → Enrichment.propagate_halt()
+            → CSO.acknowledge_halt()
+              → CSO.propagate_halt()
+                → Execution.acknowledge_halt()
+                  
+  latency_bounds:
+    local_halt: "< 50ms (HARD)"
+    cascade_total: "< 500ms (SLO)"
+    ack_per_hop: "50ms timeout"
+    
+  failure_modes:
+    dependent_timeout:
+      action: "log WARN + continue propagation"
+      rationale: "cascade must complete, slow worker can catch up"
+      
+    dependent_crash:
+      action: "flag CRITICAL + force cascade"
+      rationale: "crashed worker can't process anyway"
+      
+    orphan_halt:
+      detection: "get_dependents() comparison"
+      prevention: "all workers must register"
+      
+  invariants:
+    - INV-HALT-1: "halt_local < 50ms"
+    - INV-HALT-2: "halt_cascade < 500ms"
+    
+  tests:
+    - tests/test_halt_latency.py
+    - tests/test_halt_propagation.py
+    - tests/test_halt_propagation_multiprocess.py
+    
+  proven:
+    sprint: S26
+    local: "0.003ms"
+    cascade: "22.59ms"
+    
+  implementation:
+    files:
+      - governance/halt.py
+      - dispatcher/dispatcher.py
+      - dispatcher/worker_base.py

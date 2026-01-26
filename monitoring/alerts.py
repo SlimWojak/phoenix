@@ -1,8 +1,8 @@
 """
-Alert Pipeline — Thresholds, debounce, delivery
+Alert Pipeline — Thresholds, debounce, delivery, auto-halt
 
-VERSION: 1.0
-SPRINT: S28.B
+VERSION: 2.0
+SPRINT: S28.D
 
 THRESHOLDS:
 - halt > 10ms → WARN
@@ -14,15 +14,25 @@ THRESHOLDS:
 DEBOUNCE:
 - Same alert class: suppress for 60s
 - Prevents alert fatigue
+
+AUTO-HALT ESCALATION (S28.D):
+- >3 CRITICAL alerts in 300s → auto halt
+- Emits AUTO_HALT_TRIGGERED bead
+
+BEAD EMISSION (S28.D):
+- All CRITICAL alerts emit VIOLATION beads
+- Enables audit trail and boardroom visibility
 """
 
 import logging
 import time
+import hashlib
+import json
 from datetime import datetime, timezone
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import Dict, List, Optional, Callable
-from collections import defaultdict
+from typing import Dict, List, Optional, Callable, Any
+from collections import defaultdict, deque
 
 logger = logging.getLogger(__name__)
 
@@ -104,20 +114,33 @@ DEFAULT_THRESHOLDS = {
 
 class AlertManager:
     """
-    Manages alert lifecycle with debounce.
+    Manages alert lifecycle with debounce and auto-halt escalation.
     
     DEBOUNCE LOGIC:
     - Track last alert time per (alert_class, source_id)
     - Suppress duplicates within debounce_seconds
     - Always allow CRITICAL to override WARN
+    
+    AUTO-HALT ESCALATION (S28.D):
+    - Track CRITICAL alerts in sliding window
+    - >3 CRITICAL in 300s → trigger auto halt
+    - Emit AUTO_HALT_TRIGGERED bead
+    
+    BEAD EMISSION (S28.D):
+    - All CRITICAL alerts emit VIOLATION beads
+    - Beads logged to telemetry and optionally boardroom
     """
     
     DEFAULT_DEBOUNCE_SECONDS = 60.0
+    AUTO_HALT_WINDOW_SECONDS = 300.0
+    AUTO_HALT_THRESHOLD = 3
     
     def __init__(
         self,
         debounce_seconds: float = DEFAULT_DEBOUNCE_SECONDS,
-        thresholds: Optional[Dict[AlertClass, AlertThreshold]] = None
+        thresholds: Optional[Dict[AlertClass, AlertThreshold]] = None,
+        halt_callback: Optional[Callable[[str], None]] = None,
+        bead_callback: Optional[Callable[[Dict], None]] = None
     ):
         self.debounce_seconds = debounce_seconds
         self.thresholds = thresholds or DEFAULT_THRESHOLDS
@@ -132,6 +155,15 @@ class AlertManager:
         
         # Callbacks
         self._callbacks: List[Callable[[Alert], None]] = []
+        
+        # S28.D: Auto-halt escalation
+        self._halt_callback = halt_callback
+        self._critical_timestamps: deque = deque()  # Track CRITICAL times
+        self._auto_halt_triggered = False
+        
+        # S28.D: Bead emission
+        self._bead_callback = bead_callback
+        self._beads_emitted: List[Dict] = []
     
     def register_callback(self, callback: Callable[[Alert], None]) -> None:
         """Register callback to receive alerts."""
@@ -225,6 +257,11 @@ class AlertManager:
         log_level = logging.WARNING if level == AlertLevel.WARN else logging.ERROR
         logger.log(log_level, f"ALERT [{level.value}] {message}")
         
+        # S28.D: Emit bead for CRITICAL alerts
+        if level == AlertLevel.CRITICAL:
+            self._emit_violation_bead(alert)
+            self._check_auto_halt_escalation()
+        
         # Callbacks
         for callback in self._callbacks:
             try:
@@ -233,6 +270,114 @@ class AlertManager:
                 logger.error(f"Alert callback error: {e}")
         
         return alert
+    
+    def _emit_violation_bead(self, alert: Alert) -> Dict:
+        """
+        Emit VIOLATION bead for CRITICAL alert.
+        
+        S28.D: All CRITICAL alerts → bead emission.
+        """
+        now = datetime.now(timezone.utc)
+        
+        bead = {
+            "bead_id": f"BEAD-VIOL-{now.strftime('%Y%m%d%H%M%S')}-{len(self._beads_emitted):04d}",
+            "bead_type": "VIOLATION",
+            "timestamp": now.isoformat(),
+            "source_module": "monitoring.alerts",
+            "alert_class": alert.alert_class.value,
+            "alert_level": alert.level.value,
+            "message": alert.message,
+            "metadata": alert.metadata,
+            "state_hash": self._compute_alert_hash(alert),
+        }
+        
+        self._beads_emitted.append(bead)
+        logger.info(f"BEAD emitted: {bead['bead_id']} ({alert.alert_class.value})")
+        
+        # Invoke bead callback if registered
+        if self._bead_callback:
+            try:
+                self._bead_callback(bead)
+            except Exception as e:
+                logger.error(f"Bead callback error: {e}")
+        
+        return bead
+    
+    def _compute_alert_hash(self, alert: Alert) -> str:
+        """Compute deterministic hash of alert."""
+        hashable = {
+            "class": alert.alert_class.value,
+            "level": alert.level.value,
+            "message": alert.message,
+            "timestamp": alert.timestamp.isoformat(),
+        }
+        canonical = json.dumps(hashable, sort_keys=True)
+        return hashlib.sha256(canonical.encode()).hexdigest()[:16]
+    
+    def _check_auto_halt_escalation(self) -> None:
+        """
+        Check if auto-halt should be triggered.
+        
+        S28.D: >3 CRITICAL alerts in 300s → auto halt.
+        """
+        if self._auto_halt_triggered:
+            return  # Already halted
+        
+        now = time.time()
+        cutoff = now - self.AUTO_HALT_WINDOW_SECONDS
+        
+        # Add current CRITICAL timestamp
+        self._critical_timestamps.append(now)
+        
+        # Remove old timestamps outside window
+        while self._critical_timestamps and self._critical_timestamps[0] < cutoff:
+            self._critical_timestamps.popleft()
+        
+        # Check threshold
+        if len(self._critical_timestamps) > self.AUTO_HALT_THRESHOLD:
+            self._trigger_auto_halt()
+    
+    def _trigger_auto_halt(self) -> None:
+        """
+        Trigger automatic halt due to repeated CRITICAL alerts.
+        
+        S28.D: Invoke halt callback and emit AUTO_HALT_TRIGGERED bead.
+        """
+        self._auto_halt_triggered = True
+        halt_reason = f"AUTO_HALT: >{self.AUTO_HALT_THRESHOLD} CRITICAL alerts in {self.AUTO_HALT_WINDOW_SECONDS}s"
+        
+        logger.critical(halt_reason)
+        
+        # Emit AUTO_HALT bead
+        now = datetime.now(timezone.utc)
+        bead = {
+            "bead_id": f"BEAD-HALT-{now.strftime('%Y%m%d%H%M%S')}-AUTO",
+            "bead_type": "AUTO_HALT_TRIGGERED",
+            "timestamp": now.isoformat(),
+            "source_module": "monitoring.alerts",
+            "reason": halt_reason,
+            "critical_count": len(self._critical_timestamps),
+            "window_seconds": self.AUTO_HALT_WINDOW_SECONDS,
+        }
+        self._beads_emitted.append(bead)
+        
+        if self._bead_callback:
+            try:
+                self._bead_callback(bead)
+            except Exception as e:
+                logger.error(f"Bead callback error: {e}")
+        
+        # Invoke halt callback
+        if self._halt_callback:
+            try:
+                self._halt_callback(halt_reason)
+            except Exception as e:
+                logger.error(f"Halt callback error: {e}")
+    
+    def reset_auto_halt(self) -> None:
+        """Reset auto-halt state (for testing or recovery)."""
+        self._auto_halt_triggered = False
+        self._critical_timestamps.clear()
     
     def emit_halt_violation(self, latency_ms: float, source_id: str = "halt") -> Optional[Alert]:
         """Emit halt latency violation alert."""
@@ -304,7 +449,19 @@ class AlertManager:
                 "by_class": dict(by_class),
             },
             "debounce_seconds": self.debounce_seconds,
+            # S28.D additions
+            "beads_emitted": len(self._beads_emitted),
+            "critical_in_window": len(self._critical_timestamps),
+            "auto_halt_triggered": self._auto_halt_triggered,
         }
+    
+    def get_beads(self) -> List[Dict]:
+        """Get all emitted beads."""
+        return self._beads_emitted.copy()
+    
+    def is_auto_halted(self) -> bool:
+        """Check if auto-halt has been triggered."""
+        return self._auto_halt_triggered
     
     def clear_history(self) -> None:
         """Clear alert history (for testing)."""

@@ -138,15 +138,15 @@
 ## ARCHIVED FILES
 
 Moved to `cso/knowledge/archive/`:
-- `htf/htf_structure.yaml`
-- `htf/htf_signals.yaml`
-- `htf/htf_bias.yaml`
-- `htf/htf_state_machine.yaml`
-- `htf/index.yaml`
-- `htf/EXTRACTION_AUDIT.md`
-- `htf/EXTRACTION_LOG.md`
-- `nex_baseline/entry_quality.yaml`
-- `nex_baseline/CONSOLIDATION_LOG.md`
+- `archive/htf/htf_structure.yaml`
+- `archive/htf/htf_signals.yaml`
+- `archive/htf/htf_bias.yaml`
+- `archive/htf/htf_state_machine.yaml`
+- `archive/htf/index.yaml`
+- `archive/htf/EXTRACTION_AUDIT.md`
+- `archive/htf/EXTRACTION_LOG.md`
+- `archive/nex_baseline/entry_quality.yaml`
+- `archive/nex_baseline/CONSOLIDATION_LOG.md`
 
 ---
 

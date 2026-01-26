@@ -1,0 +1,43 @@
+# INV-GOV-HALT-BEFORE-ACTION — Halt Check Before Capital Action
+# VERSION: 1.0
+# STATUS: PROVEN
+
+invariant:
+  id: INV-GOV-HALT-BEFORE-ACTION
+  name: Halt Check Before Capital Action
+  
+  description: |
+    Every capital-affecting action MUST check halt_signal FIRST.
+    If halted, action is BLOCKED — no exceptions, no bypasses.
+    This is the core safety invariant for execution.
+    
+  pattern: "halt-first"
+  
+  enforcement:
+    type: gate
+    mechanism: "HaltGate.check_before(action)"
+    violations:
+      - HaltGateViolation: "action attempted without check"
+      - HaltBlockedError: "action attempted while halted"
+      - BrokerHaltedError: "broker operation during halt"
+    
+  applies_to:
+    - execution/halt_gate.py
+    - execution/broker_stub.py
+    - execution/intent.py (capital actions)
+    
+  tests:
+    - test_file: tests/test_halt_before_exec.py
+      description: "Verifies halt check precedes action"
+    - test_file: tests/test_halt_blocks_t2_action.py
+      description: "T2 actions blocked when halted"
+    - test_file: tests/test_execution_path.py
+      class: TestGateC3HaltRespected
+      description: "Halt stops all execution"
+      
+  proven:
+    sprint: S28.C
+    evidence: "4/4 halt tests pass"
+    
+  severity: CRITICAL
+  violation_action: HALT

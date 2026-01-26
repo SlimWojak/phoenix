@@ -1,0 +1,47 @@
+# INV-EXEC-LIFECYCLE-1 — Valid State Transitions Only
+# VERSION: 1.0
+# STATUS: PROVEN
+
+invariant:
+  id: INV-EXEC-LIFECYCLE-1
+  name: Valid Position Transitions
+  
+  description: |
+    Position state machine allows only valid transitions.
+    Terminal states (CLOSED, HALTED) have no outgoing transitions.
+    Invalid transitions raise InvalidTransitionError.
+    
+  state_machine:
+    states:
+      PENDING:
+        transitions_to: [OPEN, PARTIAL, CLOSED, HALTED]
+      OPEN:
+        transitions_to: [PARTIAL, CLOSED, HALTED]
+      PARTIAL:
+        transitions_to: [OPEN, CLOSED, HALTED]
+      CLOSED:
+        transitions_to: []  # Terminal
+      HALTED:
+        transitions_to: []  # Terminal
+        
+  enforcement:
+    type: state_machine
+    mechanism: "validate_transition() before state change"
+    violation: "InvalidTransitionError exception"
+    
+  tests:
+    - test_file: tests/test_execution_path.py
+      class: TestGateC4LifecycleValid
+      description: "7 tests for valid transitions"
+      
+  proven:
+    sprint: S28.C
+    evidence: "7/7 lifecycle tests pass"
+    
+  implementation:
+    file: execution/position.py
+    constants: VALID_TRANSITIONS
+    function: validate_transition()
+    
+  severity: HIGH
+  violation_action: REJECT_AND_LOG

@@ -1,7 +1,7 @@
 """
 Position Lifecycle — State machine for position tracking.
 
-SPRINT: S28.C
+SPRINT: S28.D
 STATUS: MOCK_SIGNALS
 CAPITAL: PAPER_ONLY
 
@@ -14,6 +14,10 @@ CONSTRAINTS (S28.C):
 - Simplified P&L v0 (no fees/slippage)
 - Deterministic state transitions
 
+S28.D ADDITIONS:
+- Bead emission on InvalidTransitionError
+- Violation callback for audit trail
+
 INVARIANTS:
 - INV-CONTRACT-1: deterministic state machine
 - INV-EXEC-LIFECYCLE-1: valid transitions only
@@ -22,9 +26,61 @@ INVARIANTS:
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from enum import Enum
-from typing import Dict, Optional, List, Set
+from typing import Dict, Optional, List, Set, Callable
 import hashlib
 import json
+import logging
+
+logger = logging.getLogger(__name__)
+
+# =============================================================================
+# BEAD EMISSION (S28.D)
+# =============================================================================
+
+# Global violation callback (set by registry or test harness)
+_violation_callback: Optional[Callable[[Dict], None]] = None
+
+
+def set_violation_callback(callback: Callable[[Dict], None]) -> None:
+    """Set callback for violation bead emission."""
+    global _violation_callback
+    _violation_callback = callback
+
+
+def _emit_violation_bead(
+    violation_type: str,
+    from_state: str,
+    to_state: str,
+    position_id: Optional[str] = None
+) -> Dict:
+    """
+    Emit VIOLATION bead for InvalidTransitionError.
+    
+    S28.D: Enables audit trail for state machine violations.
+    """
+    now = datetime.now(timezone.utc)
+    
+    bead = {
+        "bead_id": f"BEAD-TRANS-{now.strftime('%Y%m%d%H%M%S')}",
+        "bead_type": "VIOLATION",
+        "timestamp": now.isoformat(),
+        "source_module": "execution.position",
+        "violation_type": violation_type,
+        "from_state": from_state,
+        "to_state": to_state,
+        "position_id": position_id,
+        "invariant": "INV-EXEC-LIFECYCLE-1",
+    }
+    
+    logger.warning(f"VIOLATION BEAD: {violation_type} ({from_state} → {to_state})")
+    
+    if _violation_callback:
+        try:
+            _violation_callback(bead)
+        except Exception as e:
+            logger.error(f"Violation callback error: {e}")
+    
+    return bead
 
 
 # =============================================================================
@@ -33,9 +89,24 @@ import json
 
 class InvalidTransitionError(Exception):
     """Raised when attempting invalid state transition."""
-    def __init__(self, from_state: 'PositionState', to_state: 'PositionState'):
+    def __init__(
+        self, 
+        from_state: 'PositionState', 
+        to_state: 'PositionState',
+        position_id: Optional[str] = None
+    ):
         self.from_state = from_state
         self.to_state = to_state
+        self.position_id = position_id
+        
+        # S28.D: Emit violation bead
+        _emit_violation_bead(
+            violation_type="invalid_state_transition",
+            from_state=from_state.value,
+            to_state=to_state.value,
+            position_id=position_id,
+        )
+        
         super().__init__(
             f"INV-EXEC-LIFECYCLE-1 violated: "
             f"Invalid transition {from_state.value} → {to_state.value}"
@@ -209,7 +280,7 @@ class Position:
             InvalidTransitionError: If transition is invalid
         """
         if not validate_transition(self.state, new_state):
-            raise InvalidTransitionError(self.state, new_state)
+            raise InvalidTransitionError(self.state, new_state, self.position_id)
         
         old_state = self.state
         self.state = new_state

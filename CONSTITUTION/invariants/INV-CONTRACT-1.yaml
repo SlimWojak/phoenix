@@ -1,0 +1,39 @@
+# INV-CONTRACT-1 — Deterministic State Machine
+# VERSION: 1.0
+# STATUS: PROVEN
+
+invariant:
+  id: INV-CONTRACT-1
+  name: Deterministic State Machine
+  
+  description: |
+    Same input → same output.
+    State machines must be deterministic.
+    Hash comparison proves: same data + same signals = same result.
+    
+  enforcement:
+    type: hash_comparison
+    mechanism: "compute_state_hash() returns canonical hash"
+    violation: "DeterminismViolation exception"
+    
+  applies_to:
+    - governance/interface.py (GovernanceInterface.compute_state_hash)
+    - execution/position.py (Position state machine)
+    - execution/replay.py (ReplayHarness)
+    - cso/observer.py (CSO state)
+    
+  tests:
+    - test_file: tests/test_state_hash_canonical.py
+      description: "Verifies state hash determinism"
+    - test_file: tests/test_intent_deterministic.py
+      description: "Intent hash is deterministic"
+    - test_file: tests/test_execution_path.py
+      class: TestGateC2Deterministic
+      description: "Replay produces same hash across runs"
+      
+  proven:
+    sprint: S28.C
+    evidence: "3 replay runs produced identical hash: 3c4ea95b6152c8d2"
+    
+  severity: CRITICAL
+  violation_action: HALT

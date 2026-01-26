@@ -1,7 +1,7 @@
 # Phoenix
 
-**Status:** Sprint 26 in progress  
-**Jurisdiction:** Sibling to God_Mode (Forge)  
+**Status:** Sprint 28 — STEEL_PIPES (Complete)
+**Jurisdiction:** Sibling to God_Mode (Forge)
 **Founded:** 2026-01-24
 
 ---
@@ -19,88 +19,127 @@ Phoenix (App)    = The Trading System — River, CSO, Execution
 
 ---
 
-## Project Structure
-
-```
-phoenix/
-├── contracts/           # Data & governance contracts
-│   ├── ICT_DATA_CONTRACT.md
-│   ├── GOVERNANCE_INTERFACE_CONTRACT.md
-│   ├── truth_teller.py
-│   └── mirror_markers.py
-│
-├── governance/          # GovernanceInterface implementation
-│   ├── interface.py     # Abstract base class (all organs inherit)
-│   ├── halt.py          # <50ms halt mechanism
-│   ├── telemetry.py     # Quality reporting
-│   ├── tokens.py        # T2 approval tokens
-│   ├── types.py         # Enums, dataclasses
-│   └── errors.py        # Error classification
-│
-├── cso/                 # Chief Strategy Officer (skeleton)
-│   ├── contract.py      # CSOContract ABC
-│   └── __init__.py
-│
-├── docs/                # Canonical documentation
-│   ├── VISION_v4.md
-│   ├── PHOENIX_MANIFESTO.md
-│   ├── CONSTITUTION_AS_CODE.md
-│   ├── COLD_START_STRATEGY.md
-│   └── ...
-│
-├── CONSTITUTION/        # Constitutional architecture graph
-│   ├── modules/
-│   ├── seams/
-│   ├── invariants/
-│   └── ...
-│
-├── reports/             # Sprint reports & test results
-│   ├── TRACK_B_REPORT.md
-│   ├── TRACK_C_REPORT.md
-│   └── ...
-│
-├── tests/               # Test suite
-│   ├── test_halt_latency.py
-│   ├── test_mirror.py
-│   └── ...
-│
-├── CLAUDE.md            # Agent orientation
-└── GEMINI.md            # Advisor context
-```
-
----
-
-## Sprint 26 Progress
+## Current Sprint: S28 STEEL_PIPES
 
 | Track | Name | Status |
 |-------|------|--------|
-| A | River (Data Integrity) | COMPLETE |
-| B | Governance Skeleton | COMPLETE |
-| C | Oracle Foundation | COMPLETE |
-| D | Hands (Execution) | PENDING |
+| A | Chaos V3 (Regime Stress) | ✓ COMPLETE |
+| B | Monitoring (Dashboard/Alerts) | ✓ COMPLETE |
+| C | Execution Path (T0/T1/T2 Wiring) | ✓ COMPLETE |
+| D | Consolidation (Docs/Constitution) | ✓ COMPLETE |
 
-### Proven Invariants
+### Exit Gate Summary
 
-- **INV-HALT-1:** `request_halt() < 50ms` — Proven at 0.003ms p99
-- **INV-CONTRACT-1:** Deterministic state machine — XOR test passed
-- **INV-DATA-1:** Schema locked — 472 columns, hash `b848ffe506fd3fff`
-
----
-
-## Founding Commit
-
-```
-Phoenix founded — Schema Lockdown complete (Sprint 26 Track A Day 0.5)
-```
+| Gate | Criterion | Status |
+|------|-----------|--------|
+| Chaos V3 | 100% vectors pass | ✓ PASS |
+| Dashboard | Renders with live data | ✓ PASS |
+| Auto-Halt | >3 CRITICAL → halt | ✓ PASS |
+| Determinism | Same replay = same hash | ✓ PASS |
+| Constitution | Invariants populated | ✓ PASS |
 
 ---
 
-## Related Repositories
+## Architecture
 
-| Repo | Purpose |
-|------|---------|
-| `God_Mode` | Forge — governance patterns, constitutional enforcement |
-| `nex` | Legacy data pipeline (being subsumed) |
+```
+phoenix/
+├── CONSTITUTION/           # The Law
+│   ├── invariants/         # 6 proven invariants
+│   ├── roles/              # sovereign, cto, cso
+│   └── wiring/             # halt propagation
+│
+├── contracts/              # Data & governance contracts
+│   ├── ICT_DATA_CONTRACT.md
+│   └── GOVERNANCE_INTERFACE_CONTRACT.md
+│
+├── governance/             # GovernanceInterface (Track B)
+│   ├── interface.py        # ABC for all organs
+│   ├── halt.py             # <50ms halt mechanism
+│   ├── telemetry.py        # Quality reporting
+│   └── types.py            # Tier enums
+│
+├── monitoring/             # Observability (S28.B)
+│   ├── alerts.py           # Threshold + debounce + auto-halt
+│   └── dashboard.py        # Web health view
+│
+├── execution/              # Execution path (S28.C)
+│   ├── position.py         # Lifecycle state machine
+│   ├── broker_stub.py      # Paper broker (P&L v0)
+│   ├── replay.py           # Deterministic harness
+│   └── intent.py           # Order intents
+│
+├── cso/                    # Chief Strategy Officer
+│   ├── knowledge/          # 5-drawer methodology (59 signals)
+│   ├── observer.py         # Passive observer
+│   └── beads.py            # Decision artifacts
+│
+├── enrichment/             # Data enrichment (L1-L6)
+│   └── layers/             # ICT marker calculation
+│
+├── dispatcher/             # Worker coordination
+│   └── tmux_control.py     # TMUX C2
+│
+├── tests/                  # 60+ tests
+│   ├── test_halt_*.py
+│   ├── test_execution_path.py
+│   ├── test_monitoring.py
+│   └── chaos/
+│
+└── docs/                   # Sprint reports & docs
+```
+
+---
+
+## Proven Invariants
+
+| Invariant | Description | Proven Value |
+|-----------|-------------|--------------|
+| INV-HALT-1 | Local halt < 50ms | 0.003ms |
+| INV-HALT-2 | Cascade < 500ms | 22.59ms |
+| INV-CONTRACT-1 | Deterministic state | Hash match |
+| INV-DATA-CANON | Single truth (River) | XOR == 0 |
+| INV-GOV-HALT-BEFORE-ACTION | Halt-first pattern | Tests pass |
+| INV-EXEC-LIFECYCLE-1 | Valid transitions | Enforced |
+
+---
+
+## Quick Start
+
+```bash
+# Clone
+git clone https://github.com/SlimWojak/phoenix.git
+cd phoenix
+
+# Run tests (requires nex venv)
+cd ~/nex && source .venv/bin/activate
+python -m pytest ~/phoenix/tests/ -v
+
+# Check halt latency
+python -c "
+from governance.halt import HaltSignal
+import time
+h = HaltSignal()
+t = time.perf_counter()
+h.set()
+print(f'Halt latency: {(time.perf_counter()-t)*1000:.3f}ms')
+"
+
+# Run execution path tests
+python tests/test_execution_path.py
+```
+
+---
+
+## Fresh Session Bootstrap
+
+**Load these files in order:**
+
+1. `SKILL.md` — Communication standard
+2. `CONSTITUTION/invariants/` — Proven laws
+3. `contracts/ICT_DATA_CONTRACT.md` — Data schema
+4. `docs/SPRINT_26.md` — Current sprint
+5. `docs/ADVISOR_ORIENTATION.md` — Full bootstrap guide
 
 ---
 
@@ -113,21 +152,14 @@ Phoenix founded — Schema Lockdown complete (Sprint 26 Track A Day 0.5)
 
 ---
 
-## Quick Start
+## Related Repositories
 
-```bash
-# Clone
-git clone https://github.com/SlimWojak/phoenix.git
-cd phoenix
-
-# Run tests (requires nex venv for data tests)
-cd ~/nex && source .venv/bin/activate
-pytest ~/phoenix/tests/ -v
-
-# Verify governance halt latency
-python -c "from phoenix.governance import HaltSignal; import time; h=HaltSignal(); t=time.perf_counter(); h.set(); print(f'{(time.perf_counter()-t)*1000:.3f}ms')"
-```
+| Repo | Purpose |
+|------|---------|
+| `God_Mode` | Forge — governance patterns |
+| `nex` | Legacy data pipeline (being subsumed) |
 
 ---
 
-*Sprint 26 — Foundation Proof*
+*Sprint 28 — Steel Pipes Complete*
+*OINK OINK.* 🐗🔥
