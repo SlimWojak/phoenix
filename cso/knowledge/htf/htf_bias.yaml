@@ -7,13 +7,24 @@ schema_version: "1.0.0"
 created: "2026-01-23"
 
 # =============================================================================
-# 3 QUESTIONS FRAMEWORK
+# EXECUTION TIMING & DATA REQUIREMENTS
 # =============================================================================
 
 execution_timing:
-  frequency: "once per day"
-  time: "00:00 NY (midnight)"
+  weekly_context: {frequency: "once per week", time: "Sunday 17:00 NY", purpose: "Macro permission, objectives, limits"}
+  daily_analysis: {frequency: "once per day", time: "00:00 NY", purpose: "Component detection (ranges, PDAs, liquidity)"}
+  daily_bias: {frequency: "once per day", time: "00:00 NY (after analysis)", purpose: "Answer 3 questions, set trade bias"}
   locked_until: "next 00:00 NY"
+  ref: "L0:41-52"
+
+data_requirements:
+  weekly_candles: "52+ weeks"
+  daily_candles: "90+ days"
+  ref: "L0:49-52"
+
+# =============================================================================
+# 3 QUESTIONS FRAMEWORK
+# =============================================================================
 
 signals:
   # Q1: WHERE IS PRICE RIGHT NOW? (Location)
@@ -117,6 +128,24 @@ signals:
       - {condition: "daily == neutral", result: defer_to_weekly}
       - {condition: "weekly != daily", result: both_allowed}
     ref: "L0:300-330, NEX:LAYER_0_5:165-185"
+
+# =============================================================================
+# WEEKLY ROLE LIMITATIONS (A3)
+# =============================================================================
+
+  - id: "SIG-HTF-027"
+    name: "Weekly Role Boundaries"
+    weekly_used_only_for:
+      - "Define major external objectives (PWH / PWL)"
+      - "Define macro PDAs (Weekly FVG / OB)"
+      - "Define expansion limits"
+    weekly_not_used_for:
+      - "Execution ranges"
+      - "Daily bias overrides"
+      - "Premium/discount decisions for entries"
+      - "Intraday trading decisions"
+    weekly_context_output: [pwh, pwl, weekly_fvgs, weekly_obs, expansion_limits]
+    ref: "L0:384-409"
 
 # =============================================================================
 # PROHIBITIONS

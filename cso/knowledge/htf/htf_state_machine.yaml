@@ -125,6 +125,77 @@ output_schema:
   meta: [analysis_timestamp, analysis_date, tradeable]
 
 # =============================================================================
+# LAYER DEPENDENCIES (Integration with Lower Layers)
+# =============================================================================
+
+layer_dependencies:
+  layer_1_daily_state_engine:
+    requires: [daily_mss, daily_objective, daily_structure_state]
+    purpose: "classify expansion vs pullback, check if objective delivered"
+    ref: "L0:1906-1912"
+  layer_2_operating_range:
+    requires: [daily_dealing_range, daily_structure_state, trade_bias]
+    purpose: "primary operating range, H4/H1 if post-expansion, validate alignment"
+    ref: "L0:1915-1921"
+  layer_3_intraday_execution:
+    requires: [trade_bias, daily_objective, daily_pdas]
+    purpose: "trade direction, TP target, PDA alignment checks"
+    ref: "L0:1924-1930"
+
+# =============================================================================
+# VALIDATION CHECKLIST (tradeable=True requirements)
+# =============================================================================
+
+validation_checklist:
+  - {check: weekly_mss_detected, desc: "Weekly MSS detected (or confirmed none needed)", ref: "L0:1939"}
+  - {check: daily_mss_confirmed, desc: "Daily MSS detected and confirmed", ref: "L0:1940"}
+  - {check: daily_range_defined, desc: "Daily range defined (structure-based)", ref: "L0:1941"}
+  - {check: objective_identified, desc: "Daily objective identified and aligned", ref: "L0:1942"}
+  - {check: objective_status_valid, desc: "Objective status = NOT_DELIVERED or LIQUIDITY_RUN", ref: "L0:1943"}
+  - {check: not_equilibrium, desc: "Premium/Discount zone determined (NOT equilibrium)", ref: "L0:1944"}
+  - {check: bias_synthesized, desc: "Trade bias synthesized from 3 questions", ref: "L0:1945"}
+  - {check: pdas_tracked, desc: "All PDAs tracked (respected/broken/untested)", ref: "L0:1946"}
+  - {check: liquidity_pools_identified, desc: "Liquidity pools identified", ref: "L0:1947"}
+  - {check: state_machine_full_context, desc: "State machine in FULL_CONTEXT state", ref: "L0:1948"}
+
+# =============================================================================
+# KEY PRINCIPLES SUMMARY (10 Rules)
+# =============================================================================
+
+key_principles:
+  - {num: 1, rule: "Weekly sets limits. Daily proves intent and defines direction.", ref: "L0:1954"}
+  - {num: 2, rule: "After Daily expansion, execution shifts to H4/H1 rebalance mode.", ref: "L0:1955"}
+  - {num: 3, rule: "Without MSS → no structure.", ref: "L0:1956"}
+  - {num: 4, rule: "Without MSS → no range.", ref: "L0:1957"}
+  - {num: 5, rule: "Without objective → no trade.", ref: "L0:1958"}
+  - {num: 6, rule: "Objective must be valid: NOT_DELIVERED or LIQUIDITY_RUN status.", ref: "L0:1959"}
+  - {num: 7, rule: "Post-expansion = impulsive delivery. Grind rejected.", ref: "L0:1960"}
+  - {num: 8, rule: "Structure > Time: Ranges from MSS, NOT PDH/PDL.", ref: "L0:1961"}
+  - {num: 9, rule: "Bias = 3 Questions: Location + Objective + Respect.", ref: "L0:1962"}
+  - {num: 10, rule: "One bias per day: Set at 00:00 NY, frozen until next day.", ref: "L0:1963"}
+
+# =============================================================================
+# WHAT'S NOT IN LAYER 0 (Scope Boundaries)
+# =============================================================================
+
+scope_exclusions:
+  layer_0_does_not:
+    - "Define H4/H1 ranges (that's Layer 2 if post-expansion)"
+    - "Detect intraday FVGs (that's Layer 5)"
+    - "Detect displacement (that's Layer 6)"
+    - "Detect sweeps (that's Layer 3)"
+    - "Make entry decisions (that's Layer 3)"
+    - "Calculate position sizing (that's Layer 3)"
+  layer_0_only:
+    - "Provides HTF context (Weekly + Daily)"
+    - "Sets daily trade bias"
+    - "Defines structural dealing range"
+    - "Identifies objectives (with liquidity status)"
+    - "Gates lower layers (tradeable yes/no)"
+    - "Detects post-expansion state (rebalance mode)"
+  ref: "L0:1967-1983"
+
+# =============================================================================
 # INVARIANTS
 # =============================================================================
 

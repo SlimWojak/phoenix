@@ -121,6 +121,88 @@ signals:
     outputs: [order_flow]
 
 # =============================================================================
+# IPDA RANGES (GAP-A RESOLUTION)
+# =============================================================================
+# IPDA = Interbank Price Delivery Algorithm data ranges
+
+  - id: "SIG-HTF-009"
+    name: "IPDA Ranges"
+    timeframe: HTF
+    description: "ICT-defined lookback windows for institutional algorithms"
+    ranges:
+      ipda_20: {lookback: 20, type: short_term, formula: "high[-20:].max(), low[-20:].min()"}
+      ipda_40: {lookback: 40, type: medium_term, formula: "high[-40:].max(), low[-40:].min()"}
+      ipda_60: {lookback: 60, type: long_term, formula: "high[-60:].max(), low[-60:].min()"}
+    usage:
+      - "Bootstrap context (NO_STRUCTURE state)"
+      - "Locating external liquidity (PDH/PDL, PWH/PWL)"
+      - "Bounding where structure may form"
+    outputs: [ipda_20_high, ipda_20_low, ipda_40_high, ipda_40_low, ipda_60_high, ipda_60_low]
+    ref: "L0:703-735"
+    weight: 0.6
+
+# =============================================================================
+# EQUAL HIGHS/LOWS DETECTION (GAP-B RESOLUTION)
+# =============================================================================
+
+  - id: "SIG-HTF-040"
+    name: "Equal Highs Detection"
+    timeframe: HTF
+    description: "Multiple highs within tolerance (liquidity pool)"
+    parameters:
+      tolerance_pips: 10
+      min_touches: 3
+    detection: "Group highs within tolerance_pips, count touches, return if >= min_touches"
+    outputs: [equal_highs, equal_highs_touches]
+    ref: "L0:521-523"
+    weight: 0.85
+    note: "Priority 1 in dealing range hierarchy"
+
+  - id: "SIG-HTF-041"
+    name: "Equal Lows Detection"
+    timeframe: HTF
+    description: "Multiple lows within tolerance (liquidity pool)"
+    parameters:
+      tolerance_pips: 10
+      min_touches: 3
+    detection: "Group lows within tolerance_pips, count touches, return if >= min_touches"
+    outputs: [equal_lows, equal_lows_touches]
+    ref: "L0:521-523"
+    weight: 0.85
+    note: "Priority 1 in dealing range hierarchy"
+
+# =============================================================================
+# WEEKLY RANGE
+# =============================================================================
+
+  - id: "SIG-HTF-042"
+    name: "Weekly Range Definition"
+    timeframe: HTF
+    description: "Range from MSS boundaries (last bullish low → last bearish high)"
+    methods:
+      mss_boundaries: "last_bullish_mss.low → last_bearish_mss.high"
+      single_mss: "single_mss.low → single_mss.high"
+    outputs: [weekly_range_high, weekly_range_low, weekly_equilibrium, weekly_range_method]
+    ref: "L0:330-381"
+    note: "Returns None if no MSS history (NO_STRUCTURE)"
+
+# =============================================================================
+# SWING CANDIDATE IDENTIFICATION
+# =============================================================================
+
+  - id: "SIG-HTF-043"
+    name: "Swing Candidate Identification"
+    timeframe: HTF
+    description: "Local pivots (unvalidated until displacement reaction)"
+    algorithm:
+      lookback: 3
+      swing_high: "high[i] > all highs in [i-lookback : i+lookback]"
+      swing_low: "low[i] < all lows in [i-lookback : i+lookback]"
+    outputs: [swing_highs, swing_lows, swing_dates, validated_flag]
+    ref: "L0:629-659"
+    note: "UNVALIDATED until price reacts with displacement"
+
+# =============================================================================
 # INVARIANTS
 # =============================================================================
 

@@ -13,29 +13,32 @@ label: "Complete HTF Methodology — M2M Extraction"
 
 files:
   - name: htf_structure.yaml
-    purpose: "MSS detection, swings, ranges, bootstrap"
-    signals: 8
+    purpose: "MSS detection, swings, ranges, bootstrap, IPDA, equal H/L"
+    signals: 13
     invariants: 6
-    covers: ["GAP-1 Bootstrap", "GAP-2 BOS=MSS", "GAP-5 Validated Swings"]
+    covers: ["GAP-1 Bootstrap", "GAP-2 BOS=MSS", "GAP-5 Validated Swings", "GAP-A IPDA", "GAP-B Equal H/L"]
     
   - name: htf_signals.yaml
-    purpose: "Displacement, FVG, liquidity classification"
-    signals: 9
+    purpose: "Displacement, FVG, liquidity classification, consequence check"
+    signals: 10
     invariants: 4
     covers: ["GAP-3 Displacement", "GAP-4 FVG Universal", "GAP-7 Liquidity Status"]
     
   - name: htf_bias.yaml
-    purpose: "3Q framework, daily bias synthesis, DOL"
-    signals: 7
+    purpose: "3Q framework, daily bias synthesis, DOL, weekly role boundaries"
+    signals: 8
     invariants: 4
     prohibitions: 6
     cross_ref: "nex/meridian_gold/enrichment_specs/LAYER_0_5_HTF_BIAS_SPEC.md"
     
   - name: htf_state_machine.yaml
-    purpose: "MMXM, warmup states, post-expansion"
+    purpose: "MMXM, warmup states, post-expansion, layer deps, validation checklist"
     signals: 7
     invariants: 5
     warmup_states: 6
+    validation_checklist: 10
+    key_principles: 10
+    layer_dependencies: 3
     conflicts: 1
     covers: ["GAP-6 MMXM", "GAP-8 Post-Expansion"]
 
@@ -44,12 +47,15 @@ files:
 # =============================================================================
 
 totals:
-  signals: 31
+  signals: 38
   invariants: 19
   prohibitions: 6
   warmup_states: 6
+  validation_checklist: 10
+  key_principles: 10
+  layer_dependencies: 3
   conflicts: 1
-  gaps_covered: 8
+  gaps_covered: 10
 
 # =============================================================================
 # COVERAGE

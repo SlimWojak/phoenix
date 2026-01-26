@@ -125,6 +125,25 @@ signals:
     ref: "L0:757-790"
 
 # =============================================================================
+# STRUCTURAL CONSEQUENCE CHECK
+# =============================================================================
+# Used to classify liquidity levels as DELIVERED_WITH_CONSEQUENCE
+
+  - id: "SIG-HTF-019"
+    name: "Structural Consequence at Level"
+    description: "Check if consequence occurred AT or FROM liquidity level"
+    consequence_types:
+      - {type: displacement, check: "displacement_event.origin near level (5 pips)"}
+      - {type: mss, check: "mss_event.origin near level (5 pips)"}
+      - {type: fvg, check: "fvg.top (bearish) or fvg.bottom (bullish) near level"}
+      - {type: structure_change, check: "structure_change.price near level"}
+    tolerance_pips: 5
+    outputs: [consequence_exists, consequence_type, consequence_details]
+    ref: "L0:1205-1263"
+    weight: 0.9
+    note: "If consequence exists → level is DELIVERED_WITH_CONSEQUENCE (invalid target)"
+
+# =============================================================================
 # INVARIANTS
 # =============================================================================
 
