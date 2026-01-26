@@ -1,0 +1,148 @@
+# ENTRY_QUALITY — NEX Baseline (Consolidated)
+# VERSION: DRAFT v0
+# SPRINT: S27.NEX_BASELINE.WAVE_1
+# LABEL: "DRAFT v0 — consolidated from NEX L8/L10/L11, pending Olya validation"
+# CONSOLIDATES: L8 (405 lines) + L10 (364 lines) + L11 (440 lines) = 1,209 → 395
+
+schema_version: "1.0.0"
+created: "2026-01-23"
+source_specs: ["L8_PREMIUM_DISCOUNT_SPEC_REVISED.md:D188", "L10_TIMING_SPEC.md:D180", "L11_ALIGNMENT_REFACTORED_SPEC.md:D184"]
+total_columns: 48
+
+# =============================================================================
+# SIGNALS: PREMIUM_DISCOUNT (L8) — 16 columns
+# =============================================================================
+# KEY: "Structure is more important than time" (Olya)
+
+signals:
+  premium_discount:
+    - {id: "SIG-ENTRY-001", name: "Structural Premium", col: "in_structural_premium", type: bool, formula: "close > structural_equilibrium", weight: 0.9, ref: "L8:73-82"}
+    - {id: "SIG-ENTRY-002", name: "Structural Discount", col: "in_structural_discount", type: bool, formula: "close < structural_equilibrium", weight: 0.9, ref: "L8:73-82"}
+    - {id: "SIG-ENTRY-003", name: "Structural Position %", col: "structural_position_pct", type: float, formula: "(close - low) / (high - low) * 100", weight: 0.7, ref: "L8:132-138"}
+    - {id: "SIG-ENTRY-004", name: "Daily Position %", col: "daily_position_pct", type: float, formula: "(close - pdl) / (pdh - pdl) * 100", weight: 0.4, ref: "L8:150-156", note: "SECONDARY"}
+    - {id: "SIG-ENTRY-005", name: "Weekly Position %", col: "weekly_position_pct", type: float, formula: "(close - pwl) / (pwh - pwl) * 100", weight: 0.4, ref: "L8:159-165", note: "SECONDARY"}
+
+# =============================================================================
+# SIGNALS: TIMING (L10) — 20 columns
+# =============================================================================
+# KEY: "First touch beats fifth confluence" — fresh entry > late entry
+
+  timing:
+    - {id: "SIG-ENTRY-010", name: "Freshness Score", col: "entry_freshness_score", type: float, range: [0, 10], weight: 0.85, ref: "L10:127-158", note: "Composite: age+touch+recency"}
+    - {id: "SIG-ENTRY-011", name: "FVG First Touch", col: "15m_fvg_up_touch_count", type: int, condition: "touch_count == 1", weight: 0.8, ref: "L10:70-82"}
+    - {id: "SIG-ENTRY-012", name: "Zone Age Fresh", col: "15m_fvg_up_age_bars", type: int, condition: "age_bars <= 5", weight: 0.7, ref: "L10:52-65"}
+    - {id: "SIG-ENTRY-013", name: "Recent Structure Break", col: "bars_since_structure_break", type: int, condition: "bars <= 20", weight: 0.6, ref: "L10:90-98"}
+    - {id: "SIG-ENTRY-014", name: "Recent Sweep", col: "bars_since_asia_*_sweep", type: int, condition: "bars <= 15", weight: 0.5, ref: "L10:100-104"}
+
+# =============================================================================
+# SIGNALS: ALIGNMENT (L11) — 12 columns
+# =============================================================================
+# KEY: "Layer stores COUNTS, evaluator makes DECISIONS"
+
+  alignment:
+    - {id: "SIG-ENTRY-020", name: "HTF Bullish Count", col: "htf_bullish_count", type: int, range: [0, 3], weight: 0.7, ref: "L11:68-77"}
+    - {id: "SIG-ENTRY-021", name: "HTF Bearish Count", col: "htf_bearish_count", type: int, range: [0, 3], weight: 0.7, ref: "L11:79-88"}
+    - {id: "SIG-ENTRY-022", name: "HTF Unanimous", col: "htf_unanimous", type: bool, formula: "count == 3", weight: 0.9, ref: "L11:89-92"}
+    - {id: "SIG-ENTRY-023", name: "Layers Long", col: "layers_supporting_long", type: int, range: [0, 5], weight: 0.6, ref: "L11:98-122"}
+    - {id: "SIG-ENTRY-024", name: "Layers Short", col: "layers_supporting_short", type: int, range: [0, 5], weight: 0.6, ref: "L11:124-148"}
+    - {id: "SIG-ENTRY-025", name: "Entry Unanimous", col: "entry_direction_unanimous", type: bool, formula: "layers >= 4 AND opposing == 0", weight: 0.85, ref: "L11:150-157"}
+    - {id: "SIG-ENTRY-026", name: "Conflicting Signals", col: "conflicting_signals", type: bool, formula: "long > 0 AND short > 0", weight: -0.3, ref: "L11:159-163"}
+    - {id: "SIG-ENTRY-027", name: "HTF Supports Long", col: "htf_supports_long", type: bool, formula: "htf_bullish >= 2", weight: 0.65, ref: "L11:169-170"}
+    - {id: "SIG-ENTRY-028", name: "HTF Supports Short", col: "htf_supports_short", type: bool, formula: "htf_bearish >= 2", weight: 0.65, ref: "L11:171-172"}
+    - {id: "SIG-ENTRY-029", name: "Entry Matches HTF Long", col: "entry_matches_htf_long", type: bool, formula: "htf_long AND layers >= 2", weight: 0.8, ref: "L11:174-178"}
+    - {id: "SIG-ENTRY-030", name: "Entry Matches HTF Short", col: "entry_matches_htf_short", type: bool, formula: "htf_short AND layers >= 2", weight: 0.8, ref: "L11:180-184"}
+
+# =============================================================================
+# INVARIANTS (11 — deduped from L8/L10/L11)
+# =============================================================================
+
+invariants:
+  - {id: "INV-ENTRY-001", rule: "Structural range PRIMARY, time-based SECONDARY", violation: "Using PDH/PDL as main dealing range", ref: "L8:17-23"}
+  - {id: "INV-ENTRY-002", rule: "First touch beats multiple touches", violation: "Grading rewards confluence over freshness", ref: "L10:15-18"}
+  - {id: "INV-ENTRY-003", rule: "Layer stores COUNTS, evaluator applies THRESHOLDS", violation: "Threshold decisions in enrichment layer", ref: "L11:7-9"}
+  - {id: "INV-ENTRY-004", rule: "Zone age resets on exit/re-entry", violation: "Age continues across zone boundaries", ref: "L10:41-55"}
+  - {id: "INV-ENTRY-005", rule: "Touch count increments only on NEW entry", violation: "Touch increments while continuously in zone", ref: "L10:63-82"}
+  - {id: "INV-ENTRY-006", rule: "bars_since_event = 9999 before first event", violation: "Using 0 or NaN before first event", ref: "L10:86-96"}
+  - {id: "INV-ENTRY-007", rule: "HTF unanimous = ALL 3 TFs agree", violation: "unanimous=True when only 2 agree", ref: "L11:89-92"}
+  - {id: "INV-ENTRY-008", rule: "Conflicting = BOTH long AND short signals", violation: "Missing conflict detection", ref: "L11:159-163"}
+  - {id: "INV-ENTRY-009", rule: "OTE is evaluator logic, not enrichment", violation: "OTE columns in enrichment", ref: "L8:295-315"}
+  - {id: "INV-ENTRY-010", rule: "L10 runs AFTER L3,L5,L7,L9", violation: "L10 before dependencies", ref: "L10:20-28"}
+  - {id: "INV-ENTRY-011", rule: "L11 runs LAST", violation: "L11 not final", ref: "L11:192-196"}
+
+# =============================================================================
+# CONFLICTS (flagged, not resolved)
+# =============================================================================
+
+conflicts:
+  - id: "CONFLICT-001"
+    desc: "L8 uses structural P/D, L11 uses daily P/D"
+    recommendation: "Align L11 to structural"
+    refs: ["L8:73-82", "L11:110-111"]
+  
+  - id: "CONFLICT-002"
+    desc: "L10 has hardcoded freshness thresholds, L11 principle says 'thresholds in evaluator'"
+    recommendation: "Move scoring to evaluator"
+    refs: ["L10:127-158", "L11:7-9"]
+  
+  - id: "CONFLICT-003"
+    desc: "L11 code refs in_daily_discount but L8 establishes in_structural_discount as primary"
+    recommendation: "Update L11 to use structural"
+    refs: ["L8:78-82", "L11:110"]
+
+# =============================================================================
+# COMPOSITE GATES
+# =============================================================================
+
+composite_gates:
+  - id: "GATE-ENTRY-001"
+    name: "High Quality Long"
+    requires: [SIG-ENTRY-002, "SIG-ENTRY-010>=6", "touch<=2", SIG-ENTRY-029, "NOT SIG-ENTRY-026"]
+    output: "GRADE_A_LONG"
+  
+  - id: "GATE-ENTRY-002"
+    name: "High Quality Short"
+    requires: [SIG-ENTRY-001, "SIG-ENTRY-010>=6", "touch<=2", SIG-ENTRY-030, "NOT SIG-ENTRY-026"]
+    output: "GRADE_A_SHORT"
+  
+  - id: "GATE-ENTRY-003"
+    name: "Alignment Gate"
+    requires: ["htf_count>=2", "layers>=3"]
+    output: "ALIGNED"
+  
+  - id: "GATE-ENTRY-004"
+    name: "Freshness Gate"
+    requires: ["age<=10", "break<=30"]
+    output: "FRESH"
+
+# =============================================================================
+# DEPENDENCIES
+# =============================================================================
+
+dependencies:
+  premium_discount: {L0: [dealing_range_high, dealing_range_low], L2: [pdh, pdl, pwh, pwl]}
+  timing: {L3: [swept_asia_high, swept_asia_low], L5: [in_*_fvg_*], L7: [structure_break_*], L9: [in_ob_*]}
+  alignment: {L0.5: [htf_*_bias], L5: [in_15m_fvg_*, 15m_bisi/sibi], L7: [order_flow], L8: [in_*_premium/discount], L9: [in_ob_*]}
+
+pipeline_order: [L0, L0.5, L1, L2, L3, L5, L6, L7, L8, L9, L10, L11]
+
+# =============================================================================
+# COLUMN MANIFEST (48 total)
+# =============================================================================
+
+columns:
+  premium_discount:  # 16
+    structural: [structural_range_high, structural_range_low, structural_equilibrium, structural_range_pips, structural_position_pct, price_vs_structural_eq, in_structural_premium, in_structural_discount]
+    daily: [daily_range_high, daily_range_low, daily_equilibrium, daily_position_pct]
+    weekly: [weekly_range_high, weekly_range_low, weekly_equilibrium, weekly_position_pct]
+  
+  timing:  # 20
+    fvg_age: [5m_fvg_up_age_bars, 5m_fvg_down_age_bars, 15m_fvg_up_age_bars, 15m_fvg_down_age_bars, 1h_fvg_up_age_bars, 1h_fvg_down_age_bars, 4h_fvg_up_age_bars, 4h_fvg_down_age_bars]
+    fvg_touch: [15m_fvg_up_touch_count, 15m_fvg_down_touch_count, ob_bull_touch_count, ob_bear_touch_count]
+    ob_age: [ob_bull_age_bars, ob_bear_age_bars]
+    bars_since: [bars_since_structure_break_up, bars_since_structure_break_down, bars_since_asia_high_sweep, bars_since_asia_low_sweep]
+    composite: [entry_freshness_score, bars_since_structure_break]
+  
+  alignment:  # 12
+    htf_counts: [htf_bullish_count, htf_bearish_count, htf_neutral_count, htf_unanimous]
+    entry_confluence: [layers_supporting_long, layers_supporting_short, entry_direction_unanimous, conflicting_signals]
+    direction: [htf_supports_long, htf_supports_short, entry_matches_htf_long, entry_matches_htf_short]
