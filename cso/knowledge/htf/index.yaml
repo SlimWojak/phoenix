@@ -1,0 +1,116 @@
+# HTF METHODOLOGY — Index Manifest
+# VERSION: 1.0.0
+# SPRINT: S27.HTF_FULL_EXTRACTION
+# SOURCE: docs/olya_skills/LAYER_0_HTF_CONTEXT_CLEAN.md (2072 lines)
+
+schema_version: "1.0.0"
+created: "2026-01-23"
+label: "Complete HTF Methodology — M2M Extraction"
+
+# =============================================================================
+# FILES
+# =============================================================================
+
+files:
+  - name: htf_structure.yaml
+    purpose: "MSS detection, swings, ranges, bootstrap"
+    signals: 8
+    invariants: 6
+    covers: ["GAP-1 Bootstrap", "GAP-2 BOS=MSS", "GAP-5 Validated Swings"]
+    
+  - name: htf_signals.yaml
+    purpose: "Displacement, FVG, liquidity classification"
+    signals: 9
+    invariants: 4
+    covers: ["GAP-3 Displacement", "GAP-4 FVG Universal", "GAP-7 Liquidity Status"]
+    
+  - name: htf_bias.yaml
+    purpose: "3Q framework, daily bias synthesis, DOL"
+    signals: 7
+    invariants: 4
+    prohibitions: 6
+    cross_ref: "nex/meridian_gold/enrichment_specs/LAYER_0_5_HTF_BIAS_SPEC.md"
+    
+  - name: htf_state_machine.yaml
+    purpose: "MMXM, warmup states, post-expansion"
+    signals: 7
+    invariants: 5
+    warmup_states: 6
+    conflicts: 1
+    covers: ["GAP-6 MMXM", "GAP-8 Post-Expansion"]
+
+# =============================================================================
+# TOTALS
+# =============================================================================
+
+totals:
+  signals: 31
+  invariants: 19
+  prohibitions: 6
+  warmup_states: 6
+  conflicts: 1
+  gaps_covered: 8
+
+# =============================================================================
+# COVERAGE
+# =============================================================================
+
+coverage:
+  layer_0_doc:
+    total_sections: 11  # A-K in source
+    extracted: 11
+    coverage_pct: 100
+    
+  gaps_resolved:
+    - {gap: 1, topic: "Bootstrap (first MSS)", file: htf_structure.yaml}
+    - {gap: 2, topic: "BOS = MSS terminology", file: htf_structure.yaml}
+    - {gap: 3, topic: "Displacement (qualitative)", file: htf_signals.yaml}
+    - {gap: 4, topic: "FVG (universal)", file: htf_signals.yaml}
+    - {gap: 5, topic: "Validated swings", file: htf_structure.yaml}
+    - {gap: 6, topic: "MMXM identification", file: htf_state_machine.yaml}
+    - {gap: 7, topic: "Liquidity status (3-state)", file: htf_signals.yaml}
+    - {gap: 8, topic: "Post-expansion threshold", file: htf_state_machine.yaml}
+
+# =============================================================================
+# NEX GAP-FILLS USED
+# =============================================================================
+
+nex_gap_fills:
+  - source: "LAYER_0_5_HTF_BIAS_SPEC.md"
+    used_for: "DOL path types, counter-trend rules"
+    signals: ["SIG-HTF-024", "SIG-HTF-026"]
+    
+  - source: "LAYER_0_HTF_ANALYSIS_SPEC.md"
+    used_for: "Column reference validation"
+    note: "Confirmed alignment, no new signals extracted"
+
+# =============================================================================
+# DEPENDENCIES
+# =============================================================================
+
+dependencies:
+  htf_structure:
+    requires: [weekly_candles, daily_candles]
+    provides: [weekly_mss, daily_mss, dealing_range, order_flow]
+    
+  htf_signals:
+    requires: [htf_structure.dealing_range, price_history]
+    provides: [displacement, fvg, liquidity_status, objective]
+    
+  htf_bias:
+    requires: [htf_structure.*, htf_signals.*]
+    provides: [trade_bias, q1_location, q2_objective, q3_respect]
+    
+  htf_state_machine:
+    requires: [htf_bias.trade_bias, daily_mss, objective]
+    provides: [warmup_state, structure_state, mmxm_targets]
+
+# =============================================================================
+# VALIDATION
+# =============================================================================
+
+validation_rules:
+  - "Every signal has source_ref"
+  - "All 8 GAPS from source doc covered"
+  - "Invariants deduplicated across files"
+  - "Conflicts flagged, not resolved"

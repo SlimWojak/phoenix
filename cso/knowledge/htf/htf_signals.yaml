@@ -1,0 +1,135 @@
+# HTF_SIGNALS — Displacement, FVG, Liquidity Classification
+# VERSION: 1.0.0
+# SOURCE: docs/olya_skills/LAYER_0_HTF_CONTEXT_CLEAN.md
+# COVERS: GAP-3 (Displacement), GAP-4 (FVG Universal), GAP-7 (Liquidity Status)
+
+schema_version: "1.0.0"
+created: "2026-01-23"
+
+# =============================================================================
+# DISPLACEMENT (Qualitative — NO pip thresholds)
+# =============================================================================
+# GAP-3: Universal across ALL timeframes, 5 components required
+
+signals:
+  - id: "SIG-HTF-010"
+    name: "Displacement Confirmed"
+    timeframe: [HTF, ITF, LTF]  # Universal
+    description: "Forceful exit from balance with intent"
+    components_all_required:
+      - {name: forceful_exit, desc: "Price forcefully EXITS prior balance"}
+      - {name: structure_removal, desc: "Removes structure of that timeframe"}
+      - {name: imbalance_left, desc: "FVG created OR respected"}
+      - {name: one_sided, desc: "Strong bodies (>70%), no hesitation"}
+      - {name: no_rotation, desc: "No rotation back into balance"}
+    weight: 0.95
+    ref: "L0:162-220"
+    note: "NO pip thresholds. NO fixed distances. Same logic all TFs."
+
+# =============================================================================
+# FVG DETECTION (Universal)
+# =============================================================================
+# GAP-4: Same for ALL timeframes, only Impact/Weight differs
+
+  - id: "SIG-HTF-011"
+    name: "FVG Bullish"
+    timeframe: [HTF, ITF, LTF]
+    formula: "candle_A.high < candle_C.low"
+    outputs: [fvg_exists, fvg_direction, fvg_top, fvg_bottom, fvg_mid]
+    weight: 0.85
+    ref: "L0:222-260"
+    note: "NO pip thresholds. NO body checks. NO timeframe scaling."
+
+  - id: "SIG-HTF-012"
+    name: "FVG Bearish"
+    timeframe: [HTF, ITF, LTF]
+    formula: "candle_A.low > candle_C.high"
+    outputs: [fvg_exists, fvg_direction, fvg_top, fvg_bottom, fvg_mid]
+    weight: 0.85
+    ref: "L0:222-260"
+
+  - id: "SIG-HTF-013"
+    name: "FVG Respected"
+    timeframe: [HTF, ITF, LTF]
+    description: "Price returned to FVG and continued original direction"
+    conditions_all_required:
+      - {name: shallow_return, desc: "≤50% of FVG depth"}
+      - {name: corrective_character, desc: "Not impulsive"}
+      - {name: no_acceptance, desc: "No rotation in zone"}
+      - {name: continuation, desc: "Resumes original direction"}
+      - {name: structure_intact, desc: "No structure break"}
+    weight: 0.8
+    ref: "L0:262-300"
+    note: "Same 5 conditions for all timeframes"
+
+# =============================================================================
+# LIQUIDITY LEVEL STATUS
+# =============================================================================
+# GAP-7: Three-state classification
+
+  - id: "SIG-HTF-014"
+    name: "Liquidity NOT_DELIVERED"
+    description: "Level never touched — highest quality target"
+    condition: "never_touched(level, price_history)"
+    quality: highest
+    valid_target: true
+    ref: "L0:920-940"
+
+  - id: "SIG-HTF-015"
+    name: "Liquidity LIQUIDITY_RUN"
+    description: "Touched but no structural consequence — delivery incomplete"
+    condition: "touched AND no_consequence"
+    quality: valid
+    valid_target: true
+    ref: "L0:942-960"
+
+  - id: "SIG-HTF-016"
+    name: "Liquidity DELIVERED_WITH_CONSEQUENCE"
+    description: "Consequence at level — INVALID target"
+    condition: "consequence_at_level (displacement|MSS|FVG|structure_change)"
+    quality: invalid
+    valid_target: false
+    ref: "L0:962-1000"
+
+# =============================================================================
+# OBJECTIVE PRIORITY (UPDATED with MMXM)
+# =============================================================================
+# GAP-6: MMXM as Priority 1 target
+
+  - id: "SIG-HTF-017"
+    name: "Daily Objective"
+    timeframe: HTF
+    priority_hierarchy:
+      1: {type: mmxm, target: "mmxm_high|mmxm_low", note: "Original consolidation"}
+      2: {type: liquidity, target: "pdh|pdl", note: "Previous day"}
+      3: {type: liquidity, target: "pwh|pwl", note: "Previous week"}
+      4: {type: imbalance, target: "daily_fvg|weekly_fvg"}
+    filter: "status IN (NOT_DELIVERED, LIQUIDITY_RUN)"
+    weight: 0.9
+    ref: "L0:822-880"
+
+# =============================================================================
+# PDA TRACKING
+# =============================================================================
+
+  - id: "SIG-HTF-018"
+    name: "PDA Types"
+    types:
+      - {name: fvg_up, role: support, direction: bullish}
+      - {name: fvg_down, role: resistance, direction: bearish}
+      - {name: ob_bull, role: support, direction: bullish}
+      - {name: ob_bear, role: resistance, direction: bearish}
+      - {name: ifvg, role: depends_on_flip}
+      - {name: bpr, role: strong_reaction_zone}
+    tracking: [respected, broken, untested]
+    ref: "L0:757-790"
+
+# =============================================================================
+# INVARIANTS
+# =============================================================================
+
+invariants:
+  - {id: "INV-HTF-007", rule: "Displacement is QUALITATIVE (no pip thresholds)", violation: "Pip-based displacement threshold", ref: "L0:162-165"}
+  - {id: "INV-HTF-008", rule: "FVG detection universal (all TFs same)", violation: "Timeframe-specific FVG logic", ref: "L0:222-225"}
+  - {id: "INV-HTF-009", rule: "Only NOT_DELIVERED or LIQUIDITY_RUN are valid targets", violation: "Targeting DELIVERED_WITH_CONSEQUENCE level", ref: "L0:GAP-7"}
+  - {id: "INV-HTF-010", rule: "FVG respect uses 5 conditions (all required)", violation: "Partial FVG respect check", ref: "L0:262-270"}

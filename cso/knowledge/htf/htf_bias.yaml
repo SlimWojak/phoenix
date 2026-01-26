@@ -1,0 +1,141 @@
+# HTF_BIAS — 3Q Framework, Daily Bias Synthesis, DOL
+# VERSION: 1.0.0
+# SOURCE: docs/olya_skills/LAYER_0_HTF_CONTEXT_CLEAN.md
+# CROSS-REF: nex/meridian_gold/enrichment_specs/LAYER_0_5_HTF_BIAS_SPEC.md
+
+schema_version: "1.0.0"
+created: "2026-01-23"
+
+# =============================================================================
+# 3 QUESTIONS FRAMEWORK
+# =============================================================================
+
+execution_timing:
+  frequency: "once per day"
+  time: "00:00 NY (midnight)"
+  locked_until: "next 00:00 NY"
+
+signals:
+  # Q1: WHERE IS PRICE RIGHT NOW? (Location)
+  - id: "SIG-HTF-020"
+    name: "Q1 Location"
+    question: "Where is price RIGHT NOW?"
+    outputs:
+      - {col: position_pct, type: float, formula: "(close - range_low) / (range_high - range_low) * 100"}
+      - {col: zone, type: str, values: [premium, discount, equilibrium]}
+      - {col: nearest_pda, type: dict}
+      - {col: in_pda, type: bool}
+    zones:
+      deep_discount: "<25%"
+      discount: "25-50%"
+      equilibrium: "~50%"
+      premium: "50-75%"
+      deep_premium: ">75%"
+    ref: "L0:1130-1170"
+
+  # Q2: WHERE IS PRICE LIKELY TO GO? (Objective)
+  - id: "SIG-HTF-021"
+    name: "Q2 Objective"
+    question: "Where is price LIKELY TO GO?"
+    outputs:
+      - {col: dol_primary, type: dict, note: "Draw on Liquidity"}
+      - {col: dol_secondary, type: dict}
+      - {col: expected_path, type: str}
+    requires: "daily_mss.exists"
+    ref: "L0:1172-1210"
+
+  # Q3: WHERE IS PRICE COMING FROM? (Respect)
+  - id: "SIG-HTF-022"
+    name: "Q3 Respect"
+    question: "Where is price COMING FROM?"
+    outputs:
+      - {col: htf_direction, type: str, values: [bullish, bearish, neutral]}
+      - {col: confidence, type: str, values: [high, medium, low]}
+      - {col: structure_bias, type: str}
+      - {col: pda_bias, type: str}
+    logic: "structure_bias + pda_bias alignment"
+    ref: "L0:1212-1265"
+
+# =============================================================================
+# BIAS SYNTHESIS
+# =============================================================================
+
+  - id: "SIG-HTF-023"
+    name: "Daily Bias Synthesis"
+    inputs: [q1_location, q2_objective, q3_respect]
+    outputs:
+      - {col: trade_bias, type: str, values: [long_only, short_only, both, none]}
+      - {col: bias_note, type: str}
+    logic:
+      - {condition: "htf_direction == neutral", output: none}
+      - {condition: "zone == equilibrium", output: none}
+      - {condition: "dol_primary == None", output: none}
+      - {condition: "htf_direction == bullish", output: long_only}
+      - {condition: "htf_direction == bearish", output: short_only}
+    ref: "L0:1267-1300"
+    weight: 0.95
+
+# =============================================================================
+# DRAW ON LIQUIDITY (DOL)
+# =============================================================================
+
+  - id: "SIG-HTF-024"
+    name: "DOL Framework"
+    paths:
+      - {from: liquidity, to: liquidity, code: liq_to_liq}
+      - {from: liquidity, to: imbalance, code: liq_to_imb}
+      - {from: imbalance, to: liquidity, code: imb_to_liq}
+      - {from: imbalance, to: imbalance, code: imb_to_imb}
+    bullish_dol: "BSL (buy-side liquidity above)"
+    bearish_dol: "SSL (sell-side liquidity below)"
+    ref: "NEX:LAYER_0_5:55-75"
+
+# =============================================================================
+# PREMIUM / DISCOUNT
+# =============================================================================
+
+  - id: "SIG-HTF-025"
+    name: "Premium/Discount State"
+    formula: "compare(close, structural_equilibrium)"
+    states:
+      premium: {condition: "close > eq", trading_bias: SELL}
+      discount: {condition: "close < eq", trading_bias: BUY}
+      equilibrium: {condition: "close == eq", trading_bias: NO_TRADE}
+    ref: "L0:694-720"
+    note: "Structure-based range, NOT time-based (PDH/PDL)"
+
+# =============================================================================
+# WEEKLY vs DAILY ALIGNMENT
+# =============================================================================
+
+  - id: "SIG-HTF-026"
+    name: "Weekly/Daily Alignment"
+    weekly_role: "macro permission, objectives, limits ONLY"
+    daily_role: "anchor direction, execution range"
+    alignment_logic:
+      - {condition: "weekly == daily", result: strong_alignment}
+      - {condition: "daily == neutral", result: defer_to_weekly}
+      - {condition: "weekly != daily", result: both_allowed}
+    ref: "L0:300-330, NEX:LAYER_0_5:165-185"
+
+# =============================================================================
+# PROHIBITIONS
+# =============================================================================
+
+prohibitions:
+  - {id: "PRO-HTF-001", rule: "No swing without MSS", ref: "L0:1340"}
+  - {id: "PRO-HTF-002", rule: "No range without MSS", ref: "L0:1341"}
+  - {id: "PRO-HTF-003", rule: "No Daily re-biasing intraday", ref: "L0:1342"}
+  - {id: "PRO-HTF-004", rule: "No trading from equilibrium", ref: "L0:1343"}
+  - {id: "PRO-HTF-005", rule: "No Weekly for execution", ref: "L0:1344"}
+  - {id: "PRO-HTF-006", rule: "No H4/H1 unless post_expansion", ref: "L0:1345"}
+
+# =============================================================================
+# INVARIANTS
+# =============================================================================
+
+invariants:
+  - {id: "INV-HTF-011", rule: "Bias set at 00:00 NY, frozen until next day", violation: "Intraday bias change", ref: "L0:24-30"}
+  - {id: "INV-HTF-012", rule: "Trade requires: MSS + range + objective + not equilibrium", violation: "Trading with incomplete context", ref: "L0:1310-1330"}
+  - {id: "INV-HTF-013", rule: "Weekly = limits only, Daily = execution direction", violation: "Using Weekly for entry decisions", ref: "L0:300-315"}
+  - {id: "INV-HTF-014", rule: "Counter-trend only toward HTF PDA", violation: "Counter-trend without PDA target", ref: "NEX:LAYER_0_5:178"}

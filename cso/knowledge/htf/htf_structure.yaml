@@ -1,0 +1,133 @@
+# HTF_STRUCTURE — MSS, Swings, Ranges, Bootstrap
+# VERSION: 1.0.0
+# SOURCE: docs/olya_skills/LAYER_0_HTF_CONTEXT_CLEAN.md
+# COVERS: GAP-1 (Bootstrap), GAP-2 (BOS=MSS)
+
+schema_version: "1.0.0"
+created: "2026-01-23"
+
+# =============================================================================
+# MSS DETECTION (Market Structure Shift)
+# =============================================================================
+# GLOBAL RULE: Structure exists ONLY after MSS
+#              Swings created BY MSS, Ranges created BY MSS
+
+signals:
+  - id: "SIG-HTF-001"
+    name: "Weekly MSS Bullish"
+    timeframe: HTF
+    conditions:
+      - {type: price_action, operator: break, target: prior_weekly_swing_high}
+      - {type: imbalance, operator: qualitative, target: displacement}
+      - {type: imbalance, operator: exists, target: fvg}
+    weight: 1.0
+    ref: "L0:42-95"
+    outputs: [weekly_mss_exists, weekly_mss_direction, weekly_swing_high, weekly_swing_low]
+
+  - id: "SIG-HTF-002"
+    name: "Weekly MSS Bearish"
+    timeframe: HTF
+    conditions:
+      - {type: price_action, operator: break, target: prior_weekly_swing_low}
+      - {type: imbalance, operator: qualitative, target: displacement}
+      - {type: imbalance, operator: exists, target: fvg}
+    weight: 1.0
+    ref: "L0:42-95"
+
+  - id: "SIG-HTF-003"
+    name: "Daily MSS Bullish"
+    timeframe: HTF
+    conditions:
+      - {type: price_action, operator: break, target: prior_daily_swing_high}
+      - {type: imbalance, operator: qualitative, target: displacement}
+      - {type: imbalance, operator: exists, target: fvg}
+    weight: 0.9
+    ref: "L0:370-420"
+    note: "Same logic as Weekly MSS, daily scope"
+
+  - id: "SIG-HTF-004"
+    name: "Daily MSS Bearish"
+    timeframe: HTF
+    conditions:
+      - {type: price_action, operator: break, target: prior_daily_swing_low}
+      - {type: imbalance, operator: qualitative, target: displacement}
+      - {type: imbalance, operator: exists, target: fvg}
+    weight: 0.9
+    ref: "L0:370-420"
+
+# =============================================================================
+# BOOTSTRAP (First MSS)
+# =============================================================================
+# GAP-1: Initial boundaries = PDH/PDL/PWH/PWL ONLY
+
+  - id: "SIG-HTF-005"
+    name: "Bootstrap MSS"
+    timeframe: HTF
+    description: "First MSS when NO_STRUCTURE state"
+    conditions:
+      - {type: price_action, operator: break, target: "pdh|pdl|pwh|pwl"}
+      - {type: imbalance, operator: qualitative, target: displacement}
+      - {type: imbalance, operator: exists, target: fvg}
+    weight: 1.0
+    ref: "L0:98-160"
+    note: "ONLY PDH/PDL/PWH/PWL valid for bootstrap"
+
+# =============================================================================
+# DEALING RANGE
+# =============================================================================
+# Range = last bullish MSS low → last bearish MSS high
+# Priority: Liquidity > External > MSS > Validated Swings
+
+  - id: "SIG-HTF-006"
+    name: "Daily Dealing Range"
+    timeframe: HTF
+    priority_hierarchy:
+      1: {type: liquidity, target: equal_highs_lows, note: "3+ touches within 10 pips"}
+      2: {type: liquidity, target: "pdh|pdl|pwh|pwl", note: "External liquidity"}
+      3: {type: structure, target: mss_swings, note: "From MSS boundaries"}
+      4: {type: structure, target: validated_swings, note: "Immediate displacement reaction"}
+    weight: 0.85
+    ref: "L0:481-590"
+    outputs: [dealing_range_high, dealing_range_low, dealing_range_equilibrium, dealing_range_method]
+
+# =============================================================================
+# VALIDATED SWINGS
+# =============================================================================
+# GAP-5: Swing validated when IMMEDIATE displacement reaction (1-3 bars)
+
+  - id: "SIG-HTF-007"
+    name: "Validated Swing"
+    timeframe: HTF
+    detection:
+      candidate: "local pivot (lookback=3)"
+      validation: "immediate displacement (1-3 candles after touch)"
+    ref: "L0:592-680"
+    note: "If level matters, algorithms respond instantly"
+
+# =============================================================================
+# ORDER FLOW
+# =============================================================================
+
+  - id: "SIG-HTF-008"
+    name: "Daily Order Flow"
+    timeframe: HTF
+    states:
+      bullish: "HH + HL"
+      bearish: "LH + LL"
+      mixed: "HH + LL or LH + HL"
+      neutral: "Not enough swings"
+    weight: 0.7
+    ref: "L0:423-455"
+    outputs: [order_flow]
+
+# =============================================================================
+# INVARIANTS
+# =============================================================================
+
+invariants:
+  - {id: "INV-HTF-001", rule: "Structure exists ONLY after MSS", violation: "Swings/ranges without MSS", ref: "L0:14-21"}
+  - {id: "INV-HTF-002", rule: "BOS = MSS (same thing, use MSS only)", violation: "Using BOS terminology", ref: "L0:GAP-2"}
+  - {id: "INV-HTF-003", rule: "Bootstrap uses PDH/PDL/PWH/PWL ONLY", violation: "Arbitrary levels for first MSS", ref: "L0:98-100"}
+  - {id: "INV-HTF-004", rule: "MSS requires displacement + FVG", violation: "MSS from close-only break", ref: "L0:55-70"}
+  - {id: "INV-HTF-005", rule: "Range priority: Liquidity > External > MSS > Validated", violation: "Using time-based range", ref: "L0:490-520"}
+  - {id: "INV-HTF-006", rule: "Validated swing needs immediate reaction (1-3 bars)", violation: "Delayed reaction = balance", ref: "L0:640-660"}

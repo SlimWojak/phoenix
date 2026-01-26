@@ -1,0 +1,146 @@
+# HTF_STATE_MACHINE — MMXM, Warmup States, Post-Expansion
+# VERSION: 1.0.0
+# SOURCE: docs/olya_skills/LAYER_0_HTF_CONTEXT_CLEAN.md
+# COVERS: GAP-6 (MMXM), GAP-8 (Post-Expansion)
+
+schema_version: "1.0.0"
+created: "2026-01-23"
+
+# =============================================================================
+# WARMUP STATES (progression to FULL_CONTEXT)
+# =============================================================================
+
+warmup_states:
+  - {state: NO_STRUCTURE, tradeable: false, reason: "Waiting for first MSS", next: WEEKLY_ONLY}
+  - {state: WEEKLY_ONLY, tradeable: false, reason: "Weekly exists, waiting Daily MSS", next: NO_RANGE}
+  - {state: NO_RANGE, tradeable: false, reason: "Daily MSS exists, no range", next: NO_OBJECTIVE}
+  - {state: NO_OBJECTIVE, tradeable: false, reason: "Range exists, no draw", next: EQUILIBRIUM}
+  - {state: EQUILIBRIUM, tradeable: false, reason: "At equilibrium — no edge", next: FULL_CONTEXT}
+  - {state: FULL_CONTEXT, tradeable: true, reason: "All HTF components valid"}
+
+# =============================================================================
+# MMXM (Market Maker Move)
+# =============================================================================
+# GAP-6: Failed auction structure, NOT rigid 3-phase template
+
+signals:
+  - id: "SIG-HTF-030"
+    name: "MMXM Detection"
+    description: "Failed auction (consolidation → manipulation → rejection → reversal)"
+    timeframe_priority:
+      daily: {weight: 1, role: macro_intent, usage: primary_targets}
+      h4: {weight: 2, role: htf_rebalance, usage: secondary_targets}
+      h1: {weight: 3, role: execution_only, usage: entry_timing}
+    lookback: "since last Daily MSS (MSS resets narrative)"
+    ref: "L0:722-820"
+
+  - id: "SIG-HTF-031"
+    name: "MMXM as Manipulation (Origin)"
+    role: "Trade AWAY from MMXM"
+    conditions_all_required:
+      - {name: liquidity_sweep, desc: "PDH/PDL, swing, equal H/L swept"}
+      - {name: failed_auction, desc: "No acceptance beyond level"}
+      - {name: displacement_away, desc: "Displacement away from sweep"}
+      - {name: fvg_present, desc: "FVG created"}
+      - {name: structural_consequence, desc: "MSS or rejection"}
+    ref: "L0:745-780"
+
+  - id: "SIG-HTF-032"
+    name: "MMXM as Target (Objective)"
+    role: "Trade TOWARDS MMXM"
+    note: "MMXM does NOT need liquidity sweep — MMXM IS the liquidity pool"
+    conditions_all_required:
+      - {name: mmxm_post_mss, desc: "MMXM exists after last Daily MSS"}
+      - {name: correct_zone, desc: "Premium (shorts) OR discount (longs)"}
+      - {name: htf_aligned, desc: "HTF direction supports move"}
+      - {name: separate_sweep, desc: "Recent sweep NOT at MMXM"}
+      - {name: displacement_toward, desc: "Displacement toward MMXM"}
+      - {name: fvg_support, desc: "FVG supports move toward MMXM"}
+    ref: "L0:782-820"
+    outputs: [mmxm_high, mmxm_low, consolidation_range]
+
+  - id: "SIG-HTF-033"
+    name: "MMXM Consolidation"
+    description: "Original consolidation boundaries = the target"
+    detection:
+      lookback: 20
+      range_threshold: "< 0.5 * ATR"
+      min_touches: 3
+    outputs: [mmxm_high, mmxm_low, consolidation_start, consolidation_end]
+    ref: "L0:800-820"
+    note: "NOT manipulation extreme, NOT post-reversal extreme"
+
+# =============================================================================
+# POST-EXPANSION (Rebalance Mode)
+# =============================================================================
+# GAP-8: Triggered when objective delivered WITH displacement
+
+  - id: "SIG-HTF-034"
+    name: "Post-Expansion Status"
+    description: "Daily objective delivered WITH displacement"
+    trigger:
+      - {condition: objective_delivered, desc: "Price reached target level"}
+      - {condition: displacement_at_delivery, desc: "Impulsive (not grind)"}
+    ref: "L0:1020-1100"
+
+  - id: "SIG-HTF-035"
+    name: "Structure State"
+    states:
+      PRE_EXPANSION:
+        operating_range: "use_daily"
+        premium_discount_source: "daily_range"
+        tradeable: true
+      POST_EXPANSION:
+        operating_range: "shift_to_h4_h1"
+        mode: "REBALANCE"
+        daily_role: "direction filter only"
+        tradeable: true
+    persistence: "PERMANENT until new Daily MSS"
+    ref: "L0:1040-1080"
+
+  - id: "SIG-HTF-036"
+    name: "Grind vs Impulsive Delivery"
+    impulsive_valid:
+      - "Clear directional push"
+      - "Strong candle bodies (>70%)"
+      - "No slow overlap"
+      - "FVG created during approach"
+      - "One-sided intent"
+    grind_invalid:
+      - "Slow creep to level"
+      - "Multiple hesitant touches"
+      - "Overlapping candles (>60%)"
+      - "No FVG during approach"
+    ref: "L0:1080-1100"
+    note: "Grind rejected — does NOT trigger post-expansion"
+
+# =============================================================================
+# OUTPUT SCHEMA (Layer 0 → downstream)
+# =============================================================================
+
+output_schema:
+  weekly: [mss_exists, mss_direction, range, pwh, pwl, weekly_fvgs, weekly_obs]
+  daily: [mss_exists, mss_direction, order_flow, dealing_range, structure_state, pdas, liquidity_pools, objective]
+  bias: [q1_location, q2_objective, q3_respect, trade_bias, bias_note]
+  meta: [analysis_timestamp, analysis_date, tradeable]
+
+# =============================================================================
+# INVARIANTS
+# =============================================================================
+
+invariants:
+  - {id: "INV-HTF-015", rule: "Higher TF MMXM overrides lower TF", violation: "H1 MMXM > Daily MMXM", ref: "L0:730"}
+  - {id: "INV-HTF-016", rule: "MMXM valid only after last Daily MSS", violation: "Using pre-MSS MMXM", ref: "L0:745"}
+  - {id: "INV-HTF-017", rule: "Post-expansion = impulsive delivery only", violation: "Grind triggers post-expansion", ref: "L0:GAP-8"}
+  - {id: "INV-HTF-018", rule: "Post-expansion state permanent until new MSS", violation: "Reverting to pre-expansion without MSS", ref: "L0:1060"}
+  - {id: "INV-HTF-019", rule: "REBALANCE mode = H4/H1 operating range", violation: "Using daily range in post-expansion", ref: "L0:1070"}
+
+# =============================================================================
+# CONFLICTS (flagged)
+# =============================================================================
+
+conflicts:
+  - id: "CONFLICT-HTF-001"
+    desc: "NEX LAYER_7_STRUCTURE_SPEC uses 'BOS' terminology, L0 doc uses 'MSS' only"
+    recommendation: "Align NEX to MSS terminology"
+    refs: ["L0:GAP-2", "NEX:L7"]
