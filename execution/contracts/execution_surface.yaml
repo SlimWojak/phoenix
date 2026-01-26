@@ -1,0 +1,135 @@
+# Execution Surface Contract — S27.0
+# VERSION: 0.1
+# STATUS: SKELETON (NO CAPITAL)
+
+contract_id: EXEC-SURFACE-001
+version: "0.1.0"
+sprint: "S27.0"
+status: ACTIVE
+
+# =============================================================================
+# MODULE IDENTITY
+# =============================================================================
+
+module:
+  id: phoenix.execution
+  name: Execution Skeleton
+  tier: T0/T1  # No T2 actions in S27
+  mode: SKELETON
+
+# =============================================================================
+# PERMISSIONS
+# =============================================================================
+
+permissions:
+  reads:
+    - cso.beads.approved
+    - governance.halt_signal
+  
+  writes:
+    - execution.intents
+    - execution.blocked_log
+  
+  forbidden:
+    - orders
+    - positions
+    - capital
+    - broker
+    - account
+    - submit_order
+    - execute_order
+
+# =============================================================================
+# INVARIANTS
+# =============================================================================
+
+invariants:
+  - id: INV-GOV-HALT-BEFORE-ACTION
+    description: "Halt check precedes any capital-affecting action"
+    enforcement: HaltGateViolation exception
+    test: test_halt_before_exec.py
+  
+  - id: INV-EXEC-NO-CAPITAL
+    description: "S27 execution has no capital actions"
+    enforcement: CapitalActionForbiddenError exception
+    test: test_no_live_orders.py
+  
+  - id: INV-CONTRACT-1
+    description: "Intent hash is deterministic"
+    enforcement: hash computation
+    test: test_intent_deterministic.py
+
+# =============================================================================
+# INTENT SCHEMA
+# =============================================================================
+
+intent_schema:
+  required_fields:
+    - intent_id: string
+    - intent_type: enum[ENTRY, EXIT, SCALE, HEDGE, CANCEL]
+    - status: enum[PENDING, BLOCKED, APPROVED, REJECTED, EXPIRED]
+    - created_at: datetime
+    - symbol: string
+    - direction: enum[LONG, SHORT]
+    - size: float
+    - source_state_hash: string
+    - intent_hash: string
+  
+  optional_fields:
+    - expires_at: datetime
+    - entry_price: float
+    - stop_loss: float
+    - take_profit: float
+    - source_bead_id: string
+
+# =============================================================================
+# HALT GATE
+# =============================================================================
+
+halt_gate:
+  pattern: "halt-first"
+  enforcement: "HaltGate.check_before(action)"
+  
+  flow:
+    1_receive_intent: "Intent arrives from CSO"
+    2_check_halt: "MUST check halt_signal"
+    3_if_halted: "Block intent, log reason"
+    4_if_clear: "Mark APPROVED (no execution in S27)"
+  
+  violations:
+    - skip_check: "HaltGateViolation raised"
+    - execute_while_halted: "HaltBlockedError raised"
+
+# =============================================================================
+# EXIT GATES
+# =============================================================================
+
+exit_gates:
+  halt_first_proven:
+    test: test_halt_before_exec.py
+    criterion: "HaltGateViolation raised when check skipped"
+  
+  no_capital:
+    test: test_no_live_orders.py
+    criterion: "grep 'submit_order|execute_order|broker' returns empty"
+  
+  latency_unchanged:
+    test: test_halt_latency.py
+    criterion: "halt still <50ms after wiring"
+  
+  intent_deterministic:
+    test: test_intent_deterministic.py
+    criterion: "same input → same intent_hash"
+
+# =============================================================================
+# CHANGELOG
+# =============================================================================
+
+changelog:
+  - version: "0.1.0"
+    date: "2026-01-23"
+    changes:
+      - Initial skeleton
+      - Halt-first wiring
+      - Intent objects only
+      - No capital actions

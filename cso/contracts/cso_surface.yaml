@@ -1,0 +1,144 @@
+# CSO Surface Contract — S27.0
+# VERSION: 0.1
+# STATUS: SCAFFOLD (PASSIVE_ONLY)
+
+contract_id: CSO-SURFACE-001
+version: "0.1.0"
+sprint: "S27.0"
+status: ACTIVE
+
+# =============================================================================
+# MODULE IDENTITY
+# =============================================================================
+
+module:
+  id: phoenix.cso.observer
+  name: CSO Observer
+  tier: T1
+  mode: PASSIVE_ONLY
+
+# =============================================================================
+# PERMISSIONS
+# =============================================================================
+
+permissions:
+  reads:
+    - river.enriched_data
+    - intake.olya
+    - cso.knowledge
+  
+  writes:
+    - cso.beads.draft
+    - cso.comprehension_hash
+  
+  forbidden:
+    - execution_state
+    - orders
+    - positions
+    - capital
+    - broker
+    - account
+
+# =============================================================================
+# INVARIANTS
+# =============================================================================
+
+invariants:
+  - id: INV-GOV-NO-T1-WRITE-EXEC
+    description: "T1 modules cannot write to execution_state"
+    enforcement: CSOWriteViolation exception
+    test: test_cso_no_exec_write.py
+  
+  - id: INV-CSO-PASSIVE-S27
+    description: "S27 CSO is read-only observer"
+    enforcement: mode check
+    test: test_cso_passive.py
+  
+  - id: INV-DYNASTY-5
+    description: "Beads are immutable after creation"
+    enforcement: ImmutabilityViolation exception
+    test: test_bead_immutable.py
+  
+  - id: INV-CSO-DRAFT-ONLY
+    description: "S27 CSO can only create DRAFT beads"
+    enforcement: BeadStatusViolation exception
+    test: test_cso_draft_beads.py
+
+# =============================================================================
+# BEAD SCHEMA
+# =============================================================================
+
+bead_schema:
+  required_fields:
+    - bead_id: string
+    - bead_type: enum[DECISION, OBSERVATION, INSIGHT, COMPREHENSION]
+    - status: enum[DRAFT]  # Only DRAFT in S27
+    - created_at: datetime
+    - symbol: string
+    - content: object
+    - comprehension_hash: string
+    - source_module: string
+    - source_state_hash: string
+  
+  optional_fields:
+    - expires_at: datetime
+    - outcome: object
+    - outcome_set_at: datetime
+
+# =============================================================================
+# INTERFACES
+# =============================================================================
+
+interfaces:
+  observe_bar:
+    input:
+      bar: object  # Enriched bar from River
+    output:
+      bead: Bead | null
+    side_effects:
+      - emits draft bead if pattern detected
+  
+  emit_comprehension_hash:
+    input:
+      understanding: object
+    output:
+      hash: string
+    side_effects:
+      - stores hash in internal list
+  
+  load_knowledge:
+    input:
+      path: string
+    output:
+      metadata: object
+    side_effects:
+      - adds to knowledge cache
+
+# =============================================================================
+# EXIT GATES
+# =============================================================================
+
+exit_gates:
+  read_only_proven:
+    test: test_cso_no_exec_write.py
+    criterion: "CSOWriteViolation raised on forbidden write"
+  
+  bead_immutability:
+    test: test_bead_immutable.py
+    criterion: "ImmutabilityViolation raised on mutation"
+  
+  draft_only:
+    test: test_cso_draft_beads.py
+    criterion: "All emitted beads have status=DRAFT"
+
+# =============================================================================
+# CHANGELOG
+# =============================================================================
+
+changelog:
+  - version: "0.1.0"
+    date: "2026-01-23"
+    changes:
+      - Initial scaffold
+      - PASSIVE_ONLY mode
+      - Draft beads only
