@@ -1,0 +1,261 @@
+# DRAWER 2: CONTEXT — "Where is the market?"
+# VERSION: DRAFT v0
+# PURPOSE: HTF structure, daily state, objectives, warmup states
+# RULE: Answers "What is the current market environment?"
+
+schema_version: "1.0.0"
+created: "2026-01-23"
+label: "DRAFT v0 — 5-drawer extraction, pending Olya validation"
+
+# =============================================================================
+# EXECUTION TIMING
+# =============================================================================
+
+execution_timing:
+  weekly_context: {frequency: "once per week", time: "Sunday 17:00 NY", purpose: "Macro permission, objectives, limits"}
+  daily_analysis: {frequency: "once per day", time: "00:00 NY", purpose: "Component detection (ranges, PDAs, liquidity)"}
+  daily_bias: {frequency: "once per day", time: "00:00 NY (after analysis)", purpose: "3Q framework, set trade bias"}
+  locked_until: "next 00:00 NY"
+  ref: "L0:41-52"
+
+data_requirements:
+  weekly_candles: "52+ weeks"
+  daily_candles: "90+ days"
+
+# =============================================================================
+# HTF STRUCTURE DETECTION
+# =============================================================================
+
+signals:
+  # --- WEEKLY ---
+  weekly_mss:
+    id: "SIG-CTX-001"
+    name: "Weekly MSS"
+    timeframe: HTF
+    conditions: [break_prior_swing, displacement_qualitative, fvg_exists]
+    outputs: [weekly_mss_exists, weekly_mss_direction, weekly_swing_high, weekly_swing_low]
+    ref: "L0:42-95"
+
+  weekly_range:
+    id: "SIG-CTX-002"
+    name: "Weekly Range"
+    method: "last_bullish_mss.low → last_bearish_mss.high"
+    outputs: [weekly_range_high, weekly_range_low, weekly_equilibrium]
+    ref: "L0:330-381"
+
+  weekly_role:
+    id: "SIG-CTX-003"
+    name: "Weekly Role Boundaries"
+    used_only_for: ["Major external objectives (PWH/PWL)", "Macro PDAs", "Expansion limits"]
+    NOT_used_for: ["Execution ranges", "Daily bias overrides", "P/D for entries", "Intraday decisions"]
+    ref: "L0:384-409"
+
+  # --- DAILY ---
+  daily_mss:
+    id: "SIG-CTX-004"
+    name: "Daily MSS"
+    timeframe: HTF
+    conditions: [break_prior_swing, displacement_qualitative, fvg_exists]
+    outputs: [daily_mss_exists, daily_mss_direction]
+    ref: "L0:370-420"
+
+  bootstrap_mss:
+    id: "SIG-CTX-005"
+    name: "Bootstrap MSS"
+    description: "First MSS when NO_STRUCTURE state"
+    valid_boundaries: [pdh, pdl, pwh, pwl]
+    ref: "L0:98-160"
+    note: "ONLY PDH/PDL/PWH/PWL valid for bootstrap"
+
+  daily_order_flow:
+    id: "SIG-CTX-006"
+    name: "Daily Order Flow"
+    states: {bullish: "HH + HL", bearish: "LH + LL", mixed: "HH + LL or LH + HL", neutral: "Not enough swings"}
+    outputs: [order_flow]
+    ref: "L0:423-455"
+
+  daily_dealing_range:
+    id: "SIG-CTX-007"
+    name: "Daily Dealing Range"
+    priority_hierarchy:
+      1: {type: liquidity, target: equal_highs_lows}
+      2: {type: liquidity, target: "pdh|pdl|pwh|pwl"}
+      3: {type: structure, target: mss_swings}
+      4: {type: structure, target: validated_swings}
+    outputs: [dealing_range_high, dealing_range_low, dealing_range_equilibrium, dealing_range_method]
+    ref: "L0:481-590"
+
+  validated_swing:
+    id: "SIG-CTX-008"
+    name: "Validated Swing"
+    candidate: "local pivot (lookback=3)"
+    validation: "immediate displacement (1-3 candles after touch)"
+    ref: "L0:592-680"
+
+  ipda_ranges:
+    id: "SIG-CTX-009"
+    name: "IPDA Ranges"
+    ranges:
+      ipda_20: {lookback: 20, type: short_term}
+      ipda_40: {lookback: 40, type: medium_term}
+      ipda_60: {lookback: 60, type: long_term}
+    outputs: [ipda_20_high, ipda_20_low, ipda_40_high, ipda_40_low, ipda_60_high, ipda_60_low]
+    ref: "L0:703-735"
+
+# =============================================================================
+# OBJECTIVES (Draw on Liquidity)
+# =============================================================================
+
+  daily_objective:
+    id: "SIG-CTX-010"
+    name: "Daily Objective"
+    priority_hierarchy:
+      1: {type: mmxm, target: "mmxm_high|mmxm_low"}
+      2: {type: liquidity, target: "pdh|pdl"}
+      3: {type: liquidity, target: "pwh|pwl"}
+      4: {type: imbalance, target: "daily_fvg|weekly_fvg"}
+    filter: "status IN (NOT_DELIVERED, LIQUIDITY_RUN)"
+    outputs: [objective_price, objective_type, objective_priority, objective_status]
+    ref: "L0:822-880"
+
+  dol_framework:
+    id: "SIG-CTX-011"
+    name: "Draw on Liquidity Framework"
+    paths:
+      - {from: liquidity, to: liquidity, code: liq_to_liq}
+      - {from: liquidity, to: imbalance, code: liq_to_imb}
+      - {from: imbalance, to: liquidity, code: imb_to_liq}
+      - {from: imbalance, to: imbalance, code: imb_to_imb}
+    bullish_dol: "BSL (buy-side liquidity above)"
+    bearish_dol: "SSL (sell-side liquidity below)"
+    ref: "NEX:LAYER_0_5"
+
+  structural_consequence:
+    id: "SIG-CTX-012"
+    name: "Structural Consequence at Level"
+    consequence_types:
+      - {type: displacement, check: "displacement_event.origin near level (5 pips)"}
+      - {type: mss, check: "mss_event.origin near level (5 pips)"}
+      - {type: fvg, check: "fvg boundary near level"}
+      - {type: structure_change, check: "structure_change.price near level"}
+    tolerance_pips: 5
+    ref: "L0:1205-1263"
+
+# =============================================================================
+# MMXM CONTEXT
+# =============================================================================
+
+  mmxm_detection:
+    id: "SIG-CTX-013"
+    name: "MMXM Detection"
+    description: "Failed auction (consolidation → manipulation → rejection → reversal)"
+    timeframe_priority:
+      daily: {weight: 1, role: macro_intent}
+      h4: {weight: 2, role: htf_rebalance}
+      h1: {weight: 3, role: execution_only}
+    lookback: "since last Daily MSS"
+    ref: "L0:722-820"
+
+  mmxm_as_manipulation:
+    id: "SIG-CTX-014"
+    name: "MMXM as Manipulation (Origin)"
+    role: "Trade AWAY from MMXM"
+    conditions: [liquidity_sweep, failed_auction, displacement_away, fvg_present, structural_consequence]
+    ref: "L0:745-780"
+
+  mmxm_as_target:
+    id: "SIG-CTX-015"
+    name: "MMXM as Target (Objective)"
+    role: "Trade TOWARDS MMXM"
+    note: "MMXM IS the liquidity pool — no sweep required at MMXM"
+    conditions: [mmxm_post_mss, correct_zone, htf_aligned, separate_sweep, displacement_toward, fvg_support]
+    ref: "L0:782-820"
+
+# =============================================================================
+# STRUCTURE STATE
+# =============================================================================
+
+  structure_state:
+    id: "SIG-CTX-016"
+    name: "Daily Structure State"
+    states:
+      PRE_EXPANSION:
+        operating_range: "use_daily"
+        pd_source: "daily_range"
+      POST_EXPANSION:
+        operating_range: "shift_to_h4_h1"
+        mode: "REBALANCE"
+        daily_role: "direction filter only"
+    persistence: "PERMANENT until new Daily MSS"
+    ref: "L0:1040-1080"
+
+  post_expansion_trigger:
+    id: "SIG-CTX-017"
+    name: "Post-Expansion Detection"
+    trigger:
+      - "Daily objective delivered"
+      - "Delivery WITH displacement (impulsive)"
+    grind_invalid: ["Slow creep", "Multiple hesitant touches", "Overlapping candles >60%", "No FVG"]
+    ref: "L0:1020-1100"
+
+# =============================================================================
+# WARMUP STATES (State Machine)
+# =============================================================================
+
+warmup_states:
+  states:
+    - {state: NO_STRUCTURE, tradeable: false, reason: "Waiting for first MSS", next: WEEKLY_ONLY}
+    - {state: WEEKLY_ONLY, tradeable: false, reason: "Weekly exists, waiting Daily MSS", next: NO_RANGE}
+    - {state: NO_RANGE, tradeable: false, reason: "Daily MSS exists, no range", next: NO_OBJECTIVE}
+    - {state: NO_OBJECTIVE, tradeable: false, reason: "Range exists, no draw", next: EQUILIBRIUM}
+    - {state: EQUILIBRIUM, tradeable: false, reason: "At equilibrium — no edge", next: FULL_CONTEXT}
+    - {state: FULL_CONTEXT, tradeable: true, reason: "All HTF components valid"}
+  ref: "L0:1828-1899"
+
+# =============================================================================
+# VALIDATION CHECKLIST
+# =============================================================================
+
+validation_checklist:
+  checks:
+    - {check: weekly_mss_detected, desc: "Weekly MSS detected (or confirmed none needed)"}
+    - {check: daily_mss_confirmed, desc: "Daily MSS detected and confirmed"}
+    - {check: daily_range_defined, desc: "Daily range defined (structure-based)"}
+    - {check: objective_identified, desc: "Daily objective identified and aligned"}
+    - {check: objective_status_valid, desc: "Objective status = NOT_DELIVERED or LIQUIDITY_RUN"}
+    - {check: not_equilibrium, desc: "Premium/Discount zone determined (NOT equilibrium)"}
+    - {check: bias_synthesized, desc: "Trade bias synthesized from 3 questions"}
+    - {check: pdas_tracked, desc: "All PDAs tracked (respected/broken/untested)"}
+    - {check: liquidity_pools_identified, desc: "Liquidity pools identified"}
+    - {check: state_machine_full_context, desc: "State machine in FULL_CONTEXT state"}
+  ref: "L0:1935-1948"
+
+# =============================================================================
+# KEY PRINCIPLES
+# =============================================================================
+
+key_principles:
+  principles:
+    - {num: 1, rule: "Weekly sets limits. Daily proves intent and defines direction."}
+    - {num: 2, rule: "After Daily expansion, execution shifts to H4/H1 rebalance mode."}
+    - {num: 3, rule: "Without MSS → no structure."}
+    - {num: 4, rule: "Without MSS → no range."}
+    - {num: 5, rule: "Without objective → no trade."}
+    - {num: 6, rule: "Objective must be valid: NOT_DELIVERED or LIQUIDITY_RUN status."}
+    - {num: 7, rule: "Post-expansion = impulsive delivery. Grind rejected."}
+    - {num: 8, rule: "Structure > Time: Ranges from MSS, NOT PDH/PDL."}
+    - {num: 9, rule: "Bias = 3 Questions: Location + Objective + Respect."}
+    - {num: 10, rule: "One bias per day: Set at 00:00 NY, frozen until next day."}
+  ref: "L0:1952-1963"
+
+# =============================================================================
+# OUTPUT SCHEMA
+# =============================================================================
+
+output_schema:
+  schema:
+    weekly: [mss_exists, mss_direction, range, pwh, pwl, weekly_fvgs, weekly_obs]
+    daily: [mss_exists, mss_direction, order_flow, dealing_range, structure_state, pdas, liquidity_pools, objective]
+    bias: [q1_location, q2_objective, q3_respect, trade_bias, bias_note]
+    meta: [analysis_timestamp, analysis_date, tradeable]
+  ref: "L0:1745-1823"

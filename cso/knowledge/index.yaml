@@ -1,0 +1,159 @@
+# CSO KNOWLEDGE — 5-DRAWER INDEX
+# VERSION: DRAFT v0
+# ARCHITECTURE: 5 conceptual drawers answering fundamental questions
+# LABEL: "DRAFT v0 — 5-drawer extraction, pending Olya validation"
+
+schema_version: "1.0.0"
+created: "2026-01-23"
+
+# =============================================================================
+# DRAWER ARCHITECTURE
+# =============================================================================
+
+architecture:
+  principle: "Each drawer answers ONE question. Concept lives in ONE place."
+  deduplication: "Definitions in FOUNDATION only. Other drawers reference."
+  sources:
+    primary: "docs/olya_skills/LAYER_0_HTF_CONTEXT_CLEAN.md"
+    secondary: "nex/meridian_gold/enrichment_specs/*.md"
+
+# =============================================================================
+# DRAWERS
+# =============================================================================
+
+drawers:
+  - drawer: 1
+    name: "foundation"
+    file: "foundation.yaml"
+    question: "What ARE these concepts?"
+    contains:
+      - concept definitions (MSS, FVG, OB, displacement, liquidity, IPDA)
+      - invariants (INV-*) — universal rules that NEVER change
+      - prohibitions (PRO-*) — things we NEVER do
+    counts:
+      definitions: 24
+      invariants: 21
+      prohibitions: 8
+
+  - drawer: 2
+    name: "context"
+    file: "context.yaml"
+    question: "Where is the market?"
+    contains:
+      - HTF structure (weekly/daily MSS, swings, ranges)
+      - daily state (type of day, phase, classification)
+      - objectives (DOL, targets, liquidity status)
+      - warmup states / state machine
+    counts:
+      signals: 17
+      warmup_states: 6
+      key_principles: 10
+      validation_checks: 10
+
+  - drawer: 3
+    name: "conditions"
+    file: "conditions.yaml"
+    question: "Is this setup valid?"
+    contains:
+      - 3Q framework (location, objective, respect)
+      - range selection / operating range
+      - alignment (HTF/ITF agreement)
+      - location (premium/discount/equilibrium)
+      - confluence scoring
+    counts:
+      signals: 15
+      composite_gates: 4
+      conflicts: 2
+
+  - drawer: 4
+    name: "entry"
+    file: "entry.yaml"
+    question: "When/how to act?"
+    contains:
+      - timing (sessions, kill zones, day of week)
+      - triggers (sweep, displacement, LTF MSS)
+      - execution (entry price, stop placement)
+      - liquidity pools
+    counts:
+      sessions: 3
+      kill_zones: 3
+      triggers: 5
+      reference_levels: 2
+      liquidity_pools: 14
+
+  - drawer: 5
+    name: "management"
+    file: "management.yaml"
+    question: "How to manage the trade?"
+    contains:
+      - targets (partials, full exit, post-expansion)
+      - stops (initial, trailing, invalidation)
+      - adjustments (re-entry, scale, hold vs exit)
+    counts:
+      signals: 8
+      gaps_flagged: 6
+    note: "THINNEST drawer — sources focus on context/conditions"
+
+# =============================================================================
+# TOTALS
+# =============================================================================
+
+totals:
+  files: 5
+  definitions: 24
+  signals: 40
+  invariants: 21
+  prohibitions: 8
+  composite_gates: 4
+  gaps_flagged: 8
+  conflicts: 2
+
+# =============================================================================
+# ARCHIVED STRUCTURE
+# =============================================================================
+
+archived:
+  location: "cso/knowledge/archive/"
+  reason: "Replaced by 5-drawer structure"
+  files:
+    - htf/htf_structure.yaml
+    - htf/htf_signals.yaml
+    - htf/htf_bias.yaml
+    - htf/htf_state_machine.yaml
+    - htf/index.yaml
+    - htf/EXTRACTION_AUDIT.md
+    - htf/EXTRACTION_LOG.md
+    - nex_baseline/entry_quality.yaml
+    - nex_baseline/CONSOLIDATION_LOG.md
+
+# =============================================================================
+# VALIDATION STATUS
+# =============================================================================
+
+validation:
+  schema_valid: true  # All YAML parses
+  no_duplicates: true  # Definitions in FOUNDATION only
+  traceable: true  # source_ref on all
+  gaps_documented: true  # Management gaps flagged
+  
+  pending:
+    - "Olya validation of all 5 drawers"
+    - "Gap resolution (especially MANAGEMENT)"
+    - "Conflict resolution (CONDITIONS)"
+
+# =============================================================================
+# USAGE NOTES
+# =============================================================================
+
+usage:
+  cso_validation:
+    1: "Check FOUNDATION for concept definition"
+    2: "Check CONTEXT for market state"
+    3: "Check CONDITIONS for setup validity"
+    4: "Check ENTRY for timing/trigger"
+    5: "Check MANAGEMENT for trade handling"
+  
+  adding_concepts:
+    rule: "New definitions → FOUNDATION"
+    rule2: "New signals → appropriate drawer by question"
+    rule3: "Always dedupe against existing"

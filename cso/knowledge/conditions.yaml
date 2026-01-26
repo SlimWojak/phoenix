@@ -1,0 +1,285 @@
+# DRAWER 3: CONDITIONS — "Is this setup valid?"
+# VERSION: DRAFT v0
+# PURPOSE: Range selection, alignment, location, confluence scoring
+# RULE: Answers "Should I be looking for a trade here?"
+
+schema_version: "1.0.0"
+created: "2026-01-23"
+label: "DRAFT v0 — 5-drawer extraction, pending Olya validation"
+
+# =============================================================================
+# 3 QUESTIONS FRAMEWORK (Daily Bias)
+# =============================================================================
+
+bias_framework:
+  execution: "00:00 NY daily, frozen until next day"
+
+  Q1_location:
+    id: "SIG-COND-001"
+    question: "Where is price RIGHT NOW?"
+    outputs:
+      - {col: position_pct, type: float, formula: "(close - range_low) / (range_high - range_low) * 100"}
+      - {col: zone, type: str, values: [premium, discount, equilibrium]}
+      - {col: nearest_pda, type: dict}
+      - {col: in_pda, type: bool}
+    zones:
+      deep_discount: "<25%"
+      discount: "25-50%"
+      equilibrium: "~50%"
+      premium: "50-75%"
+      deep_premium: ">75%"
+    ref: "L0:1130-1170"
+
+  Q2_objective:
+    id: "SIG-COND-002"
+    question: "Where is price LIKELY TO GO?"
+    outputs: [dol_primary, dol_secondary, expected_path]
+    requires: "daily_mss.exists"
+    ref: "L0:1172-1210"
+
+  Q3_respect:
+    id: "SIG-COND-003"
+    question: "Where is price COMING FROM?"
+    outputs:
+      - {col: htf_direction, values: [bullish, bearish, neutral]}
+      - {col: confidence, values: [high, medium, low]}
+      - {col: structure_bias, type: str}
+      - {col: pda_bias, type: str}
+    logic: "structure_bias + pda_bias alignment"
+    ref: "L0:1212-1265"
+
+  bias_synthesis:
+    id: "SIG-COND-004"
+    inputs: [q1_location, q2_objective, q3_respect]
+    outputs: [trade_bias, bias_note]
+    logic:
+      - {condition: "htf_direction == neutral", output: none}
+      - {condition: "zone == equilibrium", output: none}
+      - {condition: "dol_primary == None", output: none}
+      - {condition: "htf_direction == bullish", output: long_only}
+      - {condition: "htf_direction == bearish", output: short_only}
+    ref: "L0:1267-1300"
+
+# =============================================================================
+# PREMIUM / DISCOUNT (Location)
+# =============================================================================
+
+signals:
+  structural_premium_discount:
+    id: "SIG-COND-010"
+    name: "Structural P/D State"
+    formula: "compare(close, structural_equilibrium)"
+    states:
+      premium: {condition: "close > eq", trading_bias: SELL}
+      discount: {condition: "close < eq", trading_bias: BUY}
+      equilibrium: {condition: "close == eq", trading_bias: NO_TRADE}
+    note: "Structure-based range, NOT time-based (PDH/PDL)"
+    ref: "L0:694-720, NEX:L8"
+
+  structural_position:
+    id: "SIG-COND-011"
+    name: "Structural Position %"
+    col: "structural_position_pct"
+    formula: "(close - structural_low) / (structural_high - structural_low) * 100"
+    weight: 0.9
+    ref: "NEX:L8:132-138"
+
+  daily_position:
+    id: "SIG-COND-012"
+    name: "Daily Position %"
+    col: "daily_position_pct"
+    formula: "(close - pdl) / (pdh - pdl) * 100"
+    weight: 0.4
+    note: "SECONDARY — structural is primary"
+    ref: "NEX:L8:150-156"
+
+# =============================================================================
+# ALIGNMENT
+# =============================================================================
+
+  weekly_daily_alignment:
+    id: "SIG-COND-020"
+    name: "Weekly/Daily Alignment"
+    weekly_role: "macro permission, objectives, limits ONLY"
+    daily_role: "anchor direction, execution range"
+    alignment_logic:
+      - {condition: "weekly == daily", result: strong_alignment}
+      - {condition: "daily == neutral", result: defer_to_weekly}
+      - {condition: "weekly != daily", result: both_allowed}
+    ref: "L0:300-330"
+
+  htf_alignment:
+    id: "SIG-COND-021"
+    name: "HTF Alignment Count"
+    timeframes: [weekly, daily, h4]
+    outputs:
+      - {col: htf_bullish_count, type: int, range: [0, 3]}
+      - {col: htf_bearish_count, type: int, range: [0, 3]}
+      - {col: htf_unanimous, type: bool, formula: "count == 3"}
+    ref: "NEX:L11:68-92"
+
+  entry_htf_match:
+    id: "SIG-COND-022"
+    name: "Entry Matches HTF"
+    outputs:
+      - {col: entry_matches_htf_long, formula: "htf_long AND layers >= 2"}
+      - {col: entry_matches_htf_short, formula: "htf_short AND layers >= 2"}
+    ref: "NEX:L11:174-184"
+
+  layer_confluence:
+    id: "SIG-COND-023"
+    name: "Layer Confluence"
+    outputs:
+      - {col: layers_supporting_long, type: int, range: [0, 5]}
+      - {col: layers_supporting_short, type: int, range: [0, 5]}
+      - {col: entry_direction_unanimous, formula: "layers >= 4 AND opposing == 0"}
+      - {col: conflicting_signals, formula: "long > 0 AND short > 0", weight: -0.3}
+    ref: "NEX:L11:98-163"
+
+# =============================================================================
+# PDA TRACKING (Confluence Zones)
+# =============================================================================
+
+  fvg_tracking:
+    id: "SIG-COND-030"
+    name: "FVG Tracking"
+    timeframes: [5m, 15m, 1h, 4h, daily]
+    per_fvg:
+      - fvg_high
+      - fvg_low
+      - fvg_ce
+      - fvg_direction
+      - fvg_size_pips
+      - fvg_age_bars
+      - fvg_fill_pct
+      - fvg_formed_during_displacement
+      - fvg_fully_broken
+      - in_fvg
+    ref: "NEX:L5"
+
+  ob_tracking:
+    id: "SIG-COND-031"
+    name: "Order Block Tracking"
+    per_ob:
+      - ob_body_high
+      - ob_body_low
+      - ob_mt
+      - ob_body_pct
+      - ob_displacement_pips
+      - ob_has_fvg
+      - ob_age_bars
+      - ob_touch_count
+      - ob_fully_broken
+      - in_ob
+    note: "BODY only, NOT wicks"
+    ref: "NEX:L9"
+
+  pda_status:
+    id: "SIG-COND-032"
+    name: "PDA Status Tracking"
+    status_types: [respected, broken, untested]
+    ref: "L0:757-790"
+
+# =============================================================================
+# TIMING FRESHNESS
+# =============================================================================
+
+  freshness_score:
+    id: "SIG-COND-040"
+    name: "Entry Freshness Score"
+    col: "entry_freshness_score"
+    type: float
+    range: [0, 10]
+    components:
+      - fvg_age
+      - ob_age
+      - touch_count
+      - bars_since_structure_break
+    note: "First touch beats fifth confluence"
+    ref: "NEX:L10:127-158"
+
+  zone_freshness:
+    id: "SIG-COND-041"
+    name: "Zone Age/Touch"
+    outputs:
+      - {col: fvg_up_age_bars, condition: "fresh if <= 5"}
+      - {col: fvg_touch_count, condition: "fresh if == 1"}
+      - {col: bars_since_structure_break, condition: "recent if <= 20"}
+      - {col: bars_since_sweep, condition: "recent if <= 15"}
+    ref: "NEX:L10:52-104"
+
+# =============================================================================
+# COMPOSITE GATES
+# =============================================================================
+
+composite_gates:
+  high_quality_long:
+    id: "GATE-COND-001"
+    name: "High Quality Long"
+    requires:
+      - "in_structural_discount"
+      - "freshness_score >= 6"
+      - "touch_count <= 2"
+      - "entry_matches_htf_long"
+      - "NOT conflicting_signals"
+    output: "GRADE_A_LONG"
+    ref: "NEX:L11"
+
+  high_quality_short:
+    id: "GATE-COND-002"
+    name: "High Quality Short"
+    requires:
+      - "in_structural_premium"
+      - "freshness_score >= 6"
+      - "touch_count <= 2"
+      - "entry_matches_htf_short"
+      - "NOT conflicting_signals"
+    output: "GRADE_A_SHORT"
+    ref: "NEX:L11"
+
+  alignment_gate:
+    id: "GATE-COND-003"
+    name: "Alignment Gate"
+    requires: ["htf_count >= 2", "layers >= 3"]
+    output: "ALIGNED"
+
+  freshness_gate:
+    id: "GATE-COND-004"
+    name: "Freshness Gate"
+    requires: ["age <= 10", "break <= 30"]
+    output: "FRESH"
+
+# =============================================================================
+# CONFLICTS (Flagged)
+# =============================================================================
+
+conflicts:
+  - id: "CONFLICT-COND-001"
+    desc: "L8 uses structural P/D, L11 uses daily P/D"
+    recommendation: "Align L11 to structural"
+    refs: ["NEX:L8:73-82", "NEX:L11:110-111"]
+  
+  - id: "CONFLICT-COND-002"
+    desc: "L10 has hardcoded freshness thresholds, L11 says 'thresholds in evaluator'"
+    recommendation: "Move scoring to evaluator"
+    refs: ["NEX:L10:127-158", "NEX:L11:7-9"]
+
+# =============================================================================
+# LAYER DEPENDENCIES
+# =============================================================================
+
+layer_dependencies:
+  layer_8_premium_discount:
+    depends_on: [L0_dealing_range, L2_pdh_pdl]
+    ref: "NEX:L8"
+  
+  layer_10_timing:
+    depends_on: [L3_sweeps, L5_fvg, L7_structure, L9_ob]
+    ref: "NEX:L10"
+  
+  layer_11_alignment:
+    depends_on: [L0.5_htf_bias, L5_fvg, L7_order_flow, L8_pd, L9_ob]
+    runs: "LAST"
+    ref: "NEX:L11"
+
+pipeline_order: [L0, L0.5, L1, L2, L3, L5, L6, L7, L8, L9, L10, L11]
