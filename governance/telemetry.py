@@ -1,13 +1,19 @@
 """
 Quality Telemetry — Health and quality reporting
 
-VERSION: 0.2
+VERSION: 0.3 (S28.B expansion)
 CONTRACT: GOVERNANCE_INTERFACE_CONTRACT.md
+
+EXPANSION (S28.B):
+- cascade timing histogram
+- signal generation rate (stub for CSO)
+- bounds violation counter (from Track A fix)
 """
 
 from datetime import datetime, timezone
-from typing import Optional
-from dataclasses import dataclass
+from typing import Optional, List, Dict
+from dataclasses import dataclass, field
+from collections import deque
 
 from .types import QualityTelemetry, HealthState, LifecycleState
 
@@ -209,3 +215,140 @@ class TelemetryAggregator:
             total_anomalies=anomalies,
             total_gaps=gaps
         )
+
+
+# =============================================================================
+# EXPANDED TELEMETRY (S28.B)
+# =============================================================================
+
+@dataclass
+class CascadeTimingTelemetry:
+    """Cascade timing histogram for halt propagation."""
+    samples: List[float] = field(default_factory=list)
+    p50_ms: float = 0.0
+    p99_ms: float = 0.0
+    max_ms: float = 0.0
+    sample_count: int = 0
+    slo_violations: int = 0  # > 500ms (INV-HALT-2)
+    
+    def record(self, timing_ms: float, slo_threshold_ms: float = 500.0) -> None:
+        """Record cascade timing sample."""
+        self.samples.append(timing_ms)
+        self.sample_count += 1
+        
+        if timing_ms > slo_threshold_ms:
+            self.slo_violations += 1
+        
+        # Keep last 1000 samples
+        if len(self.samples) > 1000:
+            self.samples = self.samples[-1000:]
+        
+        # Update percentiles
+        if self.samples:
+            sorted_s = sorted(self.samples)
+            self.p50_ms = sorted_s[int(len(sorted_s) * 0.50)]
+            self.p99_ms = sorted_s[int(len(sorted_s) * 0.99)]
+            self.max_ms = max(self.samples)
+
+
+@dataclass
+class SignalGenerationTelemetry:
+    """Signal generation rate tracking (stub for CSO)."""
+    total_signals: int = 0
+    rate_per_minute: float = 0.0
+    last_signal_time: Optional[datetime] = None
+    window_signals: int = 0
+    window_start: Optional[datetime] = None
+    
+    def record_signal(self) -> None:
+        """Record a signal generation event."""
+        now = datetime.now(timezone.utc)
+        self.total_signals += 1
+        self.last_signal_time = now
+        
+        # Rolling 1-minute window for rate calculation
+        if self.window_start is None:
+            self.window_start = now
+            self.window_signals = 1
+        elif (now - self.window_start).total_seconds() > 60:
+            self.rate_per_minute = self.window_signals
+            self.window_start = now
+            self.window_signals = 1
+        else:
+            self.window_signals += 1
+
+
+@dataclass
+class BoundsViolationTelemetry:
+    """Bounds violation tracking (from Track A fix)."""
+    total_violations: int = 0
+    violations_by_type: Dict[str, int] = field(default_factory=dict)
+    last_violation_time: Optional[datetime] = None
+    last_violation_type: Optional[str] = None
+    
+    def record_violation(self, violation_type: str) -> None:
+        """Record a bounds violation."""
+        self.total_violations += 1
+        self.violations_by_type[violation_type] = self.violations_by_type.get(violation_type, 0) + 1
+        self.last_violation_time = datetime.now(timezone.utc)
+        self.last_violation_type = violation_type
+
+
+class ExtendedTelemetryEmitter(TelemetryEmitter):
+    """
+    Extended telemetry emitter with S28.B metrics.
+    
+    Adds:
+    - cascade_timing: Halt propagation timing histogram
+    - signal_generation: CSO signal rate (stub)
+    - bounds_violations: Data bounds violations
+    """
+    
+    def __init__(self, module_id: str):
+        super().__init__(module_id)
+        self.cascade_timing = CascadeTimingTelemetry()
+        self.signal_generation = SignalGenerationTelemetry()
+        self.bounds_violations = BoundsViolationTelemetry()
+    
+    def record_cascade_timing(self, timing_ms: float) -> None:
+        """Record cascade timing sample."""
+        self.cascade_timing.record(timing_ms)
+        self._last_update = datetime.now(timezone.utc)
+    
+    def record_signal(self) -> None:
+        """Record signal generation event."""
+        self.signal_generation.record_signal()
+        self._last_update = datetime.now(timezone.utc)
+    
+    def record_bounds_violation(self, violation_type: str) -> None:
+        """Record bounds violation."""
+        self.bounds_violations.record_violation(violation_type)
+        self.increment_anomaly()
+    
+    def get_extended_telemetry(self) -> Dict:
+        """Get extended telemetry including S28.B metrics."""
+        base = self.get_telemetry()
+        return {
+            "base": {
+                "data_health": base.data_health.value,
+                "lifecycle_state": base.lifecycle_state.value,
+                "quality_score": base.quality_score,
+                "anomaly_count": base.anomaly_count,
+                "gap_count": base.gap_count,
+            },
+            "cascade_timing": {
+                "p50_ms": self.cascade_timing.p50_ms,
+                "p99_ms": self.cascade_timing.p99_ms,
+                "max_ms": self.cascade_timing.max_ms,
+                "sample_count": self.cascade_timing.sample_count,
+                "slo_violations": self.cascade_timing.slo_violations,
+            },
+            "signal_generation": {
+                "total_signals": self.signal_generation.total_signals,
+                "rate_per_minute": self.signal_generation.rate_per_minute,
+            },
+            "bounds_violations": {
+                "total": self.bounds_violations.total_violations,
+                "by_type": self.bounds_violations.violations_by_type,
+            }
+        }
