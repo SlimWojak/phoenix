@@ -296,13 +296,79 @@ class HPGParser:
 
     def _llm_parse(self, text: str, seed: int) -> dict[str, Any] | None:
         """
-        Parse using LLM backend.
+        Parse using LLM backend (Gemma or Claude).
 
-        TODO: Implement Gemma/Claude integration in S30.
+        Uses cognitive arbitrage: Gemma first, Claude fallback.
         """
-        # Placeholder for LLM integration
-        # Will use structured output/JSON mode
+        try:
+            from intelligence import LLMClient
+        except ImportError:
+            return self._mock_parse(text, seed)
+
+        client = LLMClient()
+        if not client.is_available():
+            return self._mock_parse(text, seed)
+
+        # Build prompt for structured extraction
+        prompt = self._build_hpg_prompt(text, seed)
+        system = self._build_hpg_system_prompt()
+
+        schema = {
+            "type": "object",
+            "required": ["signal_type", "pair", "session", "random_seed"],
+            "properties": {
+                "signal_type": {"type": "string"},
+                "pair": {"type": "string"},
+                "session": {"type": "string"},
+                "stop_model": {"type": "string"},
+                "risk_percent": {"type": "number"},
+                "random_seed": {"type": "number"},
+            },
+        }
+
+        try:
+            response = client.complete_json(prompt, schema=schema, system=system)
+            if response.parsed:
+                # Ensure required fields
+                result = response.parsed
+                result["hpg_version"] = "1.0"
+                result["random_seed"] = seed  # Use provided seed
+                return result
+        except Exception:  # noqa: S110
+            pass  # Fallback to mock on LLM failure
+
+        # Fallback to mock on failure
         return self._mock_parse(text, seed)
+
+    def _build_hpg_system_prompt(self) -> str:
+        """Build system prompt for HPG extraction."""
+        return """You are a trading hypothesis parser. Extract structured parameters.
+
+OUTPUT FORMAT: JSON object with these fields:
+- signal_type: One of FVG, BOS, CHoCH, OTE, LIQUIDITY_SWEEP
+- pair: Currency pair (EURUSD, GBPUSD, USDJPY, AUDUSD, USDCAD, NZDUSD)
+- session: Trading session (LONDON, NY, ASIA, ANY)
+- stop_model: Stop strategy (TIGHT, NORMAL, WIDE, ATR_BASED)
+- risk_percent: Risk as decimal (0.5 to 2.5)
+- time_filter: Optional object with operator (AFTER, BEFORE, BETWEEN) and value (HH:MM)
+
+RULES:
+- Use ONLY the enumerated values above
+- Default to FVG if signal type unclear
+- Default to ANY if session unclear
+- Default to EURUSD if pair not specified
+- Default risk_percent to 1.0 if not specified
+
+Output ONLY valid JSON, no explanation."""
+
+    def _build_hpg_prompt(self, text: str, seed: int) -> str:
+        """Build prompt for HPG extraction."""
+        return f"""Parse this trading hypothesis into structured parameters:
+
+HYPOTHESIS: "{text}"
+
+Extract the signal type, currency pair, session, stop model, and any time filters.
+Output as JSON."""
 
     def validate(self, hpg: HPG) -> ValidationResult:
         """

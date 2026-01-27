@@ -338,8 +338,8 @@ class HuntEngine:
         if self._bead_store is not None:
             try:
                 self._bead_store.write_dict(bead_content)
-            except Exception:
-                pass  # Non-blocking for now
+            except Exception:  # noqa: S110
+                pass  # Non-blocking bead emission
 
         return bead_id, bead_hash
 

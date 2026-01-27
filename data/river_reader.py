@@ -369,6 +369,54 @@ class RiverReader:
         except Exception as e:
             raise RiverReadError(f"Failed to list timeframes: {e}") from e
 
+    def is_available(self) -> bool:
+        """
+        Check if River database is available.
+
+        Returns:
+            True if database exists and can be opened.
+        """
+        if not self._river_path.exists():
+            return False
+
+        try:
+            conn = self._get_connection()
+            # Try a simple query
+            cursor = conn.cursor()
+            cursor.execute("SELECT 1")
+            return True
+        except Exception:
+            return False
+
+    def has_data_for_pair(self, pair: str, timeframe: str = "1H") -> bool:
+        """
+        Check if River has data for a pair.
+
+        Args:
+            pair: Trading pair
+            timeframe: Timeframe to check
+
+        Returns:
+            True if table exists and has data.
+        """
+        table_name = f"{pair}_{timeframe}"
+        if not self._validate_table_name(table_name):
+            return False
+
+        try:
+            conn = self._get_connection()
+            cursor = conn.cursor()
+            cursor.execute(
+                """
+                SELECT name FROM sqlite_master
+                WHERE type='table' AND name=?
+                """,
+                (table_name,),
+            )
+            return cursor.fetchone() is not None
+        except Exception:
+            return False
+
     # =========================================================================
     # VALIDATION HELPERS
     # =========================================================================

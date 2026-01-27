@@ -289,11 +289,79 @@ class QueryParser:
 
     def _llm_parse(self, text: str) -> dict[str, Any] | None:
         """
-        Parse using LLM backend.
+        Parse using LLM backend (Gemma or Claude).
 
-        TODO: Implement Gemma/Claude integration.
+        Uses cognitive arbitrage: Gemma first, Claude fallback.
         """
+        try:
+            from intelligence import LLMClient
+        except ImportError:
+            return self._mock_parse(text)
+
+        client = LLMClient()
+        if not client.is_available():
+            return self._mock_parse(text)
+
+        prompt = self._build_query_prompt(text)
+        system = self._build_query_system_prompt()
+
+        schema = {
+            "type": "object",
+            "required": ["bead_types", "keywords"],
+            "properties": {
+                "bead_types": {"type": "array"},
+                "keywords": {"type": "array"},
+                "pair_filter": {"type": "array"},
+                "limit": {"type": "number"},
+            },
+        }
+
+        try:
+            response = client.complete_json(prompt, schema=schema, system=system)
+            if response.parsed:
+                result = response.parsed
+                # Convert string bead types to enums
+                bead_types = []
+                for bt in result.get("bead_types", []):
+                    try:
+                        bead_types.append(BeadTypeFilter(bt))
+                    except ValueError:
+                        pass
+                result["bead_types"] = bead_types
+                return result
+        except Exception:  # noqa: S110
+            pass  # Fallback to mock on LLM failure
+
         return self._mock_parse(text)
+
+    def _build_query_system_prompt(self) -> str:
+        """Build system prompt for query parsing."""
+        return """You are a memory query parser. Extract search parameters from queries.
+
+OUTPUT FORMAT: JSON object with these fields:
+- bead_types: Array of bead types (HUNT, CONTEXT_SNAPSHOT, PERFORMANCE, AUTOPSY)
+- keywords: Array of search keywords (signal types, sessions, patterns)
+- pair_filter: Array of currency pairs (EURUSD, GBPUSD, etc.)
+- limit: Number of results (1-100, default 20)
+
+RULES:
+- Extract relevant bead types based on what the user is asking about
+- If asking about "hypothesis" or "testing" → include HUNT
+- If asking about "session" or "context" → include CONTEXT_SNAPSHOT
+- If asking about "performance" or "results" → include PERFORMANCE
+- Extract any mentioned signal types (FVG, BOS, CHoCH) as keywords
+- Extract any mentioned sessions (London, NY, Asia) as keywords
+
+Output ONLY valid JSON, no explanation."""
+
+    def _build_query_prompt(self, text: str) -> str:
+        """Build prompt for query extraction."""
+        return f"""Parse this memory query into search parameters:
+
+QUERY: "{text}"
+
+Identify what types of beads to search, relevant keywords, and any filters.
+Output as JSON."""
 
     def validate(self, ir: QueryIR) -> ValidationResult:
         """

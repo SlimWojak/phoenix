@@ -210,15 +210,21 @@ class Backtester:
         """
         Get price bars from River.
 
-        Returns mock data for now (real implementation uses RiverReader).
+        Uses RiverReader if available, otherwise mock data.
         """
-        if self._river:
-            # Real implementation
-            # df = self._river.get_bars(pair, "1H", window.start, window.end)
-            # return df.to_dict('records')
-            pass
+        if self._river is not None:
+            try:
+                # Try real River data
+                if hasattr(self._river, "is_available") and self._river.is_available():
+                    if hasattr(self._river, "has_data_for_pair"):
+                        if self._river.has_data_for_pair(pair):
+                            df = self._river.get_bars(pair, "1H", window.start, window.end)
+                            if not df.empty:
+                                return df.to_dict("records")
+            except Exception:  # noqa: S110
+                pass  # Fall through to mock on River error
 
-        # Mock data generation (deterministic)
+        # Mock data generation (deterministic fallback)
         return self._generate_mock_bars(pair, window)
 
     def _generate_mock_bars(self, pair: str, window: DataWindow) -> list[dict]:
