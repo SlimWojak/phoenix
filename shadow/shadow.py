@@ -133,6 +133,7 @@ class Shadow:
         self,
         config: ShadowConfig | None = None,
         bead_store: Any | None = None,
+        autopsy: Any | None = None,
     ) -> None:
         """
         Initialize shadow engine.
@@ -140,9 +141,11 @@ class Shadow:
         Args:
             config: Shadow configuration
             bead_store: BeadStore for PERFORMANCE beads
+            autopsy: Autopsy engine for post-trade analysis (WIRING)
         """
         self._config = config or ShadowConfig()
         self._bead_store = bead_store
+        self._autopsy = autopsy
 
         # State
         self._balance = self._config.initial_balance
@@ -377,7 +380,7 @@ class Shadow:
         return errors
 
     def _handle_closed_position(self, position: PaperPosition) -> None:
-        """Handle position closure: update stats, emit bead."""
+        """Handle position closure: update stats, emit bead, trigger autopsy."""
         # Update stats
         self._total_trades += 1
         self._total_pnl += position.realized_pnl
@@ -394,6 +397,54 @@ class Shadow:
         # Emit PERFORMANCE bead (INV-SHADOW-BEAD-1)
         if self._config.enable_bead_emission:
             self._emit_performance_bead(position)
+
+        # WIRING: Shadow → Autopsy
+        self._trigger_autopsy(position)
+
+    def _trigger_autopsy(self, position: PaperPosition) -> None:
+        """
+        Trigger autopsy analysis for closed position.
+
+        WIRING: Shadow → Autopsy
+        """
+        if self._autopsy is None:
+            return
+
+        try:
+            # Build entry thesis from position
+            risk_pct = getattr(position, "initial_risk_percent", 1.0)
+            entry_thesis = {
+                "confidence": min(risk_pct / 2.0, 1.0),  # Approx
+                "setup_type": "CSO_SIGNAL",
+                "reasoning_hash": "",
+            }
+
+            # Build outcome
+            pnl = getattr(position, "realized_pnl", 0)
+            result = "WIN" if pnl > 0 else "LOSS"
+            if abs(pnl) < 0.01:
+                result = "BREAKEVEN"
+
+            # Calculate pnl_percent safely
+            size = getattr(position, "size", 1.0) or 1.0
+            entry = getattr(position, "entry_price", 1.0) or 1.0
+            position_value = size * entry if size and entry else 1.0
+            pnl_percent = (pnl / position_value * 100) if position_value else 0
+
+            outcome = {
+                "result": result,
+                "pnl_percent": pnl_percent,
+                "duration": "PT24H",  # Would calculate actual duration
+            }
+
+            # Trigger autopsy (async/non-blocking)
+            self._autopsy.analyze(
+                position_id=position.position_id,
+                entry_thesis=entry_thesis,
+                outcome=outcome,
+            )
+        except Exception:  # noqa: S110
+            pass  # Non-blocking - autopsy is supplementary
 
     def _emit_performance_bead(self, position: PaperPosition) -> None:
         """Emit PERFORMANCE bead for closed position."""

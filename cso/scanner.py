@@ -113,6 +113,7 @@ class CSOScanner:
         river_reader: Any | None = None,
         params: CSOParams | None = None,
         shadow: Any | None = None,
+        telegram: Any | None = None,
     ) -> None:
         """
         Initialize scanner.
@@ -121,10 +122,12 @@ class CSOScanner:
             river_reader: RiverReader for market data
             params: CSO parameters (loads default if None)
             shadow: Shadow engine for CSE signals
+            telegram: TelegramNotifier for alerts
         """
         self._river = river_reader
         self._params = params or ParamsLoader().load()
         self._shadow = shadow
+        self._telegram = telegram
 
         # Load pairs from config
         self._pairs = self._load_pairs()
@@ -264,11 +267,12 @@ class CSOScanner:
 
     def _emit_cse(self, result: SetupResult) -> None:
         """
-        Emit CSE signal to Shadow.
+        Emit CSE signal to Shadow and Telegram.
 
+        WIRING: CSO → Shadow + Telegram
         INVARIANT: INV-CSO-CSE-1
         """
-        if self._shadow is None or result.setup is None:
+        if result.setup is None:
             return
 
         setup = result.setup
@@ -289,23 +293,52 @@ class CSOScanner:
             evidence_hash=setup.evidence.evidence_hash,
         )
 
-        # Send to Shadow
-        try:
-            from shadow.shadow import CSESignal as ShadowCSE
+        # WIRING: Send to Shadow
+        if self._shadow is not None:
+            try:
+                from shadow.shadow import CSESignal as ShadowCSE
 
-            shadow_signal = ShadowCSE(
-                signal_id=cse.signal_id,
-                timestamp=cse.timestamp,
-                pair=cse.pair,
-                direction="LONG" if setup.direction.value == "BULLISH" else "SHORT",
-                entry=cse.parameters["entry"],
-                stop=cse.parameters["stop"],
-                target=cse.parameters["target"],
-                risk_percent=cse.parameters["risk_percent"],
-                confidence=cse.confidence,
-                source=cse.source,
-                evidence_hash=cse.evidence_hash,
-            )
-            self._shadow.consume_signal(shadow_signal)
-        except Exception:  # noqa: S110
-            pass  # Non-blocking
+                shadow_signal = ShadowCSE(
+                    signal_id=cse.signal_id,
+                    timestamp=cse.timestamp,
+                    pair=cse.pair,
+                    direction="LONG" if setup.direction.value == "BULLISH" else "SHORT",
+                    entry=cse.parameters["entry"],
+                    stop=cse.parameters["stop"],
+                    target=cse.parameters["target"],
+                    risk_percent=cse.parameters["risk_percent"],
+                    confidence=cse.confidence,
+                    source=cse.source,
+                    evidence_hash=cse.evidence_hash,
+                )
+                self._shadow.consume_signal(shadow_signal)
+            except Exception:  # noqa: S110
+                pass  # Non-blocking
+
+        # WIRING: Send to Telegram (READY setups only)
+        if self._telegram is not None and setup.confidence >= 0.8:
+            try:
+                self._telegram.send_sync(
+                    message=self._format_setup_alert(setup),
+                    level="INFO",
+                    category=f"setup:{setup.pair}",
+                )
+            except Exception:  # noqa: S110
+                pass  # Non-blocking
+
+    def _format_setup_alert(self, setup: Any) -> str:
+        """Format setup alert for Telegram."""
+        direction = setup.direction.value
+        emoji = "📈" if direction == "BULLISH" else "📉"
+
+        return f"""
+{emoji} <b>SETUP READY</b>
+
+<b>Pair:</b> {setup.pair}
+<b>Type:</b> {setup.setup_type.value}
+<b>Direction:</b> {direction}
+<b>Confidence:</b> {setup.confidence:.1%}
+<b>Entry:</b> {setup.entry_price:.5f}
+<b>Stop:</b> {setup.stop_price:.5f}
+<b>Target:</b> {setup.target_price:.5f}
+"""
