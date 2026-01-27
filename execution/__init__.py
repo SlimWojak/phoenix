@@ -1,141 +1,35 @@
 """
-Phoenix Execution — Halt-first execution with paper broker.
+Execution — Order execution and position management
+===================================================
 
-SPRINT: S28.C
-STATUS: MOCK_SIGNALS
-CAPITAL: PAPER_ONLY
+S32: EXECUTION_PATH
 
-S28.C CAPABILITIES:
-- Intent schema enforcement
-- Position lifecycle state machine
-- Paper broker stub (immediate fills)
-- Deterministic replay harness
-- Halt integration
+Contains position lifecycle, reconciliation, and promotion.
 
-CONSTRAINTS:
-- PAPER ONLY — no real broker connection
-- Mock signals only (NOT Olya methodology)
-- Simplified P&L v0 (no fees, no slippage)
-
-INVARIANTS:
-- INV-GOV-HALT-BEFORE-ACTION: halt check precedes any action
-- INV-CONTRACT-1: deterministic state machine
-- INV-EXEC-LIFECYCLE-1: valid state transitions only
+CONSTITUTIONAL:
+- Human sovereignty over capital is absolute
+- No automatic retry without human decision
+- Reconciliation is read-only (never mutates state)
 """
 
-from .broker_stub import (
-    BrokerHaltedError,
-    ExitResult,
-    FillType,
-    OrderRejectedError,
-    OrderResult,
-    PaperBrokerStub,
-    PnLCalculator,
-)
-from .halt_gate import (
-    ExecutionGateCoordinator,
-    HaltBlockedError,
-    HaltCheckResult,
-    HaltGate,
-    HaltGateViolation,
-    halt_gated,
-)
-from .intent import (
-    CapitalActionForbiddenError,
-    Direction,
-    ExecutionIntent,
-    IntentFactory,
-    IntentMutationError,
-    IntentStatus,
-    IntentType,
-)
-from .position import (
-    VALID_TRANSITIONS,
-    InvalidTransitionError,
+from .positions import (
     Position,
-    PositionMutationError,
-    PositionRegistry,
+    PositionLifecycle,
     PositionState,
-    validate_transition,
+    PositionTracker,
 )
-from .replay import (
-    DeterminismVerifier,
-    MockSignal,
-    MockSignalGenerator,
-    ReplayHarness,
-    ReplayResult,
-    ReplayState,
+from .reconciliation import (
+    DriftSeverity,
+    DriftType,
+    Reconciler,
 )
 
 __all__ = [
-    # Intent
-    "ExecutionIntent",
-    "IntentFactory",
-    "IntentType",
-    "IntentStatus",
-    "Direction",
-    "IntentMutationError",
-    "CapitalActionForbiddenError",
-    # Halt Gate
-    "HaltGate",
-    "HaltCheckResult",
-    "HaltGateViolation",
-    "HaltBlockedError",
-    "ExecutionGateCoordinator",
-    "halt_gated",
-    # Position
     "Position",
     "PositionState",
-    "PositionRegistry",
-    "InvalidTransitionError",
-    "PositionMutationError",
-    "VALID_TRANSITIONS",
-    "validate_transition",
-    # Broker
-    "PaperBrokerStub",
-    "OrderResult",
-    "ExitResult",
-    "FillType",
-    "BrokerHaltedError",
-    "OrderRejectedError",
-    "PnLCalculator",
-    # Replay
-    "ReplayHarness",
-    "ReplayResult",
-    "ReplayState",
-    "MockSignal",
-    "MockSignalGenerator",
-    "DeterminismVerifier",
+    "PositionLifecycle",
+    "PositionTracker",
+    "Reconciler",
+    "DriftType",
+    "DriftSeverity",
 ]
-
-__version__ = "0.2.0"  # S28.C
-
-
-# =============================================================================
-# CAPITAL GUARD
-# =============================================================================
-
-# These patterns are FORBIDDEN in S27
-FORBIDDEN_ACTIONS = frozenset(
-    [
-        "submit_order",
-        "execute_order",
-        "broker",
-        "connect",
-        "send_order",
-        "place_trade",
-        "allocate_capital",
-    ]
-)
-
-
-def guard_capital_action(action: str) -> None:
-    """
-    Guard against capital actions.
-
-    Raises CapitalActionForbiddenError if action is forbidden.
-    """
-    action_lower = action.lower()
-    for forbidden in FORBIDDEN_ACTIONS:
-        if forbidden in action_lower:
-            raise CapitalActionForbiddenError(action)
