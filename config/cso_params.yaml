@@ -1,0 +1,101 @@
+# =============================================================================
+# CSO PARAMETERS v1.0
+# =============================================================================
+# CALIBRATABLE PARAMETERS FOR STRATEGY CORE
+# Location: phoenix/config/cso_params.yaml
+# Created: 2026-01-27 (S31)
+#
+# INVARIANT: INV-CSO-CAL-1
+# Any change triggers mandatory shadow period + CONFIG_CHANGE bead
+#
+# IMPORTANT: This file affects LIVE TRADING.
+# Changes must follow calibration_rules below.
+# =============================================================================
+
+version: "1.0"
+
+# =============================================================================
+# QUALITY THRESHOLDS
+# =============================================================================
+# These thresholds determine setup status (READY vs FORMING vs NONE)
+
+thresholds:
+  ready_min: 0.80      # Minimum score for READY (actionable)
+  forming_min: 0.50    # Minimum score for FORMING (watch list)
+
+# =============================================================================
+# KILL ZONES (ICT)
+# =============================================================================
+# Active trading sessions in UTC
+
+kill_zones:
+  london:
+    start: "07:00"
+    end: "11:00"
+    weight: 1.0
+
+  new_york:
+    start: "12:00"
+    end: "16:00"
+    weight: 1.0
+
+  asia:
+    start: "00:00"
+    end: "04:00"
+    weight: 0.8
+
+# =============================================================================
+# PAIR WEIGHTS
+# =============================================================================
+# Adjust setup quality scores by pair
+# 1.0 = neutral, >1.0 = boost, <1.0 = reduce
+
+pair_weights:
+  EURUSD: 1.0    # Primary pair
+  GBPUSD: 1.0    # Primary pair
+  USDJPY: 0.9    # Higher spread
+  AUDUSD: 0.8    # Secondary
+  USDCAD: 0.8    # Secondary
+  NZDUSD: 0.7    # Lower liquidity
+
+# =============================================================================
+# STRUCTURE DETECTION
+# =============================================================================
+# Parameters for ICT structure detection
+
+structure:
+  fvg:
+    min_gap_pips: 5        # Minimum FVG size
+    max_age_bars: 20       # Max bars since FVG formed
+    fill_threshold: 0.5    # Above this = filled
+
+  bos:
+    min_strength_pips: 10  # Minimum break strength
+    lookback_bars: 50      # How far back to find swing points
+
+  ote:
+    fib_high: 0.62         # OTE zone upper fib
+    fib_low: 0.79          # OTE zone lower fib
+
+  sweep:
+    min_depth_pips: 2      # Minimum sweep depth
+    max_age_bars: 10       # Max bars since sweep
+
+# =============================================================================
+# RISK PARAMETERS
+# =============================================================================
+
+risk:
+  default_risk_percent: 1.0    # Default position risk
+  max_risk_percent: 2.0        # Maximum allowed
+  min_rr_ratio: 1.5            # Minimum risk:reward
+
+# =============================================================================
+# CALIBRATION RULES (IMMUTABLE)
+# =============================================================================
+# These rules are enforced by ParamsLoader
+
+calibration_rules:
+  shadow_period_sessions: 5    # Sessions in shadow after param change
+  bunny_required: true         # Must pass BUNNY before live
+  auto_shadow_on_change: true  # Auto-trigger shadow on change

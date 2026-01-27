@@ -4,7 +4,7 @@
 # CANONICAL SOURCE OF TRUTH
 # Location: phoenix/schemas/beads.yaml
 # Created: 2026-01-27 (PRE-S30)
-# 
+#
 # This file IS the law. ROADMAP lines 242-340 are now HISTORICAL REFERENCE.
 # All bead changes go through this file directly.
 # =============================================================================
@@ -26,37 +26,37 @@ base_bead_fields:
     type: uuid
     description: Unique identifier for this bead
     required: true
-    
+
   bead_type:
     type: enum
-    values: [HUNT, CONTEXT_SNAPSHOT, PERFORMANCE, AUTOPSY, POSITION, PROMOTION]
+    values: [HUNT, CONTEXT_SNAPSHOT, PERFORMANCE, AUTOPSY, POSITION, PROMOTION, CONFIG_CHANGE, KILL_FLAG]
     description: Type discriminator
     required: true
-    
+
   prev_bead_id:
     type: uuid|null
     description: Previous bead in chain (null for genesis beads)
     required: true
     note: Creates merkle-lite lineage for audit
-    
+
   bead_hash:
     type: string
     description: SHA256(content + prev_hash + timestamp + signer)
     required: true
     format: hex64
-    
+
   timestamp_utc:
     type: datetime
     format: ISO8601
     description: Creation timestamp (UTC)
     required: true
-    
+
   signer:
     type: enum
     values: [system, human, claude]
     description: Entity that created/signed this bead
     required: true
-    
+
   version:
     type: string
     default: "1.0"
@@ -70,10 +70,10 @@ base_bead_fields:
 constraints:
   append_only: true
   description: Beads are immutable once written
-  
+
   hash_chain: true
   description: prev_bead_id creates merkle-lite lineage
-  
+
   no_raw_claude: true
   description: Never store raw LLM outputs directly in beads
 
@@ -92,24 +92,24 @@ invariants:
 HUNT_BEAD:
   extends: base_bead_fields
   bead_type_value: "HUNT"
-  
+
   fields:
     hpg_version:
       type: string
       description: HPG schema version used
       required: true
-      
+
     hypothesis_text:
       type: string
       description: Original natural language hypothesis
       required: true
       max_length: 1000
-      
+
     hpg_json:
       type: object
       description: Frozen HPG parameters (validated against hpg_schema)
       required: true
-      
+
     data_window:
       type: object
       required: true
@@ -120,14 +120,14 @@ HUNT_BEAD:
         end:
           type: datetime
           format: ISO8601
-          
+
     variants_tested:
       type: int
       description: Number of parameter variations tested
       required: true
       min: 1
       max: 50
-      
+
     survivors:
       type: list
       description: Strategies that passed survival criteria
@@ -146,7 +146,7 @@ HUNT_BEAD:
         max_drawdown:
           type: float
           max: 0.0  # Negative value
-          
+
     random_seed:
       type: int
       description: Seed for reproducibility (INV-HUNT-DET-1)
@@ -162,33 +162,33 @@ HUNT_BEAD:
 CONTEXT_SNAPSHOT_BEAD:
   extends: base_bead_fields
   bead_type_value: "CONTEXT_SNAPSHOT"
-  
+
   fields:
     session_id:
       type: uuid
       description: Session this snapshot belongs to
       required: true
-      
+
     intuitions:
       type: list
       item_type: string
       description: Current working intuitions
       required: true
       max_items: 20
-      
+
     open_questions:
       type: list
       item_type: string
       description: Unresolved questions
       required: true
       max_items: 10
-      
+
     current_hypothesis:
       type: string
       description: Active hypothesis being explored
       required: false
       max_length: 500
-      
+
     cognitive_momentum:
       type: object
       required: true
@@ -217,14 +217,14 @@ CONTEXT_SNAPSHOT_BEAD:
 PERFORMANCE_BEAD:
   extends: base_bead_fields
   bead_type_value: "PERFORMANCE"
-  
+
   fields:
     source:
       type: enum
       values: [SHADOW, LIVE]
       description: Paper or live tracking
       required: true
-      
+
     period:
       type: object
       required: true
@@ -235,17 +235,17 @@ PERFORMANCE_BEAD:
         end:
           type: datetime
           format: ISO8601
-          
+
     pair:
       type: string
       description: Trading pair (validated against pairs.yaml)
       required: true
-      
+
     strategy_id:
       type: string
       description: Reference to Hunt survivor
       required: true
-      
+
     metrics:
       type: object
       required: true
@@ -265,12 +265,12 @@ PERFORMANCE_BEAD:
         trades:
           type: int
           min: 0
-          
+
     signals_seen:
       type: int
       description: Total signals observed
       required: true
-      
+
     signals_taken:
       type: int
       description: Signals acted upon
@@ -286,13 +286,13 @@ PERFORMANCE_BEAD:
 AUTOPSY_BEAD:
   extends: base_bead_fields
   bead_type_value: "AUTOPSY"
-  
+
   fields:
     position_id:
       type: uuid
       description: Reference to POSITION bead
       required: true
-      
+
     entry_thesis:
       type: object
       required: true
@@ -306,7 +306,7 @@ AUTOPSY_BEAD:
           description: Hash of reasoning at entry time
         setup_type:
           type: string
-          
+
     outcome:
       type: object
       required: true
@@ -319,7 +319,7 @@ AUTOPSY_BEAD:
         duration:
           type: string
           description: ISO8601 duration
-          
+
     comparison:
       type: object
       required: true
@@ -346,50 +346,50 @@ AUTOPSY_BEAD:
 POSITION_BEAD:
   extends: base_bead_fields
   bead_type_value: "POSITION"
-  
+
   fields:
     position_id:
       type: uuid
       description: Unique position identifier
       required: true
-      
+
     state:
       type: enum
       values: [PROPOSED, APPROVED, SUBMITTED, FILLED, MANAGED, CLOSED]
       description: Position lifecycle state
       required: true
-      
+
     pair:
       type: string
       description: Trading pair
       required: true
-      
+
     direction:
       type: enum
       values: [LONG, SHORT]
       required: true
-      
+
     entry_price:
       type: float
       description: Filled entry price
       required: false  # Set when FILLED
-      
+
     exit_price:
       type: float
       description: Exit price
       required: false  # Set when CLOSED
-      
+
     size:
       type: float
       description: Position size
       required: true
       min: 0.0
-      
+
     pnl:
       type: float
       description: Realized P&L
       required: false  # Set when CLOSED
-      
+
     approval_token:
       type: string
       description: Human approval token for T2 audit
@@ -405,25 +405,136 @@ POSITION_BEAD:
 PROMOTION_BEAD:
   extends: base_bead_fields
   bead_type_value: "PROMOTION"
-  
+
   fields:
     strategy_id:
       type: string
       description: Strategy being promoted
       required: true
-      
+
     evidence_bundle_bead:
       type: uuid
       description: Reference to PERFORMANCE bead(s) supporting promotion
       required: true
-      
+
     olya_reasoning:
       type: string
       description: Human reasoning for promotion decision
       required: true
       max_length: 2000
-      
+
     approved_by:
       type: string
       description: Approver identifier
       required: true
+
+# =============================================================================
+# BEAD TYPE: CONFIG_CHANGE (S31)
+# =============================================================================
+# Parameter change tracking
+# Created by: ParamsLoader on config change
+# Consumers: Signalman (decay correlation), Autopsy (param impact)
+
+CONFIG_CHANGE_BEAD:
+  extends: base_bead_fields
+  bead_type_value: "CONFIG_CHANGE"
+
+  fields:
+    config_file:
+      type: string
+      description: Config file that changed (e.g., "cso_params.yaml")
+      required: true
+
+    param_diff:
+      type: object
+      required: true
+      fields:
+        changed_keys:
+          type: list
+          item_type: string
+          description: Keys that changed
+        old_values:
+          type: object
+          description: Previous values for changed keys
+        new_values:
+          type: object
+          description: New values for changed keys
+
+    old_hash:
+      type: string
+      description: Hash of config before change
+      required: true
+      format: hex64
+
+    new_hash:
+      type: string
+      description: Hash of config after change
+      required: true
+      format: hex64
+
+    operator:
+      type: string
+      description: Who made the change
+      required: true
+
+    trigger:
+      type: enum
+      values: [MANUAL, SCHEDULED, AUTOPSY_LEARNING, SYSTEM]
+      description: What triggered the change
+      required: true
+
+# =============================================================================
+# BEAD TYPE: KILL_FLAG (S31)
+# =============================================================================
+# ONE-WAY-KILL status tracking
+# Created by: Signalman on decay detection, or manual
+# Consumers: Dispatcher (blocks new entries), Execution gate
+
+KILL_FLAG_BEAD:
+  extends: base_bead_fields
+  bead_type_value: "KILL_FLAG"
+
+  fields:
+    strategy_id:
+      type: string
+      description: Strategy affected by kill flag
+      required: true
+
+    active:
+      type: bool
+      description: TRUE = kill active (no new entries), FALSE = lifted
+      required: true
+
+    reason:
+      type: string
+      description: Reason for kill flag
+      required: true
+      max_length: 500
+
+    triggered_by:
+      type: enum
+      values: [SIGNALMAN, MANUAL, SYSTEM]
+      description: Source of kill flag
+      required: true
+
+    decay_metrics:
+      type: object
+      required: false
+      description: Decay metrics that triggered kill (if from Signalman)
+      fields:
+        sharpe_drift:
+          type: float
+        win_rate_drift:
+          type: float
+        ks_p_value:
+          type: float
+
+    lifted_by:
+      type: string
+      description: Who lifted the kill (if active=false)
+      required: false
+
+    lifted_reason:
+      type: string
+      description: Reason for lifting (if active=false)
+      required: false

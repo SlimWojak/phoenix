@@ -1,0 +1,301 @@
+# =============================================================================
+# MARKET STRUCTURE SCHEMA v1.0
+# =============================================================================
+# CANONICAL SOURCE OF TRUTH
+# Location: phoenix/schemas/market_structure.yaml
+# Created: 2026-01-27 (S31)
+#
+# Defines outputs from StructureDetector.
+# ICT methodology structures: FVG, BOS, CHoCH, OTE, Liquidity Sweep
+# =============================================================================
+
+schema_version: "1.0"
+schema_type: market_structure
+last_updated: "2026-01-27"
+
+# =============================================================================
+# PURPOSE
+# =============================================================================
+#
+# StructureDetector converts River bars into detected market structures.
+# CSO StrategyCore uses these structures to identify setups.
+# This schema defines the output format.
+
+# =============================================================================
+# STRUCTURE TYPES
+# =============================================================================
+
+structure_types:
+  FVG:
+    name: Fair Value Gap
+    definition: |
+      Three-candle pattern where middle candle creates a gap.
+      Bullish FVG: bar[n].low > bar[n-2].high (gap above)
+      Bearish FVG: bar[n].high < bar[n-2].low (gap below)
+    fields:
+      direction:
+        type: enum
+        values: [BULLISH, BEARISH]
+        required: true
+      gap_high:
+        type: float
+        description: Upper bound of the gap
+        required: true
+      gap_low:
+        type: float
+        description: Lower bound of the gap
+        required: true
+      gap_size_pips:
+        type: float
+        description: Size of gap in pips
+        required: true
+      fill_percent:
+        type: float
+        description: How much of gap has been filled (0.0-1.0)
+        required: true
+        min: 0.0
+        max: 1.0
+      age_bars:
+        type: int
+        description: Bars since FVG formed
+        required: true
+      candle_indices:
+        type: list
+        item_type: int
+        description: Indices of the 3 candles [n-2, n-1, n]
+        required: true
+
+  BOS:
+    name: Break of Structure
+    definition: |
+      Close beyond previous swing high (bullish) or swing low (bearish).
+      Confirms trend continuation.
+    fields:
+      direction:
+        type: enum
+        values: [BULLISH, BEARISH]
+        required: true
+      swing_level:
+        type: float
+        description: Price level that was broken
+        required: true
+      break_candle_index:
+        type: int
+        description: Index of candle that broke structure
+        required: true
+      break_strength:
+        type: float
+        description: How far beyond swing level (in pips)
+        required: true
+      confirmation_bars:
+        type: int
+        description: Bars since break confirmed
+        required: true
+
+  CHOCH:
+    name: Change of Character
+    definition: |
+      Break of structure in opposite direction to prior trend.
+      Signals potential trend reversal.
+    fields:
+      direction:
+        type: enum
+        values: [BULLISH, BEARISH]
+        description: New direction (after change)
+        required: true
+      prior_trend:
+        type: enum
+        values: [BULLISH, BEARISH]
+        description: Trend before change
+        required: true
+      reversal_level:
+        type: float
+        description: Price level where character changed
+        required: true
+      reversal_strength:
+        type: float
+        description: Strength of reversal move (in pips)
+        required: true
+      candle_index:
+        type: int
+        description: Index of candle that confirmed change
+        required: true
+
+  OTE:
+    name: Optimal Trade Entry
+    definition: |
+      Price in 0.62-0.79 Fibonacci zone of a range after BOS.
+      Classic ICT entry zone.
+    fields:
+      direction:
+        type: enum
+        values: [BULLISH, BEARISH]
+        required: true
+      range_high:
+        type: float
+        description: High of the range
+        required: true
+      range_low:
+        type: float
+        description: Low of the range
+        required: true
+      ote_high:
+        type: float
+        description: Upper bound of OTE zone (0.62 fib)
+        required: true
+      ote_low:
+        type: float
+        description: Lower bound of OTE zone (0.79 fib)
+        required: true
+      current_in_zone:
+        type: bool
+        description: Is current price in OTE zone?
+        required: true
+      related_bos_index:
+        type: int
+        description: Index of BOS that created this OTE
+        required: true
+
+  LIQUIDITY_SWEEP:
+    name: Liquidity Sweep
+    definition: |
+      Wick pierces beyond equal highs/lows (liquidity pool),
+      but close respects the level. Indicates smart money activity.
+    fields:
+      direction:
+        type: enum
+        values: [BULLISH, BEARISH]
+        description: Direction of subsequent expected move
+        required: true
+      level_swept:
+        type: float
+        description: Liquidity level that was swept
+        required: true
+      sweep_depth_pips:
+        type: float
+        description: How far wick went beyond level
+        required: true
+      sweep_candle_index:
+        type: int
+        description: Index of candle that swept
+        required: true
+      close_respected:
+        type: bool
+        description: Did close stay within level?
+        required: true
+
+# =============================================================================
+# STRUCTURE DETECTION OUTPUT
+# =============================================================================
+
+structure_output:
+  description: Output from StructureDetector.detect_all()
+  fields:
+    pair:
+      type: string
+      description: Currency pair analyzed
+      required: true
+
+    timeframe:
+      type: string
+      description: Timeframe of analysis (e.g., "1H", "4H")
+      required: true
+
+    analysis_timestamp:
+      type: datetime
+      format: ISO8601
+      description: When analysis was performed
+      required: true
+
+    bars_analyzed:
+      type: int
+      description: Number of bars analyzed
+      required: true
+
+    structures:
+      type: list
+      description: Detected structures
+      required: true
+      item_schema:
+        structure_type:
+          type: enum
+          values: [FVG, BOS, CHOCH, OTE, LIQUIDITY_SWEEP]
+        structure_data:
+          type: object
+          description: Fields specific to structure type
+        detected_at_index:
+          type: int
+          description: Bar index where structure detected
+        detected_at_time:
+          type: datetime
+          format: ISO8601
+        confidence:
+          type: float
+          min: 0.0
+          max: 1.0
+          description: Detection confidence
+
+    htf_bias:
+      type: enum
+      values: [BULLISH, BEARISH, NEUTRAL]
+      description: Higher timeframe directional bias
+      required: true
+
+    ltf_setup:
+      type: object
+      description: Lower timeframe setup details
+      required: false
+      fields:
+        setup_type:
+          type: string
+          description: Type of setup forming
+        structures_aligned:
+          type: list
+          item_type: string
+          description: Which structures support setup
+        quality_score:
+          type: float
+          min: 0.0
+          max: 1.0
+
+# =============================================================================
+# SETUP QUALITY SCORING
+# =============================================================================
+
+quality_scoring:
+  description: How StrategyCore scores setup quality
+
+  components:
+    structure_alignment:
+      weight: 0.3
+      description: HTF and LTF structures align
+
+    fvg_quality:
+      weight: 0.2
+      description: FVG present and unfilled
+
+    liquidity_context:
+      weight: 0.2
+      description: Liquidity sweep present
+
+    session_timing:
+      weight: 0.15
+      description: In active kill zone
+
+    recent_bos:
+      weight: 0.15
+      description: Recent BOS confirms direction
+
+  thresholds:
+    ready_min: 0.8
+    forming_min: 0.5
+    none_max: 0.3
+
+# =============================================================================
+# INVARIANTS
+# =============================================================================
+
+invariants:
+  - INV-STRUCTURE-DET-1: "Structure detection is deterministic (same bars → same output)"
+  - INV-STRUCTURE-FVG-1: "FVG requires exactly 3 consecutive bars with gap"
+  - INV-STRUCTURE-BOS-1: "BOS requires close beyond swing level, not just wick"

@@ -1,0 +1,190 @@
+# =============================================================================
+# STATE ANCHOR SCHEMA v1.0
+# =============================================================================
+# CANONICAL SOURCE OF TRUTH
+# Location: phoenix/schemas/state_anchor.yaml
+# Created: 2026-01-27 (S31)
+#
+# State anchor binds T2 intents to market/system state.
+# Prevents stale context execution.
+# =============================================================================
+
+schema_version: "1.0"
+schema_type: state_anchor
+last_updated: "2026-01-27"
+
+# =============================================================================
+# PURPOSE
+# =============================================================================
+#
+# State anchor ensures T2 intents execute in the context they were created.
+# If anything changes (params, market, kills), the anchor invalidates.
+#
+# INVARIANT: INV-STATE-ANCHOR-1
+# "T2 intents must include state_hash; reject stale with STATE_CONFLICT"
+
+# =============================================================================
+# STATE ANCHOR FIELDS
+# =============================================================================
+
+state_anchor_fields:
+  anchor_id:
+    type: uuid
+    description: Unique identifier for this state anchor
+    required: true
+
+  timestamp:
+    type: datetime
+    format: ISO8601
+    description: When this anchor was created
+    required: true
+
+  session_id:
+    type: uuid
+    description: Session this anchor belongs to
+    required: true
+
+# =============================================================================
+# COMPONENT HASHES
+# =============================================================================
+# Each component contributes to combined_hash.
+# If ANY component changes, anchor is invalid.
+
+components:
+  strategy_params_hash:
+    type: string
+    format: hex64
+    description: SHA256 hash of cso_params.yaml
+    required: true
+    source: phoenix/config/cso_params.yaml
+
+  market_snapshot_hash:
+    type: string
+    format: hex64
+    description: SHA256 hash of current market structure
+    required: true
+    source: Latest StructureDetector output per pair
+
+  kill_flags_hash:
+    type: string
+    format: hex64
+    description: SHA256 hash of active kill flags
+    required: true
+    source: Active KILL_FLAG beads
+
+  signalman_state_hash:
+    type: string
+    format: hex64
+    description: SHA256 hash of current Signalman alerts
+    required: false
+    source: Active decay alerts
+
+# =============================================================================
+# COMBINED HASH
+# =============================================================================
+
+combined_hash:
+  type: string
+  format: hex64
+  description: SHA256(all component hashes sorted)
+  required: true
+  computation: |
+    components_sorted = sorted([
+        strategy_params_hash,
+        market_snapshot_hash,
+        kill_flags_hash,
+        signalman_state_hash or ""
+    ])
+    combined_hash = SHA256("|".join(components_sorted))
+
+# =============================================================================
+# FRESHNESS
+# =============================================================================
+
+freshness:
+  ttl_remaining:
+    type: duration
+    format: ISO8601
+    description: Time remaining until anchor is stale
+    required: true
+
+  base_ttl_minutes:
+    type: int
+    default: 30
+    description: Default TTL for new anchors
+
+  events_that_reduce_ttl:
+    - event: DECAY_ALERT
+      factor: 0.5
+      description: Halves TTL
+    - event: HIGH_VOLATILITY
+      factor: 0.7
+      description: Reduces TTL by 30%
+    - event: NEWS_PROXIMITY
+      factor: 0.6
+      description: Reduces TTL by 40%
+    - event: PARAM_CHANGE
+      factor: 0.0
+      description: Immediate invalidation
+    - event: KILL_FLAG_CHANGE
+      factor: 0.0
+      description: Immediate invalidation
+
+  min_ttl_minutes:
+    type: int
+    default: 5
+    description: Minimum TTL regardless of events
+
+# =============================================================================
+# VALIDATION
+# =============================================================================
+
+validation:
+  on_intent:
+    steps:
+      - step: 1
+        action: Extract intent.state_hash
+      - step: 2
+        action: Compute current combined_hash
+      - step: 3
+        action: Compare hashes
+        on_mismatch: |
+          Return STATE_CONFLICT with details:
+          - Which component(s) changed
+          - Current vs intent values
+      - step: 4
+        action: Check session age vs TTL
+        on_stale: |
+          Return STALE_CONTEXT with:
+          - Time since creation
+          - Reason for reduced TTL (if any)
+
+  conflict_response:
+    type: object
+    fields:
+      status:
+        type: enum
+        values: [VALID, STATE_CONFLICT, STALE_CONTEXT]
+      details:
+        type: object
+        fields:
+          changed_components:
+            type: list
+            item_type: string
+          intent_hash:
+            type: string
+          current_hash:
+            type: string
+          age_minutes:
+            type: float
+          ttl_remaining_minutes:
+            type: float
+
+# =============================================================================
+# INVARIANTS
+# =============================================================================
+
+invariants:
+  - INV-STATE-ANCHOR-1: "T2 intents require valid state_hash"
+  - INV-STATE-ANCHOR-2: "Param change immediately invalidates anchor"
+  - INV-STATE-ANCHOR-3: "Kill flag change immediately invalidates anchor"
