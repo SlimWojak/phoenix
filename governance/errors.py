@@ -19,7 +19,7 @@ class GovernanceError(Exception):
     pass
 
 
-class HaltException(GovernanceError):
+class HaltError(GovernanceError):
     """
     Raised when halt signal is active.
 
@@ -115,7 +115,7 @@ DEFAULT_ERROR_CLASSIFICATIONS = {
     # Resource errors -> degrade
     MemoryError: ErrorClassification(ErrorCategory.DEGRADED, ErrorAction.DEGRADE),
     # Governance errors
-    HaltException: ErrorClassification(ErrorCategory.CRITICAL, ErrorAction.HALT),
+    HaltError: ErrorClassification(ErrorCategory.CRITICAL, ErrorAction.HALT),
     TierViolationError: ErrorClassification(ErrorCategory.CRITICAL, ErrorAction.HALT),
     HaltBlocksActionError: ErrorClassification(ErrorCategory.CRITICAL, ErrorAction.HALT),
     InvariantViolationError: ErrorClassification(ErrorCategory.CRITICAL, ErrorAction.HALT),
