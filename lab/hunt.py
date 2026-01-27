@@ -34,6 +34,12 @@ from .backtester import Backtester, BacktestResult, DataWindow
 from .hpg_parser import HPG, HPGParser, Session, SignalType, StopModel, ValidationResult
 from .variation_generator import VariationGenerator, VariationResult
 
+# Import BeadStore for integration (optional dependency)
+try:
+    from memory.bead_store import BeadStore
+except ImportError:
+    BeadStore = None  # type: ignore[misc, assignment]
+
 # =============================================================================
 # RESULT TYPES
 # =============================================================================
@@ -328,10 +334,12 @@ class HuntEngine:
         ).hexdigest()[:16]
         bead_content["bead_hash"] = bead_hash
 
-        # Store bead
-        if self._bead_store:
-            # self._bead_store.write(bead_content)
-            pass
+        # Store bead (if BeadStore available)
+        if self._bead_store is not None:
+            try:
+                self._bead_store.write_dict(bead_content)
+            except Exception:
+                pass  # Non-blocking for now
 
         return bead_id, bead_hash
 
