@@ -1,6 +1,6 @@
 # Phoenix
 
-**Status:** S31 COMPLETE | S32 EXECUTION_PATH next
+**Status:** S33 Phase 1 COMPLETE | Phase 2 (UX validation) next
 **Founded:** 2026-01-24
 
 ---
@@ -26,21 +26,27 @@ Phoenix (App)    = The Trading System — River, CSO, Execution
 | S29 | BUILD_MAP | ✓ Complete |
 | S30 | LEARNING_LOOP | ✓ Complete |
 | S31 | SIGNAL_AND_DECAY | ✓ Complete |
-| S32 | EXECUTION_PATH | Next |
+| S32 | EXECUTION_PATH | ✓ Complete |
+| S33 P1 | FIRST_BLOOD Infrastructure | ✓ Complete |
+| S33 P2 | FIRST_BLOOD UX Validation | Next |
 
-### S31 Delivered: SIGNAL_AND_DECAY
-- CSO: Multi-pair setup detection with ICT structures
-- Signalman: Multi-signal decay detection + ONE-WAY-KILL
-- Autopsy: Post-trade analysis with LLM fallback
-- Telegram: Throttled notification plane
-- Lens: File-based Claude response injection
-- State Anchor: T2 intent freshness validation
+### S33 Phase 1 Delivered: FIRST_BLOOD Infrastructure
 
-### S32 Focus: EXECUTION_PATH
-- IBKR connector (CSE → real execution)
-- Position sizing (Kelly, fractional)
-- Shadow → Live promotion gate
-- Vibe monitoring (market regime)
+**Tracks:**
+- **Track A:** IBKR connection with paper guards (INV-IBKR-PAPER-GUARD-1)
+- **Track B:** Monitoring + semantic health (30s heartbeat with jitter)
+- **Track C:** 8 Runbooks (RB-001 through RB-008)
+- **Track D:** Telegram real device validation
+- **Track E:** Mock CSE generator for UX testing
+- **Track G:** BUNNY Phase 1 (15/15 vectors)
+
+**Exit Gate:** Infrastructure ready for UX testing.
+
+### S33 Phase 2 Focus: UX Validation (Tomorrow)
+- Claude Desktop UX testing with G
+- Paper trade round-trip (3 trades minimum)
+- RB-004 drill completion
+- UX friction documentation
 
 See: `docs/build_docs/SPRINT_ROADMAP_S30_S33_v0.2.md`
 
@@ -58,6 +64,9 @@ cd ~/nex && source .venv/bin/activate
 
 # 3. Run tests
 python -m pytest ~/phoenix/tests/ -v
+
+# 4. Run BUNNY chaos tests
+python -m pytest ~/phoenix/tests/chaos/ -v
 ```
 
 ---
@@ -73,7 +82,7 @@ python -m pytest ~/phoenix/tests/ -v
 
 ---
 
-## Proven Invariants (S30 + S31)
+## Proven Invariants (S30 → S33 Cumulative)
 
 | ID | Description | Status |
 |----|-------------|--------|
@@ -104,9 +113,38 @@ python -m pytest ~/phoenix/tests/ -v
 | **Notification** | | |
 | INV-ALERT-THROTTLE-1 | Max 10/hour except HALT | ✓ BUNNY |
 | INV-LENS-1 | Kill-switchable | ✓ BUNNY |
+| **T2 Workflow (S32)** | | |
+| INV-T2-TOKEN-1 | Single-use, time-limited | ✓ BUNNY |
+| INV-T2-GATE-1 | No order without token | ✓ BUNNY |
+| INV-STALE-KILL-1 | >15min → STATE_CONFLICT | ✓ BUNNY |
+| **Position Lifecycle (S32)** | | |
+| INV-POSITION-SM-1 | Valid state transitions | ✓ BUNNY |
+| INV-POSITION-SUBMITTED-TTL-1 | 60s timeout to STALLED | ✓ BUNNY |
+| **Reconciliation (S32)** | | |
+| INV-RECONCILE-READONLY-1 | Reconciler never mutates | ✓ BUNNY |
+| INV-RECONCILE-ALERT-1 | Drift triggers alert | ✓ BUNNY |
+| **Promotion (S32)** | | |
+| INV-PROMOTION-SAFE-1 | Hard blocks on kill/stalled | ✓ BUNNY |
+| INV-PROMOTION-SAFE-2 | One-way promotion | ✓ BUNNY |
+| **IBKR (S33)** | | |
+| INV-IBKR-PAPER-GUARD-1 | Live requires explicit enable | ✓ BUNNY |
+| INV-IBKR-ACCOUNT-CHECK-1 | Account matches mode | ✓ BUNNY |
+| INV-IBKR-RECONNECT-1 | Max 3 reconnect attempts | ✓ BUNNY |
+| **Monitoring (S33)** | | |
+| INV-OPS-HEARTBEAT-SEMANTIC-1 | Semantic health in heartbeat | ✓ BUNNY |
+| INV-OPS-HEARTBEAT-30S-1 | 30s ±5s timing | ✓ BUNNY |
 
-**BUNNY S30:** 19/19 PASS
-**BUNNY S31:** 20/20 PASS
+---
+
+## BUNNY Chaos Validation
+
+| Sprint | Vectors | Status | Report |
+|--------|---------|--------|--------|
+| S30 | 19 | ✓ PASS | `reports/BUNNY_REPORT_S30.md` |
+| S31 | 20 | ✓ PASS | `reports/BUNNY_REPORT_S31.md` |
+| S32 | 17 | ✓ PASS | `reports/BUNNY_REPORT_S32.md` |
+| S33 P1 | 15 | ✓ PASS | `reports/BUNNY_REPORT_S33_P1.md` |
+| **Total** | **71** | | |
 
 ---
 
@@ -118,7 +156,10 @@ phoenix/
 ├── contracts/          # Data & governance contracts
 ├── governance/         # GovernanceInterface, halt, telemetry
 ├── monitoring/         # Signalman, KillManager, StateAnchor
-├── execution/          # Position, broker, replay
+│   └── ops/            # Heartbeat, semantic health (S33)
+├── execution/          # Position lifecycle, reconciliation, promotion
+├── brokers/            # IBKR connector with paper guards (S33)
+│   └── ibkr/           # Config, real_client, session_bead
 ├── cso/                # Chief Strategy Officer (structure detection)
 ├── analysis/           # Autopsy, LearningExtractor
 ├── notification/       # Telegram, AlertAggregator
@@ -126,6 +167,7 @@ phoenix/
 ├── shadow/             # Paper trading engine
 ├── memory/             # BeadStore, Athena
 ├── lab/                # Hunt, HPGParser, Backtester
+├── mocks/              # Mock CSE generator (S33)
 ├── enrichment/         # Data enrichment layers (L1-L6)
 ├── dispatcher/         # Worker coordination
 ├── schemas/            # YAML schemas (beads, HPG, CSE, etc)
@@ -134,7 +176,13 @@ phoenix/
 ├── reports/            # BUNNY reports
 ├── scripts/            # Utilities
 ├── tests/              # Test suite (unit, integration, chaos)
-└── docs/               # Documentation
+│   ├── unit/           # Component tests
+│   ├── integration/    # E2E pipeline tests
+│   ├── chaos/          # BUNNY attack vectors
+│   └── notification/   # Telegram validation (S33)
+└── docs/
+    ├── build_docs/     # Sprint build maps, roadmaps
+    └── runbooks/       # Operational runbooks (RB-001 through RB-008)
 ```
 
 ---
@@ -170,6 +218,7 @@ pytest tests/chaos/ -v
 | Unit | `tests/unit/` | Component tests |
 | Integration | `tests/integration/` | E2E pipeline tests |
 | Chaos | `tests/chaos/` | BUNNY attack vectors |
+| Notification | `tests/notification/` | Telegram validation |
 
 ---
 
@@ -182,4 +231,4 @@ pytest tests/chaos/ -v
 
 ---
 
-*S31 SIGNAL_AND_DECAY complete. S32 EXECUTION_PATH next.*
+*S33 Phase 1 Infrastructure complete. Phase 2 (UX validation) next.*
