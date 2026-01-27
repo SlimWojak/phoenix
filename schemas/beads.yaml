@@ -29,7 +29,7 @@ base_bead_fields:
 
   bead_type:
     type: enum
-    values: [HUNT, CONTEXT_SNAPSHOT, PERFORMANCE, AUTOPSY, POSITION, PROMOTION, CONFIG_CHANGE, KILL_FLAG, T2_TOKEN, RECONCILIATION_DRIFT, RECONCILIATION_RESOLUTION]
+    values: [HUNT, CONTEXT_SNAPSHOT, PERFORMANCE, AUTOPSY, POSITION, PROMOTION, CONFIG_CHANGE, KILL_FLAG, T2_TOKEN, RECONCILIATION_DRIFT, RECONCILIATION_RESOLUTION, IBKR_SESSION, HEARTBEAT]
     description: Type discriminator
     required: true
 
@@ -668,3 +668,92 @@ RECONCILIATION_RESOLUTION_BEAD:
       type: int
       description: Seconds from drift detection to resolution
       required: true
+
+# =============================================================================
+# BEAD TYPE: IBKR_SESSION (S33)
+# =============================================================================
+# IBKR connection lifecycle tracking
+# Created by: IBKR connector on connect/disconnect/reconnect
+# Consumers: Athena (connection gap queries), ops monitoring
+
+IBKR_SESSION_BEAD:
+  extends: base_bead_fields
+  bead_type_value: "IBKR_SESSION"
+
+  fields:
+    event:
+      type: enum
+      values: [CONNECT, DISCONNECT, RECONNECT]
+      description: Session event type
+      required: true
+
+    mode:
+      type: enum
+      values: [MOCK, PAPER, LIVE]
+      description: Connection mode
+      required: true
+
+    account:
+      type: string
+      description: Account ID (DU* for paper, U* for live)
+      required: true
+
+    port:
+      type: int
+      description: Gateway port (4002 paper, 4001 live)
+      required: true
+
+    gateway_version:
+      type: string
+      description: IB Gateway version (if available)
+      required: false
+
+    reconnect_attempt:
+      type: int
+      description: Attempt number (if RECONNECT event)
+      required: false
+      default: 0
+
+# =============================================================================
+# BEAD TYPE: HEARTBEAT (S33)
+# =============================================================================
+# System health monitoring
+# Created by: Heartbeat daemon every 30s
+# Consumers: Athena (health gap queries), ops alerting
+
+HEARTBEAT_BEAD:
+  extends: base_bead_fields
+  bead_type_value: "HEARTBEAT"
+
+  fields:
+    status:
+      type: enum
+      values: [HEALTHY, DEGRADED, MISSED]
+      description: Health status
+      required: true
+
+    checks:
+      type: object
+      required: true
+      description: Individual health check results
+      fields:
+        process_alive:
+          type: bool
+          description: Daemon processes running
+        ibkr_connected:
+          type: bool
+          description: IBKR connection alive
+        semantic_healthy:
+          type: bool
+          description: Semantic health checks pass
+
+    details:
+      type: object
+      description: Details if DEGRADED or MISSED
+      required: false
+
+    miss_count:
+      type: int
+      description: Consecutive miss count
+      required: false
+      default: 0
