@@ -1,0 +1,230 @@
+# =============================================================================
+# T2 TOKEN SCHEMA v1.0
+# =============================================================================
+# CANONICAL SOURCE OF TRUTH
+# Location: phoenix/schemas/t2_token.yaml
+# Created: 2026-01-27 (S32)
+#
+# Defines T2 approval token structure and lifecycle.
+# =============================================================================
+
+schema_version: "1.0"
+schema_type: t2_token
+last_updated: "2026-01-27"
+sprint: S32_EXECUTION_PATH
+
+# =============================================================================
+# TOKEN PURPOSE
+# =============================================================================
+#
+# T2 tokens are the human sovereignty gate for capital-affecting operations.
+# Every order submission to IBKR requires a valid T2 token.
+#
+# Properties:
+# - Single-use: Token can only be used once
+# - Time-limited: Expires 5 minutes after issue
+# - Intent-bound: Tied to specific intent_id
+# - Audited: Every state change emits T2_TOKEN bead
+
+# =============================================================================
+# TOKEN STRUCTURE
+# =============================================================================
+
+token:
+  id:
+    type: uuid
+    description: Unique token identifier
+    required: true
+    generation: secrets.token_urlsafe(32)
+
+  intent_id:
+    type: uuid
+    description: The specific intent this token authorizes
+    required: true
+    note: Token can only be used for this intent
+
+  issued_at:
+    type: datetime
+    format: ISO8601
+    description: When token was issued
+    required: true
+
+  expires_at:
+    type: datetime
+    format: ISO8601
+    description: When token expires (issued_at + 5 min)
+    required: true
+
+  evidence_hash:
+    type: string
+    description: SHA256 of evidence bundle that was approved
+    required: true
+    format: hex64
+    note: Prevents approval of modified evidence
+
+  used:
+    type: bool
+    description: Whether token has been consumed
+    required: true
+    default: false
+
+  used_at:
+    type: datetime
+    format: ISO8601
+    description: When token was consumed (null if unused)
+    required: false
+
+# =============================================================================
+# LIFECYCLE STATES
+# =============================================================================
+
+lifecycle:
+  ISSUED:
+    description: Token generated, ready for use
+    bead_event: ISSUED
+    next: [USED, EXPIRED, REJECTED]
+
+  USED:
+    description: Token successfully consumed for order
+    bead_event: USED
+    terminal: true
+    next: []
+
+  EXPIRED:
+    description: Token timed out (5 min without use)
+    bead_event: EXPIRED
+    terminal: true
+    next: []
+
+  REJECTED:
+    description: Token validation failed
+    bead_event: REJECTED
+    terminal: true
+    reasons:
+      - ALREADY_USED
+      - EXPIRED
+      - INTENT_MISMATCH
+      - EVIDENCE_MISMATCH
+      - INVALID_FORMAT
+    next: []
+
+# =============================================================================
+# VALIDATION RULES
+# =============================================================================
+
+validation:
+  on_use:
+    checks:
+      - exists: Token ID exists in store
+      - not_used: used == false
+      - not_expired: now < expires_at
+      - intent_match: request.intent_id == token.intent_id
+      - evidence_match: hash(request.evidence) == token.evidence_hash
+
+    on_failure:
+      action: Emit T2_TOKEN bead with event=REJECTED
+      include: failure_reason
+
+  expiry_check:
+    frequency: Every 30 seconds
+    action: Mark expired tokens, emit T2_TOKEN beads
+
+# =============================================================================
+# STORAGE
+# =============================================================================
+
+storage:
+  authoritative:
+    location: BeadStore (T2_TOKEN beads)
+    purpose: Audit trail, compliance
+
+  fast_lookup:
+    location: In-memory cache
+    ttl: 300 seconds (5 min)
+    purpose: Fast validation without bead query
+
+  cross_check:
+    trigger: Suspicious patterns (repeated failures)
+    action: Validate cache against bead
+    purpose: Detect cache corruption
+
+# =============================================================================
+# EVIDENCE BUNDLE
+# =============================================================================
+
+evidence_bundle:
+  description: What human sees before approving
+
+  components:
+    setup_quality:
+      type: float
+      description: CSO quality score (0-1)
+      display: "Quality: 0.85"
+
+    setup_type:
+      type: string
+      description: Setup type (FVG_ENTRY, OTE_ENTRY, etc.)
+      display: "Type: FVG_ENTRY"
+
+    htf_alignment:
+      type: object
+      description: Higher timeframe structure
+      display: "HTF: BULLISH (4H BOS confirmed)"
+
+    ltf_alignment:
+      type: object
+      description: Lower timeframe structure
+      display: "LTF: FVG at 1.0850"
+
+    risk_params:
+      entry: float
+      stop: float
+      target: float
+      risk_percent: float
+      display: "Entry: 1.0850, Stop: 1.0820, Target: 1.0910 (1.0% risk)"
+
+    red_checks:
+      type: list
+      description: Red flag check results
+      display: "Red Checks: 0 flags"
+
+    state_freshness:
+      hash: string
+      ttl_remaining: int
+      display: "State: FRESH (28 min remaining)"
+
+    kill_flags:
+      active: bool
+      display: "Kill Flags: NONE"
+
+  hash_computation:
+    algorithm: SHA256
+    input: JSON.stringify(sorted_components)
+    output: hex64
+
+# =============================================================================
+# INVARIANTS
+# =============================================================================
+
+invariants:
+  INV-T2-TOKEN-1:
+    statement: "Approval tokens are single-use, expire in 5 minutes"
+    enforcement: validation.on_use checks
+
+  INV-T2-GATE-1:
+    statement: "No order submission without valid T2 token"
+    enforcement: IBKR connector requires token
+
+  INV-T2-TOKEN-AUDIT-1:
+    statement: "Every token state change emits T2_TOKEN bead"
+    enforcement: lifecycle emits on ISSUED, USED, EXPIRED, REJECTED
+
+# =============================================================================
+# CONSTANTS
+# =============================================================================
+
+constants:
+  TOKEN_TTL_SEC: 300          # 5 minutes
+  EXPIRY_CHECK_SEC: 30        # Check every 30 seconds
+  CACHE_TTL_SEC: 300          # Cache matches token TTL
+  MAX_TOKENS_PER_INTENT: 3    # Prevent infinite retry loops

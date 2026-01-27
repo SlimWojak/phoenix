@@ -29,7 +29,7 @@ base_bead_fields:
 
   bead_type:
     type: enum
-    values: [HUNT, CONTEXT_SNAPSHOT, PERFORMANCE, AUTOPSY, POSITION, PROMOTION, CONFIG_CHANGE, KILL_FLAG]
+    values: [HUNT, CONTEXT_SNAPSHOT, PERFORMANCE, AUTOPSY, POSITION, PROMOTION, CONFIG_CHANGE, KILL_FLAG, T2_TOKEN, RECONCILIATION_DRIFT, RECONCILIATION_RESOLUTION]
     description: Type discriminator
     required: true
 
@@ -538,3 +538,133 @@ KILL_FLAG_BEAD:
       type: string
       description: Reason for lifting (if active=false)
       required: false
+
+# =============================================================================
+# BEAD TYPE: T2_TOKEN (S32)
+# =============================================================================
+# T2 approval token lifecycle tracking
+# Created by: T2 approval system
+# Consumers: IBKR connector, audit
+
+T2_TOKEN_BEAD:
+  extends: base_bead_fields
+  bead_type_value: "T2_TOKEN"
+
+  fields:
+    token_id:
+      type: uuid
+      description: Unique identifier for the approval token
+      required: true
+
+    intent_id:
+      type: uuid
+      description: The intent this token authorizes
+      required: true
+
+    event:
+      type: enum
+      values: [ISSUED, USED, EXPIRED, REJECTED]
+      description: Token lifecycle event
+      required: true
+
+    reason:
+      type: string
+      description: Reason for REJECTED or EXPIRED (null for ISSUED/USED)
+      required: false
+      max_length: 500
+
+    evidence_hash:
+      type: string
+      description: Hash of evidence bundle that was approved
+      required: true
+      format: hex64
+
+    expires_at:
+      type: datetime
+      format: ISO8601
+      description: When this token expires (5 min from issue)
+      required: true
+
+# =============================================================================
+# BEAD TYPE: RECONCILIATION_DRIFT (S32)
+# =============================================================================
+# Records detected drift between Phoenix state and broker state
+# Created by: Reconciliation worker
+# Consumers: Alert pipeline, resolution workflow
+
+RECONCILIATION_DRIFT_BEAD:
+  extends: base_bead_fields
+  bead_type_value: "RECONCILIATION_DRIFT"
+
+  fields:
+    drift_type:
+      type: enum
+      values: [POSITION_COUNT, POSITION_SIZE, PNL, ORDER_STATUS, PARTIAL_FILL]
+      description: Type of drift detected
+      required: true
+
+    phoenix_state:
+      type: object
+      description: Phoenix's view of the state
+      required: true
+
+    broker_state:
+      type: object
+      description: Broker's reported state
+      required: true
+
+    severity:
+      type: enum
+      values: [WARNING, CRITICAL]
+      description: Severity of the drift
+      required: true
+
+    position_id:
+      type: string
+      description: Affected position ID (if applicable)
+      required: false
+
+    alert_sent:
+      type: bool
+      description: Whether alert was dispatched
+      required: true
+      default: true
+
+# =============================================================================
+# BEAD TYPE: RECONCILIATION_RESOLUTION (S32)
+# =============================================================================
+# Records how a drift was resolved
+# Created by: Human via resolution interface
+# Consumers: Audit, promotion checklist
+
+RECONCILIATION_RESOLUTION_BEAD:
+  extends: base_bead_fields
+  bead_type_value: "RECONCILIATION_RESOLUTION"
+
+  fields:
+    drift_bead_id:
+      type: uuid
+      description: Reference to the RECONCILIATION_DRIFT bead being resolved
+      required: true
+
+    resolution:
+      type: enum
+      values: [PHOENIX_CORRECTED, BROKER_CORRECTED, ACKNOWLEDGED, STALE_IGNORED]
+      description: How the drift was resolved
+      required: true
+
+    resolved_by:
+      type: string
+      description: Human identifier who resolved
+      required: true
+
+    notes:
+      type: string
+      description: Resolution notes
+      required: false
+      max_length: 1000
+
+    time_to_resolve_sec:
+      type: int
+      description: Seconds from drift detection to resolution
+      required: true

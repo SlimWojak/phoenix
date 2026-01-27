@@ -1,0 +1,294 @@
+# =============================================================================
+# POSITION LIFECYCLE SCHEMA v1.0
+# =============================================================================
+# CANONICAL SOURCE OF TRUTH
+# Location: phoenix/schemas/position_lifecycle.yaml
+# Created: 2026-01-27 (S32)
+#
+# Defines position state machine and POSITION bead structure.
+# =============================================================================
+
+schema_version: "1.0"
+schema_type: position_lifecycle
+last_updated: "2026-01-27"
+sprint: S32_EXECUTION_PATH
+
+# =============================================================================
+# STATE MACHINE
+# =============================================================================
+
+states:
+  PROPOSED:
+    description: Intent received, awaiting T2 approval
+    entry_from: [INITIAL]
+    exit_to: [APPROVED, CANCELLED]
+
+  APPROVED:
+    description: Human approved, T2 token issued
+    entry_from: [PROPOSED]
+    exit_to: [SUBMITTED, EXPIRED]
+
+  SUBMITTED:
+    description: Order sent to broker, awaiting fill
+    entry_from: [APPROVED]
+    exit_to: [FILLED, STALLED, REJECTED]
+
+  STALLED:
+    description: Broker timeout (60s without ACK)
+    entry_from: [SUBMITTED]
+    exit_to: [CANCELLED, FILLED]
+    alert: true
+    note: Requires human intervention
+
+  FILLED:
+    description: Entry executed, position open
+    entry_from: [SUBMITTED, STALLED]
+    exit_to: [MANAGED]
+
+  MANAGED:
+    description: SL/TP in place, monitoring
+    entry_from: [FILLED]
+    exit_to: [CLOSED]
+
+  CLOSED:
+    description: Position exited (win/loss/breakeven)
+    entry_from: [MANAGED]
+    exit_to: []
+    terminal: true
+
+  CANCELLED:
+    description: Order cancelled before fill
+    entry_from: [PROPOSED, STALLED]
+    exit_to: []
+    terminal: true
+
+  REJECTED:
+    description: Broker rejected order
+    entry_from: [SUBMITTED]
+    exit_to: []
+    terminal: true
+
+  EXPIRED:
+    description: T2 token expired before submission
+    entry_from: [APPROVED]
+    exit_to: []
+    terminal: true
+
+# =============================================================================
+# TRANSITIONS
+# =============================================================================
+
+transitions:
+  propose:
+    from: INITIAL
+    to: PROPOSED
+    trigger: Intent received
+    bead: true
+
+  approve:
+    from: PROPOSED
+    to: APPROVED
+    trigger: T2 token issued
+    requires: Valid evidence bundle
+    bead: true
+
+  cancel_proposed:
+    from: PROPOSED
+    to: CANCELLED
+    trigger: Human passes
+    bead: true
+
+  submit:
+    from: APPROVED
+    to: SUBMITTED
+    trigger: Order sent to broker
+    requires: Valid T2 token
+    bead: true
+
+  expire_token:
+    from: APPROVED
+    to: EXPIRED
+    trigger: 5-minute timeout
+    bead: true
+
+  fill:
+    from: SUBMITTED
+    to: FILLED
+    trigger: Broker confirms fill
+    bead: true
+
+  stall:
+    from: SUBMITTED
+    to: STALLED
+    trigger: 60s without broker ACK
+    alert: true
+    bead: true
+
+  reject:
+    from: SUBMITTED
+    to: REJECTED
+    trigger: Broker rejects order
+    alert: true
+    bead: true
+
+  cancel_stalled:
+    from: STALLED
+    to: CANCELLED
+    trigger: Human cancels
+    bead: true
+
+  late_fill:
+    from: STALLED
+    to: FILLED
+    trigger: Late broker ACK
+    bead: true
+
+  manage:
+    from: FILLED
+    to: MANAGED
+    trigger: SL/TP placed
+    bead: true
+
+  close:
+    from: MANAGED
+    to: CLOSED
+    trigger: Exit triggered
+    bead: true
+
+# =============================================================================
+# POSITION BEAD SCHEMA
+# =============================================================================
+
+position_bead:
+  extends: base_bead_fields
+  bead_type_value: "POSITION"
+
+  fields:
+    # Identity
+    position_id:
+      type: uuid
+      description: Unique position identifier
+      required: true
+
+    signal_id:
+      type: string
+      description: CSE signal that triggered this position
+      required: true
+
+    # State
+    state:
+      type: enum
+      values: [PROPOSED, APPROVED, SUBMITTED, STALLED, FILLED, MANAGED, CLOSED, CANCELLED, REJECTED, EXPIRED]
+      description: Current position state
+      required: true
+
+    previous_state:
+      type: enum
+      values: [INITIAL, PROPOSED, APPROVED, SUBMITTED, STALLED, FILLED, MANAGED]
+      description: State before this transition
+      required: true
+
+    # Trade details
+    pair:
+      type: string
+      description: Currency pair (e.g., EURUSD)
+      required: true
+
+    side:
+      type: enum
+      values: [LONG, SHORT]
+      description: Position direction
+      required: true
+
+    # Prices
+    entry_price:
+      type: float
+      description: Entry price (filled price, not target)
+      required: false
+      note: Required when state >= FILLED
+
+    stop_price:
+      type: float
+      description: Stop loss price
+      required: true
+
+    target_price:
+      type: float
+      description: Take profit price
+      required: true
+
+    exit_price:
+      type: float
+      description: Exit price (for CLOSED state)
+      required: false
+
+    # Size
+    requested_quantity:
+      type: float
+      description: Requested position size
+      required: true
+
+    filled_quantity:
+      type: float
+      description: Actually filled quantity
+      required: false
+      note: Required when state >= FILLED
+
+    partial_fill_ratio:
+      type: float
+      description: filled_quantity / requested_quantity
+      required: false
+      min: 0.0
+      max: 1.0
+
+    # P&L (for CLOSED)
+    realized_pnl:
+      type: float
+      description: Realized P&L
+      required: false
+      note: Required for CLOSED state
+
+    exit_reason:
+      type: enum
+      values: [STOP_LOSS, TAKE_PROFIT, MANUAL, KILL_FLAG, TIMEOUT]
+      description: Why position was closed
+      required: false
+
+    # Broker details
+    broker_order_id:
+      type: string
+      description: IBKR order ID
+      required: false
+
+    # T2 tracking
+    token_id:
+      type: uuid
+      description: T2 token that authorized this position
+      required: false
+      note: Required when state >= APPROVED
+
+# =============================================================================
+# INVARIANTS
+# =============================================================================
+
+invariants:
+  INV-POSITION-SM-1:
+    statement: "Position state machine only allows valid transitions"
+    enforcement: transitions.py validates before allowing
+
+  INV-POSITION-AUDIT-1:
+    statement: "POSITION bead emitted at every state transition"
+    enforcement: lifecycle.py emits bead on transition
+
+  INV-POSITION-SUBMITTED-TTL-1:
+    statement: "SUBMITTED > 60s without ACK → STALLED + alert"
+    enforcement: Timeout monitor triggers stall transition
+
+# =============================================================================
+# TIMEOUTS
+# =============================================================================
+
+timeouts:
+  token_expiry_sec: 300       # 5 minutes
+  submitted_stall_sec: 60     # 1 minute
+  stalled_escalation_sec: 900 # 15 minutes
