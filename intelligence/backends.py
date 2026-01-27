@@ -58,16 +58,17 @@ class LLMBackend(ABC):
 
 class OllamaBackend(LLMBackend):
     """
-    Ollama backend for local Gemma.
+    Ollama backend for local models.
 
     Default for simple parsing tasks (cognitive arbitrage).
+    Supports: gemma3:4b, glm4, inquisitor, etc.
     """
 
     def __init__(
         self,
-        model: str = "gemma2:2b",
+        model: str = "gemma3:4b",
         base_url: str = "http://localhost:11434",
-        timeout: float = 30.0,
+        timeout: float = 60.0,
     ) -> None:
         """
         Initialize Ollama backend.

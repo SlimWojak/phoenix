@@ -1,25 +1,7 @@
 """
-Chaos Tests — BOAR attack vectors.
+Phoenix Chaos Tests — BUNNY
+===========================
 
-SPRINT: S27.0
+Adversarial tests that attack invariants.
+Every invariant must have at least one chaos vector.
 """
-
-from .chaos_suite_v2 import (
-    CHAOS_VECTORS,
-    ChaosSuiteV2,
-    ChaosVector,
-    VectorResult,
-    VectorSeverity,
-    VectorTarget,
-    VectorTestResult,
-)
-
-__all__ = [
-    "ChaosSuiteV2",
-    "ChaosVector",
-    "VectorResult",
-    "VectorSeverity",
-    "VectorTarget",
-    "VectorTestResult",
-    "CHAOS_VECTORS",
-]
