@@ -1,0 +1,429 @@
+# =============================================================================
+# BEADS SCHEMA v1.0
+# =============================================================================
+# CANONICAL SOURCE OF TRUTH
+# Location: phoenix/schemas/beads.yaml
+# Created: 2026-01-27 (PRE-S30)
+# 
+# This file IS the law. ROADMAP lines 242-340 are now HISTORICAL REFERENCE.
+# All bead changes go through this file directly.
+# =============================================================================
+
+schema_version: "1.0"
+schema_type: beads
+last_updated: "2026-01-27"
+
+# =============================================================================
+# BASE BEAD FIELDS (Required on ALL bead types)
+# =============================================================================
+# These fields implement:
+# - GROK hash chain (merkle-lite lineage)
+# - GPT append-only audit trail
+# - Immutability enforcement
+
+base_bead_fields:
+  bead_id:
+    type: uuid
+    description: Unique identifier for this bead
+    required: true
+    
+  bead_type:
+    type: enum
+    values: [HUNT, CONTEXT_SNAPSHOT, PERFORMANCE, AUTOPSY, POSITION, PROMOTION]
+    description: Type discriminator
+    required: true
+    
+  prev_bead_id:
+    type: uuid|null
+    description: Previous bead in chain (null for genesis beads)
+    required: true
+    note: Creates merkle-lite lineage for audit
+    
+  bead_hash:
+    type: string
+    description: SHA256(content + prev_hash + timestamp + signer)
+    required: true
+    format: hex64
+    
+  timestamp_utc:
+    type: datetime
+    format: ISO8601
+    description: Creation timestamp (UTC)
+    required: true
+    
+  signer:
+    type: enum
+    values: [system, human, claude]
+    description: Entity that created/signed this bead
+    required: true
+    
+  version:
+    type: string
+    default: "1.0"
+    description: Bead schema version
+    required: true
+
+# =============================================================================
+# CONSTRAINTS (Enforced by runtime)
+# =============================================================================
+
+constraints:
+  append_only: true
+  description: Beads are immutable once written
+  
+  hash_chain: true
+  description: prev_bead_id creates merkle-lite lineage
+  
+  no_raw_claude: true
+  description: Never store raw LLM outputs directly in beads
+
+invariants:
+  - INV-BEAD-IMMUTABLE-1: "Beads cannot be modified after creation"
+  - INV-BEAD-HASH-1: "bead_hash must match computed hash of content"
+  - INV-BEAD-CHAIN-1: "prev_bead_id must reference existing bead or be null"
+
+# =============================================================================
+# BEAD TYPE: HUNT
+# =============================================================================
+# Captures hypothesis testing cycle
+# Created by: Hunt surface
+# Consumers: Athena, Shadow, Promotion decisions
+
+HUNT_BEAD:
+  extends: base_bead_fields
+  bead_type_value: "HUNT"
+  
+  fields:
+    hpg_version:
+      type: string
+      description: HPG schema version used
+      required: true
+      
+    hypothesis_text:
+      type: string
+      description: Original natural language hypothesis
+      required: true
+      max_length: 1000
+      
+    hpg_json:
+      type: object
+      description: Frozen HPG parameters (validated against hpg_schema)
+      required: true
+      
+    data_window:
+      type: object
+      required: true
+      fields:
+        start:
+          type: datetime
+          format: ISO8601
+        end:
+          type: datetime
+          format: ISO8601
+          
+    variants_tested:
+      type: int
+      description: Number of parameter variations tested
+      required: true
+      min: 1
+      max: 50
+      
+    survivors:
+      type: list
+      description: Strategies that passed survival criteria
+      required: true
+      item_schema:
+        variant_id:
+          type: string
+        params:
+          type: object
+        sharpe:
+          type: float
+        win_rate:
+          type: float
+          min: 0.0
+          max: 1.0
+        max_drawdown:
+          type: float
+          max: 0.0  # Negative value
+          
+    random_seed:
+      type: int
+      description: Seed for reproducibility (INV-HUNT-DET-1)
+      required: true
+
+# =============================================================================
+# BEAD TYPE: CONTEXT_SNAPSHOT
+# =============================================================================
+# Captures session cognitive state
+# Created by: Checkpoint surface
+# Consumers: Session resume, Athena
+
+CONTEXT_SNAPSHOT_BEAD:
+  extends: base_bead_fields
+  bead_type_value: "CONTEXT_SNAPSHOT"
+  
+  fields:
+    session_id:
+      type: uuid
+      description: Session this snapshot belongs to
+      required: true
+      
+    intuitions:
+      type: list
+      item_type: string
+      description: Current working intuitions
+      required: true
+      max_items: 20
+      
+    open_questions:
+      type: list
+      item_type: string
+      description: Unresolved questions
+      required: true
+      max_items: 10
+      
+    current_hypothesis:
+      type: string
+      description: Active hypothesis being explored
+      required: false
+      max_length: 500
+      
+    cognitive_momentum:
+      type: object
+      required: true
+      fields:
+        operator_stance:
+          type: enum
+          values: [skeptical, neutral, confident, frustrated, exploratory]
+        momentum_direction:
+          type: string
+          max_length: 200
+        discarded_paths:
+          type: list
+          item_type: string
+          max_items: 10
+        emotional_context:
+          type: string
+          max_length: 200
+
+# =============================================================================
+# BEAD TYPE: PERFORMANCE
+# =============================================================================
+# Captures strategy performance metrics
+# Created by: Shadow boxer, Live execution
+# Consumers: Promotion decisions, Athena
+
+PERFORMANCE_BEAD:
+  extends: base_bead_fields
+  bead_type_value: "PERFORMANCE"
+  
+  fields:
+    source:
+      type: enum
+      values: [SHADOW, LIVE]
+      description: Paper or live tracking
+      required: true
+      
+    period:
+      type: object
+      required: true
+      fields:
+        start:
+          type: datetime
+          format: ISO8601
+        end:
+          type: datetime
+          format: ISO8601
+          
+    pair:
+      type: string
+      description: Trading pair (validated against pairs.yaml)
+      required: true
+      
+    strategy_id:
+      type: string
+      description: Reference to Hunt survivor
+      required: true
+      
+    metrics:
+      type: object
+      required: true
+      fields:
+        sharpe:
+          type: float
+        win_rate:
+          type: float
+          min: 0.0
+          max: 1.0
+        profit_factor:
+          type: float
+          min: 0.0
+        max_drawdown:
+          type: float
+          max: 0.0
+        trades:
+          type: int
+          min: 0
+          
+    signals_seen:
+      type: int
+      description: Total signals observed
+      required: true
+      
+    signals_taken:
+      type: int
+      description: Signals acted upon
+      required: true
+
+# =============================================================================
+# BEAD TYPE: AUTOPSY
+# =============================================================================
+# Post-trade analysis
+# Created by: Autopsy surface
+# Consumers: Learning loop, Athena
+
+AUTOPSY_BEAD:
+  extends: base_bead_fields
+  bead_type_value: "AUTOPSY"
+  
+  fields:
+    position_id:
+      type: uuid
+      description: Reference to POSITION bead
+      required: true
+      
+    entry_thesis:
+      type: object
+      required: true
+      fields:
+        confidence:
+          type: float
+          min: 0.0
+          max: 1.0
+        reasoning_hash:
+          type: string
+          description: Hash of reasoning at entry time
+        setup_type:
+          type: string
+          
+    outcome:
+      type: object
+      required: true
+      fields:
+        result:
+          type: enum
+          values: [WIN, LOSS, BREAKEVEN]
+        pnl_percent:
+          type: float
+        duration:
+          type: string
+          description: ISO8601 duration
+          
+    comparison:
+      type: object
+      required: true
+      fields:
+        thesis_valid:
+          type: bool
+          description: Did the entry thesis hold?
+        unknown_factors:
+          type: list
+          item_type: string
+          max_items: 10
+        learnings:
+          type: list
+          item_type: string
+          max_items: 10
+
+# =============================================================================
+# BEAD TYPE: POSITION
+# =============================================================================
+# Position lifecycle tracking
+# Created by: Execution path
+# Consumers: Shadow, Live execution, Autopsy
+
+POSITION_BEAD:
+  extends: base_bead_fields
+  bead_type_value: "POSITION"
+  
+  fields:
+    position_id:
+      type: uuid
+      description: Unique position identifier
+      required: true
+      
+    state:
+      type: enum
+      values: [PROPOSED, APPROVED, SUBMITTED, FILLED, MANAGED, CLOSED]
+      description: Position lifecycle state
+      required: true
+      
+    pair:
+      type: string
+      description: Trading pair
+      required: true
+      
+    direction:
+      type: enum
+      values: [LONG, SHORT]
+      required: true
+      
+    entry_price:
+      type: float
+      description: Filled entry price
+      required: false  # Set when FILLED
+      
+    exit_price:
+      type: float
+      description: Exit price
+      required: false  # Set when CLOSED
+      
+    size:
+      type: float
+      description: Position size
+      required: true
+      min: 0.0
+      
+    pnl:
+      type: float
+      description: Realized P&L
+      required: false  # Set when CLOSED
+      
+    approval_token:
+      type: string
+      description: Human approval token for T2 audit
+      required: false  # Required for APPROVED state
+
+# =============================================================================
+# BEAD TYPE: PROMOTION
+# =============================================================================
+# Strategy promotion decisions
+# Created by: Olya (human) via Promotion surface
+# Consumers: Shadow → Live transition
+
+PROMOTION_BEAD:
+  extends: base_bead_fields
+  bead_type_value: "PROMOTION"
+  
+  fields:
+    strategy_id:
+      type: string
+      description: Strategy being promoted
+      required: true
+      
+    evidence_bundle_bead:
+      type: uuid
+      description: Reference to PERFORMANCE bead(s) supporting promotion
+      required: true
+      
+    olya_reasoning:
+      type: string
+      description: Human reasoning for promotion decision
+      required: true
+      max_length: 2000
+      
+    approved_by:
+      type: string
+      description: Approver identifier
+      required: true

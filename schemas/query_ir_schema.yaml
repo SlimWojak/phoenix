@@ -1,0 +1,169 @@
+# =============================================================================
+# QUERY INTERMEDIATE REPRESENTATION (IR) SCHEMA v1.0
+# =============================================================================
+# CANONICAL SOURCE OF TRUTH
+# Location: phoenix/schemas/query_ir_schema.yaml
+# Created: 2026-01-27 (PRE-S30)
+#
+# This file IS the law. ROADMAP lines 184-209 are now HISTORICAL REFERENCE.
+# All Query IR changes go through this file directly.
+#
+# DESIGN: THIN WRAPPER (GROK)
+# - Datasette-style constraint layer on SQL
+# - NOT a complex DSL
+# - LLM generates IR, system generates SQL (no LLM at execution)
+# =============================================================================
+
+schema_version: "1.0"
+schema_type: query_ir
+last_updated: "2026-01-27"
+
+# =============================================================================
+# QUERY IR DOCUMENT STRUCTURE
+# =============================================================================
+
+query_ir_fields:
+  query_version:
+    type: string
+    default: "1.0"
+    description: Query IR schema version
+    required: true
+
+  # -------------------------------------------------------------------------
+  # AUDIT FIELDS (Required - GPT mandate)
+  # -------------------------------------------------------------------------
+  query_id:
+    type: uuid
+    description: Unique query identifier for audit trail
+    required: true
+    note: "Query without query_id rejected (GATE_3)"
+    
+  timestamp_utc:
+    type: datetime
+    format: ISO8601
+    description: Query creation timestamp
+    required: true
+    
+  requester:
+    type: enum
+    values: [claude, system, human]
+    description: Entity requesting the query
+    required: true
+
+  # -------------------------------------------------------------------------
+  # QUERY PARAMETERS
+  # -------------------------------------------------------------------------
+  bead_types:
+    type: list
+    item_type: enum
+    values: [HUNT, CONTEXT_SNAPSHOT, PERFORMANCE, AUTOPSY, POSITION, PROMOTION]
+    description: Bead types to search
+    required: false
+    default: []
+    note: "Empty list = all types"
+    
+  keywords:
+    type: list
+    item_type: string
+    description: Keywords to match in bead content
+    required: false
+    max_items: 10
+    item_max_length: 100
+    
+  date_range:
+    type: object
+    required: false
+    fields:
+      start:
+        type: datetime
+        format: ISO8601
+        required: false
+      end:
+        type: datetime
+        format: ISO8601
+        required: false
+        
+  pair_filter:
+    type: list
+    item_type: string
+    description: Filter by trading pairs
+    required: false
+    validation: "Each pair must exist in pairs.yaml"
+    
+  limit:
+    type: int
+    min: 1
+    max: 100
+    default: 20
+    description: Maximum rows to return
+    required: false
+
+# =============================================================================
+# BOUNDS ENFORCEMENT (Non-negotiable)
+# =============================================================================
+
+bounds:
+  result_cap:
+    value: 100
+    unit: rows
+    description: Maximum rows returned per query
+    enforced: true
+    
+  token_budget:
+    value: 2000
+    unit: tokens
+    description: Maximum tokens in compressed result
+    enforced: true
+    note: "Pre-compression; actual response may be smaller"
+    
+  read_only:
+    value: true
+    description: Separate DB handle, Datasette read-only mode
+    enforced: true
+
+# =============================================================================
+# CONSTRAINTS
+# =============================================================================
+
+constraints:
+  audit_required: true
+  description: Every query must have query_id, timestamp, requester
+  
+  bounded_results: true
+  description: Results capped at 100 rows, 2000 tokens
+  
+  no_sql_injection: true
+  description: IR → SQL generation is parameterized, not string concat
+
+# =============================================================================
+# INVARIANTS
+# =============================================================================
+
+invariants:
+  INV-ATHENA-RO-1: "Athena queries cannot modify data"
+  INV-ATHENA-CAP-1: "Athena results capped at 100 rows, 2000 tokens"
+  INV-ATHENA-AUDIT-1: "Every query logged with query_id"
+
+# =============================================================================
+# EXECUTION PATH
+# =============================================================================
+
+execution_path:
+  1_parse: "LLM parses NL → Query IR JSON"
+  2_validate: "Athena validates IR against this schema"
+  3_generate: "Athena generates SQL (no LLM at this step)"
+  4_execute: "Execute SQL via Datasette (read-only handle)"
+  5_cap: "Cap results, compress to summary"
+  6_log: "Log query with audit fields"
+
+# =============================================================================
+# FUTURE EXTENSIONS (STUB ONLY - NOT IMPLEMENTED)
+# =============================================================================
+# GROK: Comment only, not implemented in S30
+# ---
+# FUTURE: Semantic search extension
+# semantic_ir:
+#   natural_lang_prefix: str
+#   embedding_model: str
+#   min_score_threshold: float  # default 0.22
+# ---

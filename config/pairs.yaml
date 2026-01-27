@@ -1,0 +1,228 @@
+# =============================================================================
+# PAIRS MANIFEST v1.0
+# =============================================================================
+# CANONICAL SOURCE OF TRUTH
+# Location: phoenix/config/pairs.yaml
+# Created: 2026-01-27 (PRE-S30)
+#
+# This file IS the law. ROADMAP lines 358-407 are now HISTORICAL REFERENCE.
+# All pairs changes go through this file directly.
+#
+# VERIFICATION: scripts/verify_pair_data.py (run before S31 start)
+# =============================================================================
+
+schema_version: "1.0"
+schema_type: pairs_manifest
+last_updated: "2026-01-27"
+
+# =============================================================================
+# STATUS ENUM
+# =============================================================================
+# ACTIVE: Live trading enabled, signals generated
+# SHADOW: Paper trading only, no live execution
+# DISABLED: No signals, no tracking
+
+status_values:
+  - ACTIVE
+  - SHADOW
+  - DISABLED
+
+# =============================================================================
+# ENRICHMENT LAYERS
+# =============================================================================
+
+enrichment_layer_definitions:
+  L0: "Raw OHLCV data"
+  L1: "Time/session markers"
+  L2: "Reference levels (HTF)"
+  L3: "Liquidity sweeps"
+  L4: "Structure breaks (BOS/CHoCH)"
+  L5: "Order blocks"
+  L6: "FVG/Imbalances"
+
+# =============================================================================
+# PAIRS
+# =============================================================================
+
+pairs:
+  # ---------------------------------------------------------------------------
+  # EUR/USD — Primary pair
+  # ---------------------------------------------------------------------------
+  - symbol: EURUSD
+    status: ACTIVE
+    description: "Euro vs US Dollar"
+    
+    # Data verification
+    river_flowing: true
+    enrichment_layers:
+      - L0
+      - L1
+      - L2
+      - L3
+      - L4
+      - L5
+      - L6
+    last_verified: null  # Set by verification script
+    
+    # Governance (GPT mandate)
+    regime_constraints: []  # Default empty, Olya populates via CSO calibration
+    # Example future entry:
+    # - condition: "USD_STRENGTH > 0.8"
+    #   action: "SHADOW"
+    
+    # Trading parameters
+    min_spread_pips: 0.5
+    max_spread_pips: 3.0
+    typical_atr_pips: 60
+
+  # ---------------------------------------------------------------------------
+  # GBP/USD — Cable
+  # ---------------------------------------------------------------------------
+  - symbol: GBPUSD
+    status: ACTIVE
+    description: "British Pound vs US Dollar"
+    
+    river_flowing: true
+    enrichment_layers:
+      - L0
+      - L1
+      - L2
+      - L3
+      - L4
+      - L5
+      - L6
+    last_verified: null
+    
+    regime_constraints: []
+    
+    min_spread_pips: 0.8
+    max_spread_pips: 4.0
+    typical_atr_pips: 80
+
+  # ---------------------------------------------------------------------------
+  # USD/JPY — Yen
+  # ---------------------------------------------------------------------------
+  - symbol: USDJPY
+    status: ACTIVE
+    description: "US Dollar vs Japanese Yen"
+    
+    river_flowing: true
+    enrichment_layers:
+      - L0
+      - L1
+      - L2
+      - L3
+      - L4
+      - L5
+      - L6
+    last_verified: null
+    
+    regime_constraints: []
+    # Note: JPY pairs have different pip calculation (0.01 vs 0.0001)
+    
+    min_spread_pips: 0.5
+    max_spread_pips: 3.0
+    typical_atr_pips: 70
+
+  # ---------------------------------------------------------------------------
+  # AUD/USD — Aussie
+  # ---------------------------------------------------------------------------
+  - symbol: AUDUSD
+    status: ACTIVE
+    description: "Australian Dollar vs US Dollar"
+    
+    river_flowing: true
+    enrichment_layers:
+      - L0
+      - L1
+      - L2
+      - L3
+      - L4
+      - L5
+      - L6
+    last_verified: null
+    
+    regime_constraints: []
+    
+    min_spread_pips: 0.6
+    max_spread_pips: 3.5
+    typical_atr_pips: 55
+
+  # ---------------------------------------------------------------------------
+  # USD/CAD — Loonie
+  # ---------------------------------------------------------------------------
+  - symbol: USDCAD
+    status: ACTIVE
+    description: "US Dollar vs Canadian Dollar"
+    
+    river_flowing: true
+    enrichment_layers:
+      - L0
+      - L1
+      - L2
+      - L3
+      - L4
+      - L5
+      - L6
+    last_verified: null
+    
+    regime_constraints: []
+    
+    min_spread_pips: 0.8
+    max_spread_pips: 4.0
+    typical_atr_pips: 65
+
+  # ---------------------------------------------------------------------------
+  # NZD/USD — Kiwi
+  # ---------------------------------------------------------------------------
+  - symbol: NZDUSD
+    status: ACTIVE
+    description: "New Zealand Dollar vs US Dollar"
+    
+    river_flowing: true
+    enrichment_layers:
+      - L0
+      - L1
+      - L2
+      - L3
+      - L4
+      - L5
+      - L6
+    last_verified: null
+    
+    regime_constraints: []
+    
+    min_spread_pips: 0.8
+    max_spread_pips: 4.0
+    typical_atr_pips: 50
+
+# =============================================================================
+# VERIFICATION CONFIG
+# =============================================================================
+
+verification:
+  script: "scripts/verify_pair_data.py"
+  runs_before: "S31 start"
+  
+  checks:
+    - name: river_connection
+      description: "Can connect to River database"
+      
+    - name: data_freshness
+      description: "Data updated within last 24h"
+      
+    - name: enrichment_complete
+      description: "All L0-L6 layers populated"
+      
+    - name: no_gaps
+      description: "No significant data gaps (>4h)"
+
+# =============================================================================
+# NOTES
+# =============================================================================
+
+notes:
+  - "Verify actual data status before S31"
+  - "regime_constraints start empty, populated via CSO calibration"
+  - "last_verified updated by verification script"
+  - "Status changes require human approval (T2)"

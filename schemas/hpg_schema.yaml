@@ -1,0 +1,166 @@
+# =============================================================================
+# HUNT PARAMETER GRAMMAR (HPG) SCHEMA v1.0
+# =============================================================================
+# CANONICAL SOURCE OF TRUTH
+# Location: phoenix/schemas/hpg_schema.yaml
+# Created: 2026-01-27 (PRE-S30)
+#
+# This file IS the law. ROADMAP lines 157-182 are now HISTORICAL REFERENCE.
+# All HPG changes go through this file directly.
+#
+# CRITICAL: CLOSED-WORLD ASSUMPTION
+# - No free-text fields (all parameters from closed enum/range)
+# - LLM parses NL → HPG, cannot invent new parameters
+# - Invalid HPG rejected at schema validation (GATE_2)
+# =============================================================================
+
+schema_version: "1.0"
+schema_type: hpg
+last_updated: "2026-01-27"
+
+# =============================================================================
+# HPG DOCUMENT STRUCTURE
+# =============================================================================
+
+hpg_fields:
+  hpg_version:
+    type: string
+    default: "1.0"
+    description: HPG schema version
+    required: true
+    
+  # -------------------------------------------------------------------------
+  # SIGNAL TYPE (Closed enum - no free text)
+  # -------------------------------------------------------------------------
+  signal_type:
+    type: enum
+    values:
+      - FVG           # Fair Value Gap
+      - BOS           # Break of Structure
+      - CHoCH         # Change of Character
+      - OTE           # Optimal Trade Entry (fib zone)
+      - LIQUIDITY_SWEEP  # Liquidity sweep / stop hunt
+    description: ICT signal type to hunt for
+    required: true
+    
+  # -------------------------------------------------------------------------
+  # PAIR (Validated against pairs.yaml)
+  # -------------------------------------------------------------------------
+  pair:
+    type: string
+    description: Trading pair from pairs.yaml manifest
+    required: true
+    validation: "Must exist in phoenix/config/pairs.yaml with status ACTIVE"
+    
+  # -------------------------------------------------------------------------
+  # SESSION (Closed enum)
+  # -------------------------------------------------------------------------
+  session:
+    type: enum
+    values:
+      - LONDON    # 08:00-12:00 UTC
+      - NY        # 13:00-17:00 UTC
+      - ASIA      # 00:00-04:00 UTC
+      - ANY       # No session filter
+    description: Trading session filter
+    required: true
+    default: ANY
+    
+  # -------------------------------------------------------------------------
+  # TIME FILTER (Structured, not free text)
+  # -------------------------------------------------------------------------
+  time_filter:
+    type: object
+    required: false
+    fields:
+      operator:
+        type: enum
+        values: [AFTER, BEFORE, BETWEEN]
+        required: true
+      value:
+        type: string
+        format: "HH:MM or HH:MM-HH:MM"
+        description: Time value (UTC)
+        required: true
+        pattern: "^([01]?[0-9]|2[0-3]):[0-5][0-9](-([01]?[0-9]|2[0-3]):[0-5][0-9])?$"
+        
+  # -------------------------------------------------------------------------
+  # STOP MODEL (Closed enum)
+  # -------------------------------------------------------------------------
+  stop_model:
+    type: enum
+    values:
+      - TIGHT       # Aggressive stops (higher frequency, lower R)
+      - NORMAL      # Standard ICT stops
+      - WIDE        # Conservative stops (lower frequency, higher R)
+      - ATR_BASED   # Dynamic ATR-based stops
+    description: Stop loss placement strategy
+    required: true
+    default: NORMAL
+    
+  # -------------------------------------------------------------------------
+  # RISK PERCENT (Bounded range)
+  # -------------------------------------------------------------------------
+  risk_percent:
+    type: float
+    min: 0.5
+    max: 2.5
+    default: 1.0
+    description: Risk per trade as percentage of account
+    required: true
+    
+  # -------------------------------------------------------------------------
+  # RANDOM SEED (Required for determinism)
+  # -------------------------------------------------------------------------
+  random_seed:
+    type: int
+    description: Seed for reproducibility (INV-HUNT-DET-1)
+    required: true
+    note: "Identical inputs + identical seed → identical outputs"
+
+# =============================================================================
+# VARIATION GENERATION (Hunt process)
+# =============================================================================
+
+variation_config:
+  base_method: "Parse NL to HPG via LLM"
+  variant_methods:
+    - systematic: "Parameter grid search"
+    - chaos: "Random mutations for robustness"
+  cap: 50
+  description: Maximum 50 variants per Hunt
+
+# =============================================================================
+# CONSTRAINTS
+# =============================================================================
+
+constraints:
+  no_free_text: true
+  description: All parameters from closed enum/range
+  
+  no_llm_invention: true
+  description: LLM parses NL → HPG, cannot add new params
+  
+  schema_validation: true
+  description: Invalid HPG rejected before processing
+
+# =============================================================================
+# INVARIANTS
+# =============================================================================
+
+invariants:
+  INV-HUNT-HPG-1: "Hunt only accepts valid HPG JSON"
+  INV-HUNT-DET-1: "Identical inputs + seed → identical outputs"
+  INV-HUNT-CLOSED-1: "No parameter values outside schema enums/ranges"
+
+# =============================================================================
+# FUTURE EXTENSIONS (STUB ONLY - NOT IMPLEMENTED)
+# =============================================================================
+# GROK: Comment only, not implemented in S30
+# ---
+# FUTURE (S30+): Chaos grammar extension
+# parameter_distribution:
+#   type: enum[fixed, uniform, categorical]
+#   values: list|range
+#   probs: list[float]  # sum to 1
+# ---
