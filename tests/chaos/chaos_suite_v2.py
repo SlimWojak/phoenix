@@ -13,12 +13,11 @@ VECTORS:
 """
 
 import sys
-from pathlib import Path
 from dataclasses import dataclass
+from datetime import UTC, datetime
 from enum import Enum
-from typing import List, Dict, Any, Optional
-import json
-from datetime import datetime, timezone
+from pathlib import Path
+from typing import Any
 
 # Add phoenix to path
 PHOENIX_ROOT = Path(__file__).parent.parent.parent
@@ -29,8 +28,10 @@ sys.path.insert(0, str(PHOENIX_ROOT))
 # VECTOR TYPES
 # =============================================================================
 
+
 class VectorSeverity(Enum):
     """Chaos vector severity."""
+
     LOW = "low"
     MEDIUM = "medium"
     HIGH = "high"
@@ -39,6 +40,7 @@ class VectorSeverity(Enum):
 
 class VectorTarget(Enum):
     """Target component."""
+
     CSO = "cso"
     NEX = "nex"
     EXECUTION = "execution"
@@ -48,15 +50,17 @@ class VectorTarget(Enum):
 
 class VectorResult(Enum):
     """Vector test result."""
-    PASS = "pass"           # System handled correctly
-    FAIL = "fail"           # System failed silently
-    DETECTED = "detected"   # System detected and flagged
-    CRASHED = "crashed"     # System crashed
+
+    PASS = "pass"  # System handled correctly
+    FAIL = "fail"  # System failed silently
+    DETECTED = "detected"  # System detected and flagged
+    CRASHED = "crashed"  # System crashed
 
 
 @dataclass
 class ChaosVector:
     """Chaos test vector definition."""
+
     id: str
     name: str
     description: str
@@ -70,10 +74,11 @@ class ChaosVector:
 @dataclass
 class VectorTestResult:
     """Result of running a chaos vector."""
+
     vector_id: str
     result: VectorResult
-    detection_time_ms: Optional[float]
-    evidence: Dict[str, Any]
+    detection_time_ms: float | None
+    evidence: dict[str, Any]
     timestamp: datetime
 
 
@@ -81,7 +86,7 @@ class VectorTestResult:
 # VECTOR REGISTRY
 # =============================================================================
 
-CHAOS_VECTORS: List[ChaosVector] = [
+CHAOS_VECTORS: list[ChaosVector] = [
     # CSO vectors
     ChaosVector(
         id="V2-CSO-001",
@@ -91,7 +96,7 @@ CHAOS_VECTORS: List[ChaosVector] = [
         severity=VectorSeverity.CRITICAL,
         injection="Inject fake comprehension_hash without corresponding input",
         expected_behavior="CSO rejects bead or marks UNVERIFIED",
-        detection_method="Check bead.verified_hash matches actual input"
+        detection_method="Check bead.verified_hash matches actual input",
     ),
     ChaosVector(
         id="V2-CSO-002",
@@ -101,7 +106,7 @@ CHAOS_VECTORS: List[ChaosVector] = [
         severity=VectorSeverity.CRITICAL,
         injection="Call CSO method that writes to execution_state",
         expected_behavior="TierViolationError raised (INV-GOV-NO-T1-WRITE-EXEC)",
-        detection_method="Catch TierViolationError"
+        detection_method="Catch TierViolationError",
     ),
     ChaosVector(
         id="V2-CSO-003",
@@ -111,9 +116,8 @@ CHAOS_VECTORS: List[ChaosVector] = [
         severity=VectorSeverity.HIGH,
         injection="Modify bead.content after emit",
         expected_behavior="BeadImmutableError raised",
-        detection_method="Catch BeadImmutableError"
+        detection_method="Catch BeadImmutableError",
     ),
-    
     # NEX/River vectors
     ChaosVector(
         id="V2-NEX-001",
@@ -123,7 +127,7 @@ CHAOS_VECTORS: List[ChaosVector] = [
         severity=VectorSeverity.CRITICAL,
         injection="Create gap in data, run enrichment",
         expected_behavior="NaN preserved, not forward-filled",
-        detection_method="Check NaN count unchanged"
+        detection_method="Check NaN count unchanged",
     ),
     ChaosVector(
         id="V2-NEX-002",
@@ -133,7 +137,7 @@ CHAOS_VECTORS: List[ChaosVector] = [
         severity=VectorSeverity.HIGH,
         injection="Run enrichment with edge case data",
         expected_behavior="Column count matches contract",
-        detection_method="Assert column count == schema"
+        detection_method="Assert column count == schema",
     ),
     ChaosVector(
         id="V2-NEX-003",
@@ -143,9 +147,8 @@ CHAOS_VECTORS: List[ChaosVector] = [
         severity=VectorSeverity.CRITICAL,
         injection="Run enrichment twice with same seed",
         expected_behavior="Outputs identical (INV-CONTRACT-1)",
-        detection_method="Hash comparison"
+        detection_method="Hash comparison",
     ),
-    
     # Execution vectors
     ChaosVector(
         id="V2-EXEC-001",
@@ -155,7 +158,7 @@ CHAOS_VECTORS: List[ChaosVector] = [
         severity=VectorSeverity.CRITICAL,
         injection="Call action with halt_signal=True",
         expected_behavior="HaltException raised (INV-GOV-HALT-BEFORE-ACTION)",
-        detection_method="Verify exception raised"
+        detection_method="Verify exception raised",
     ),
     ChaosVector(
         id="V2-EXEC-002",
@@ -165,7 +168,7 @@ CHAOS_VECTORS: List[ChaosVector] = [
         severity=VectorSeverity.CRITICAL,
         injection="Call submit_order from non-T2",
         expected_behavior="TierViolationError raised",
-        detection_method="Catch exception"
+        detection_method="Catch exception",
     ),
     ChaosVector(
         id="V2-EXEC-003",
@@ -175,9 +178,8 @@ CHAOS_VECTORS: List[ChaosVector] = [
         severity=VectorSeverity.HIGH,
         injection="Create intent twice with same params",
         expected_behavior="intent_hash identical",
-        detection_method="Hash comparison"
+        detection_method="Hash comparison",
     ),
-    
     # Dispatcher vectors
     ChaosVector(
         id="V2-DISP-001",
@@ -187,7 +189,7 @@ CHAOS_VECTORS: List[ChaosVector] = [
         severity=VectorSeverity.HIGH,
         injection="Broadcast halt, kill dispatcher without cleanup",
         expected_behavior="All workers stopped, no orphans",
-        detection_method="tmux list-sessions empty"
+        detection_method="tmux list-sessions empty",
     ),
     ChaosVector(
         id="V2-DISP-002",
@@ -197,9 +199,8 @@ CHAOS_VECTORS: List[ChaosVector] = [
         severity=VectorSeverity.HIGH,
         injection="Spawn 10 workers, broadcast halt",
         expected_behavior="Cascade < 500ms (INV-HALT-2)",
-        detection_method="Timing measurement"
+        detection_method="Timing measurement",
     ),
-    
     # River vectors (deferred)
     ChaosVector(
         id="V2-RIVER-001",
@@ -209,7 +210,7 @@ CHAOS_VECTORS: List[ChaosVector] = [
         severity=VectorSeverity.MEDIUM,
         injection="Inject news event, measure quality",
         expected_behavior="Quality degrades gracefully",
-        detection_method="Quality score trajectory"
+        detection_method="Quality score trajectory",
     ),
 ]
 
@@ -218,19 +219,20 @@ CHAOS_VECTORS: List[ChaosVector] = [
 # RUNNER
 # =============================================================================
 
+
 class ChaosSuiteV2:
     """Chaos suite runner."""
-    
+
     def __init__(self):
         self.vectors = CHAOS_VECTORS
-        self.results: List[VectorTestResult] = []
-    
+        self.results: list[VectorTestResult] = []
+
     def run_vector(self, vector_id: str) -> VectorTestResult:
         """Run a single chaos vector."""
         vector = next((v for v in self.vectors if v.id == vector_id), None)
         if not vector:
             raise ValueError(f"Unknown vector: {vector_id}")
-        
+
         # Dispatch to appropriate test
         test_fn = getattr(self, f"_test_{vector.id.replace('-', '_')}", None)
         if test_fn:
@@ -241,34 +243,36 @@ class ChaosSuiteV2:
                 result=VectorResult.FAIL,
                 detection_time_ms=None,
                 evidence={"error": "No test implementation"},
-                timestamp=datetime.now(timezone.utc)
+                timestamp=datetime.now(UTC),
             )
-    
-    def run_all(self) -> Dict[str, Any]:
+
+    def run_all(self) -> dict[str, Any]:
         """Run all chaos vectors."""
         self.results = []
-        
+
         for vector in self.vectors:
             try:
                 result = self.run_vector(vector.id)
                 self.results.append(result)
             except Exception as e:
-                self.results.append(VectorTestResult(
-                    vector_id=vector.id,
-                    result=VectorResult.CRASHED,
-                    detection_time_ms=None,
-                    evidence={"error": str(e)},
-                    timestamp=datetime.now(timezone.utc)
-                ))
-        
+                self.results.append(
+                    VectorTestResult(
+                        vector_id=vector.id,
+                        result=VectorResult.CRASHED,
+                        detection_time_ms=None,
+                        evidence={"error": str(e)},
+                        timestamp=datetime.now(UTC),
+                    )
+                )
+
         # Calculate stats
         pass_count = sum(1 for r in self.results if r.result == VectorResult.PASS)
         detected_count = sum(1 for r in self.results if r.result == VectorResult.DETECTED)
         fail_count = sum(1 for r in self.results if r.result == VectorResult.FAIL)
         crash_count = sum(1 for r in self.results if r.result == VectorResult.CRASHED)
-        
+
         survival_rate = (pass_count + detected_count) / len(self.results) * 100
-        
+
         return {
             "total": len(self.results),
             "pass": pass_count,
@@ -278,42 +282,44 @@ class ChaosSuiteV2:
             "survival_rate": survival_rate,
             "exit_gate_pass": survival_rate >= 90,
         }
-    
+
     # =========================================================================
     # VECTOR TEST IMPLEMENTATIONS
     # =========================================================================
-    
+
     def _test_V2_NEX_001(self, vector: ChaosVector) -> VectorTestResult:
         """Test synthetic_leak vector."""
-        import pandas as pd
         import numpy as np
-        
+        import pandas as pd
+
         from enrichment.layers import l1_time_sessions
-        
+
         # Create data with explicit gap
-        df = pd.DataFrame({
-            'timestamp': pd.date_range('2025-01-15', periods=100, freq='1min', tz='UTC'),
-            'close': [1.0850] * 50 + [np.nan] * 10 + [1.0860] * 40,
-            'high': 1.0855,
-            'low': 1.0845,
-        })
-        
+        df = pd.DataFrame(
+            {
+                "timestamp": pd.date_range("2025-01-15", periods=100, freq="1min", tz="UTC"),
+                "close": [1.0850] * 50 + [np.nan] * 10 + [1.0860] * 40,
+                "high": 1.0855,
+                "low": 1.0845,
+            }
+        )
+
         # Count NaN before
-        nan_before = df['close'].isna().sum()
-        
+        nan_before = df["close"].isna().sum()
+
         # Run L1 (should preserve NaN, not fill)
         result = l1_time_sessions.enrich(df)
-        
+
         # The close column should still have NaN
-        nan_after = result['close'].isna().sum()
-        
+        nan_after = result["close"].isna().sum()
+
         if nan_after == nan_before:
             return VectorTestResult(
                 vector_id=vector.id,
                 result=VectorResult.PASS,
                 detection_time_ms=0,
                 evidence={"nan_before": nan_before, "nan_after": nan_after},
-                timestamp=datetime.now(timezone.utc)
+                timestamp=datetime.now(UTC),
             )
         else:
             return VectorTestResult(
@@ -321,49 +327,54 @@ class ChaosSuiteV2:
                 result=VectorResult.FAIL,
                 detection_time_ms=None,
                 evidence={"nan_before": nan_before, "nan_after": nan_after},
-                timestamp=datetime.now(timezone.utc)
+                timestamp=datetime.now(UTC),
             )
-    
+
     def _test_V2_NEX_003(self, vector: ChaosVector) -> VectorTestResult:
         """Test determinism_break vector."""
-        import pandas as pd
-        import numpy as np
         import hashlib
-        
+
+        import numpy as np
+        import pandas as pd
+
         from enrichment.layers import l1_time_sessions
-        
+
         # Create identical inputs
         np.random.seed(42)
-        df1 = pd.DataFrame({
-            'timestamp': pd.date_range('2025-01-15', periods=100, freq='1min', tz='UTC'),
-            'close': 1.0850 + np.random.randn(100) * 0.001,
-            'high': 1.0855,
-            'low': 1.0845,
-        })
-        
+        df1 = pd.DataFrame(
+            {
+                "timestamp": pd.date_range("2025-01-15", periods=100, freq="1min", tz="UTC"),
+                "close": 1.0850 + np.random.randn(100) * 0.001,
+                "high": 1.0855,
+                "low": 1.0845,
+            }
+        )
+
         np.random.seed(42)
-        df2 = pd.DataFrame({
-            'timestamp': pd.date_range('2025-01-15', periods=100, freq='1min', tz='UTC'),
-            'close': 1.0850 + np.random.randn(100) * 0.001,
-            'high': 1.0855,
-            'low': 1.0845,
-        })
-        
+        df2 = pd.DataFrame(
+            {
+                "timestamp": pd.date_range("2025-01-15", periods=100, freq="1min", tz="UTC"),
+                "close": 1.0850 + np.random.randn(100) * 0.001,
+                "high": 1.0855,
+                "low": 1.0845,
+            }
+        )
+
         # Run enrichment
         result1 = l1_time_sessions.enrich(df1)
         result2 = l1_time_sessions.enrich(df2)
-        
+
         # Compare hashes
         hash1 = hashlib.sha256(result1.to_json().encode()).hexdigest()
         hash2 = hashlib.sha256(result2.to_json().encode()).hexdigest()
-        
+
         if hash1 == hash2:
             return VectorTestResult(
                 vector_id=vector.id,
                 result=VectorResult.PASS,
                 detection_time_ms=0,
                 evidence={"hash1": hash1[:16], "hash2": hash2[:16]},
-                timestamp=datetime.now(timezone.utc)
+                timestamp=datetime.now(UTC),
             )
         else:
             return VectorTestResult(
@@ -371,7 +382,7 @@ class ChaosSuiteV2:
                 result=VectorResult.FAIL,
                 detection_time_ms=None,
                 evidence={"hash1": hash1[:16], "hash2": hash2[:16]},
-                timestamp=datetime.now(timezone.utc)
+                timestamp=datetime.now(UTC),
             )
 
 
@@ -379,19 +390,20 @@ class ChaosSuiteV2:
 # CLI
 # =============================================================================
 
+
 def main():
     """Run chaos suite from CLI."""
     import argparse
-    
+
     parser = argparse.ArgumentParser(description="Chaos Suite V2")
     parser.add_argument("--all", action="store_true", help="Run all vectors")
     parser.add_argument("--vector", type=str, help="Run specific vector")
     parser.add_argument("--list", action="store_true", help="List all vectors")
-    
+
     args = parser.parse_args()
-    
+
     suite = ChaosSuiteV2()
-    
+
     if args.list:
         print("CHAOS SUITE V2 — VECTORS")
         print("=" * 60)
@@ -401,13 +413,13 @@ def main():
             print(f"  Severity: {v.severity.value}")
             print()
         return
-    
+
     if args.vector:
         result = suite.run_vector(args.vector)
         print(f"{result.vector_id}: {result.result.value}")
         print(f"  Evidence: {result.evidence}")
         return
-    
+
     if args.all:
         results = suite.run_all()
         print("\nCHAOS SUITE V2 — RESULTS")
@@ -420,7 +432,7 @@ def main():
         print(f"Survival Rate: {results['survival_rate']:.1f}%")
         print(f"Exit Gate: {'PASS' if results['exit_gate_pass'] else 'FAIL'}")
         return
-    
+
     parser.print_help()
 
 

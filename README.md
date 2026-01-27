@@ -1,42 +1,74 @@
 # Phoenix
 
-**Status:** Sprint 28 — STEEL_PIPES (Complete)
-**Jurisdiction:** Sibling to God_Mode (Forge)
+**Status:** S29 BUILD_MAP locked | S30 LEARNING_LOOP next
 **Founded:** 2026-01-24
 
 ---
 
 ## What Is Phoenix
 
-Phoenix is the first application built on the God_Mode governance framework.
+Phoenix is the constitutional trading system built on God_Mode governance.
 
 ```
 God_Mode (Forge) = The OS — governance patterns, constitutional enforcement
 Phoenix (App)    = The Trading System — River, CSO, Execution
 ```
 
-**Founding Invariant:** The Forge remains the lawgiver, not the body.
+**Constitutional Anchor:** Human sovereignty over capital is absolute.
 
 ---
 
-## Current Sprint: S28 STEEL_PIPES
+## Current Status
 
-| Track | Name | Status |
-|-------|------|--------|
-| A | Chaos V3 (Regime Stress) | ✓ COMPLETE |
-| B | Monitoring (Dashboard/Alerts) | ✓ COMPLETE |
-| C | Execution Path (T0/T1/T2 Wiring) | ✓ COMPLETE |
-| D | Consolidation (Docs/Constitution) | ✓ COMPLETE |
+| Sprint | Name | Status |
+|--------|------|--------|
+| S28 | STEEL_PIPES | ✓ Complete |
+| S29 | BUILD_MAP | ✓ Locked |
+| S30 | LEARNING_LOOP | Next |
 
-### Exit Gate Summary
+### S30 Focus: LEARNING_LOOP
+- T0: Data schemas (HPG, Query IR)
+- T1: CSO reasoning harness
+- T2: Bead pipeline tests
 
-| Gate | Criterion | Status |
-|------|-----------|--------|
-| Chaos V3 | 100% vectors pass | ✓ PASS |
-| Dashboard | Renders with live data | ✓ PASS |
-| Auto-Halt | >3 CRITICAL → halt | ✓ PASS |
-| Determinism | Same replay = same hash | ✓ PASS |
-| Constitution | Invariants populated | ✓ PASS |
+See: `docs/build_docs/SPRINT_ROADMAP_S30_S33_v0.2.md`
+
+---
+
+## Quick Start
+
+```bash
+# 1. Clone
+git clone https://github.com/SlimWojak/phoenix.git
+cd phoenix
+
+# 2. Setup (using nex venv)
+cd ~/nex && source .venv/bin/activate
+
+# 3. Run tests
+python -m pytest ~/phoenix/tests/ -v
+```
+
+---
+
+## Key Docs
+
+| Doc | Purpose |
+|-----|---------|
+| [PRODUCT_VISION](docs/build_docs/PRODUCT_VISION.md) | Why we're building this |
+| [SPRINT_ROADMAP](docs/build_docs/SPRINT_ROADMAP_S30_S33_v0.2.md) | S30-S33 plan |
+| [CONSTITUTION](CONSTITUTION/invariants/) | Proven invariants |
+
+---
+
+## Proven Invariants
+
+| ID | Description | Status |
+|----|-------------|--------|
+| INV-HALT-1 | Local halt <50ms | ✓ 0.003ms |
+| INV-HALT-2 | Cascade <500ms | ✓ 22.59ms |
+| INV-CONTRACT-1 | Deterministic state | ✓ Hash match |
+| INV-DATA-CANON | Single truth (River) | ✓ Enforced |
 
 ---
 
@@ -44,122 +76,47 @@ Phoenix (App)    = The Trading System — River, CSO, Execution
 
 ```
 phoenix/
-├── CONSTITUTION/           # The Law
-│   ├── invariants/         # 6 proven invariants
-│   ├── roles/              # sovereign, cto, cso
-│   └── wiring/             # halt propagation
-│
-├── contracts/              # Data & governance contracts
-│   ├── ICT_DATA_CONTRACT.md
-│   └── GOVERNANCE_INTERFACE_CONTRACT.md
-│
-├── governance/             # GovernanceInterface (Track B)
-│   ├── interface.py        # ABC for all organs
-│   ├── halt.py             # <50ms halt mechanism
-│   ├── telemetry.py        # Quality reporting
-│   └── types.py            # Tier enums
-│
-├── monitoring/             # Observability (S28.B)
-│   ├── alerts.py           # Threshold + debounce + auto-halt
-│   └── dashboard.py        # Web health view
-│
-├── execution/              # Execution path (S28.C)
-│   ├── position.py         # Lifecycle state machine
-│   ├── broker_stub.py      # Paper broker (P&L v0)
-│   ├── replay.py           # Deterministic harness
-│   └── intent.py           # Order intents
-│
-├── cso/                    # Chief Strategy Officer
-│   ├── knowledge/          # 5-drawer methodology (59 signals)
-│   ├── observer.py         # Passive observer
-│   └── beads.py            # Decision artifacts
-│
-├── enrichment/             # Data enrichment (L1-L6)
-│   └── layers/             # ICT marker calculation
-│
-├── dispatcher/             # Worker coordination
-│   └── tmux_control.py     # TMUX C2
-│
-├── tests/                  # 60+ tests
-│   ├── test_halt_*.py
-│   ├── test_execution_path.py
-│   ├── test_monitoring.py
-│   └── chaos/
-│
-└── docs/                   # Sprint reports & docs
+├── CONSTITUTION/       # The Law (invariants, roles, wiring)
+├── contracts/          # Data & governance contracts
+├── governance/         # GovernanceInterface, halt, telemetry
+├── monitoring/         # Alerts, dashboard
+├── execution/          # Position, broker, replay
+├── cso/                # Chief Strategy Officer (knowledge, observer)
+├── enrichment/         # Data enrichment layers (L1-L6)
+├── dispatcher/         # Worker coordination
+├── schemas/            # YAML schemas (beads, HPG, etc)
+├── scripts/            # Utilities
+├── tests/              # Test suite
+└── docs/               # Documentation
 ```
 
 ---
 
-## Proven Invariants
-
-| Invariant | Description | Proven Value |
-|-----------|-------------|--------------|
-| INV-HALT-1 | Local halt < 50ms | 0.003ms |
-| INV-HALT-2 | Cascade < 500ms | 22.59ms |
-| INV-CONTRACT-1 | Deterministic state | Hash match |
-| INV-DATA-CANON | Single truth (River) | XOR == 0 |
-| INV-GOV-HALT-BEFORE-ACTION | Halt-first pattern | Tests pass |
-| INV-EXEC-LIFECYCLE-1 | Valid transitions | Enforced |
-
----
-
-## Quick Start
+## Development
 
 ```bash
-# Clone
-git clone https://github.com/SlimWojak/phoenix.git
-cd phoenix
+# Install pre-commit hooks
+pre-commit install
 
-# Run tests (requires nex venv)
-cd ~/nex && source .venv/bin/activate
-python -m pytest ~/phoenix/tests/ -v
+# Run linter
+ruff check .
 
-# Check halt latency
-python -c "
-from governance.halt import HaltSignal
-import time
-h = HaltSignal()
-t = time.perf_counter()
-h.set()
-print(f'Halt latency: {(time.perf_counter()-t)*1000:.3f}ms')
-"
+# Run type checker
+mypy --strict governance/ execution/
 
-# Run execution path tests
-python tests/test_execution_path.py
+# Run specific test
+pytest tests/test_halt_latency.py -v
 ```
 
 ---
 
-## Fresh Session Bootstrap
-
-**Load these files in order:**
-
-1. `SKILL.md` — Communication standard
-2. `CONSTITUTION/invariants/` — Proven laws
-3. `contracts/ICT_DATA_CONTRACT.md` — Data schema
-4. `docs/SPRINT_26.md` — Current sprint
-5. `docs/ADVISOR_ORIENTATION.md` — Full bootstrap guide
-
----
-
-## Constitutional Anchors
-
-1. **Human sovereignty over capital is absolute**
-2. **Tier 2 (capital-affecting) always requires human gate**
-3. **Forge amplifies judgment, never replaces it**
-4. **No agent assumes operator reads code**
-
----
-
-## Related Repositories
+## Related
 
 | Repo | Purpose |
 |------|---------|
-| `God_Mode` | Forge — governance patterns |
-| `nex` | Legacy data pipeline (being subsumed) |
+| God_Mode | Forge — governance patterns |
+| nex | Legacy data pipeline |
 
 ---
 
-*Sprint 28 — Steel Pipes Complete*
-*OINK OINK.* 🐗🔥
+*S29 BUILD_MAP locked. S30 LEARNING_LOOP next.*

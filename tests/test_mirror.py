@@ -20,13 +20,11 @@ Or via pytest:
     cd ~/phoenix && python -m pytest tests/test_mirror.py -v -s
 """
 
-import sys
 import json
-import hashlib
+import sys
+from dataclasses import asdict, dataclass
+from datetime import UTC, datetime
 from pathlib import Path
-from datetime import datetime, timezone, timedelta
-from typing import Dict, List, Tuple, Optional
-from dataclasses import dataclass, asdict
 
 # Add paths for imports
 PHOENIX_ROOT = Path.home() / "phoenix"
@@ -34,14 +32,13 @@ NEX_ROOT = Path.home() / "nex"
 sys.path.insert(0, str(NEX_ROOT))
 sys.path.insert(0, str(PHOENIX_ROOT))
 
-import pandas as pd
-import numpy as np
-
 # Import mirror markers directly (avoid package import issues)
 import importlib.util
+
+import pandas as pd
+
 spec = importlib.util.spec_from_file_location(
-    "mirror_markers", 
-    PHOENIX_ROOT / "contracts" / "mirror_markers.py"
+    "mirror_markers", PHOENIX_ROOT / "contracts" / "mirror_markers.py"
 )
 mirror_markers_module = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(mirror_markers_module)
@@ -52,41 +49,43 @@ EXCLUDED_FROM_MIRROR = mirror_markers_module.EXCLUDED_FROM_MIRROR
 @dataclass
 class MarkerResult:
     """Result for a single marker XOR comparison."""
+
     marker: str
     xor_sum: int
     total_bars: int
     divergence_rate: float
-    divergent_timestamps: List[str]  # First 5 timestamps where XOR=1
+    divergent_timestamps: list[str]  # First 5 timestamps where XOR=1
 
 
-@dataclass 
+@dataclass
 class MirrorTestResult:
     """Complete mirror test results."""
+
     test_window_start: str
     test_window_end: str
     symbol: str
-    
+
     # Bar counts
     dukascopy_bars: int
     ibkr_bars: int
     aligned_bars: int
     excluded_bars: int
-    
+
     # Marker results
     markers_tested: int
     markers_passed: int
     markers_failed: int
     total_xor_sum: int
-    
+
     # Per-marker details
-    marker_results: List[Dict]
-    
+    marker_results: list[dict]
+
     # Exclusions
-    exclusions: Dict[str, int]
-    
+    exclusions: dict[str, int]
+
     # Verdict
     verdict: str  # PASS or FAIL
-    failure_reasons: List[str]
+    failure_reasons: list[str]
 
 
 # =============================================================================
@@ -96,8 +95,8 @@ class MirrorTestResult:
 # Test window: 4 days where both vendors have data
 # Dukascopy: Has data up to 2025-11-21
 # IBKR: Can fetch historical for this period
-TEST_WINDOW_START = datetime(2025, 11, 17, 0, 0, 0, tzinfo=timezone.utc)
-TEST_WINDOW_END = datetime(2025, 11, 21, 0, 0, 0, tzinfo=timezone.utc)
+TEST_WINDOW_START = datetime(2025, 11, 17, 0, 0, 0, tzinfo=UTC)
+TEST_WINDOW_END = datetime(2025, 11, 21, 0, 0, 0, tzinfo=UTC)
 TEST_SYMBOL = "EURUSD"
 
 # Paths (NEX_ROOT defined at top)
@@ -108,49 +107,46 @@ RAW_PARQUET_PATH = NEX_ROOT / "nex_lab" / "data" / "fx" / f"{TEST_SYMBOL}_1m.par
 # DATA EXTRACTION
 # =============================================================================
 
+
 def extract_dukascopy_data(
-    start: datetime,
-    end: datetime,
-    symbol: str = TEST_SYMBOL
+    start: datetime, end: datetime, symbol: str = TEST_SYMBOL
 ) -> pd.DataFrame:
     """
     Extract Dukascopy data from raw parquet for the test window.
-    
+
     Returns raw OHLCV DataFrame (6 columns).
     """
     df = pd.read_parquet(RAW_PARQUET_PATH)
-    df['timestamp'] = pd.to_datetime(df['timestamp'], utc=True)
-    
+    df["timestamp"] = pd.to_datetime(df["timestamp"], utc=True)
+
     # Filter to test window
-    mask = (df['timestamp'] >= start) & (df['timestamp'] < end)
+    mask = (df["timestamp"] >= start) & (df["timestamp"] < end)
     df_window = df[mask].copy()
-    
-    return df_window.sort_values('timestamp').reset_index(drop=True)
+
+    return df_window.sort_values("timestamp").reset_index(drop=True)
 
 
 def fetch_ibkr_data(
-    start: datetime,
-    end: datetime,
-    symbol: str = TEST_SYMBOL
-) -> Optional[pd.DataFrame]:
+    start: datetime, end: datetime, symbol: str = TEST_SYMBOL
+) -> pd.DataFrame | None:
     """
     Fetch IBKR historical data for the test window.
-    
+
     Returns raw OHLCV DataFrame (6 columns) or None if fetch fails.
     """
     try:
         from nex_lab.data.vendors.ibkr import fetch_ohlcv
-        
+
         print(f"Fetching IBKR data for {symbol} from {start} to {end}...")
         df = fetch_ohlcv(symbol, "1m", start, end)
-        
+
         if df is None or df.empty:
             print("  WARNING: IBKR returned no data")
             return None
-            
+
         print(f"  Fetched {len(df):,} bars from IBKR")
         return df
-        
+
     except Exception as e:
         print(f"  ERROR fetching IBKR data: {e}")
         return None
@@ -160,18 +156,19 @@ def fetch_ibkr_data(
 # ENRICHMENT
 # =============================================================================
 
+
 def run_enrichment(df: pd.DataFrame, symbol: str = TEST_SYMBOL) -> pd.DataFrame:
     """
     Run full NEX enrichment pipeline on raw OHLCV data.
-    
+
     This is the SAME enrichment logic for both vendors — no vendor-specific branches.
     """
     from nex_lab.data.enrichment.incremental import _run_full_enrichment
-    
+
     print(f"Running enrichment on {len(df):,} bars...")
     df_enriched = _run_full_enrichment(df.copy(), symbol)
     print(f"  Enriched to {len(df_enriched.columns)} columns")
-    
+
     return df_enriched
 
 
@@ -179,15 +176,13 @@ def run_enrichment(df: pd.DataFrame, symbol: str = TEST_SYMBOL) -> pd.DataFrame:
 # XOR COMPARISON
 # =============================================================================
 
+
 def align_by_timestamp(
-    df_a: pd.DataFrame,
-    df_b: pd.DataFrame,
-    label_a: str = "A",
-    label_b: str = "B"
-) -> Tuple[pd.DataFrame, Dict[str, int]]:
+    df_a: pd.DataFrame, df_b: pd.DataFrame, label_a: str = "A", label_b: str = "B"
+) -> tuple[pd.DataFrame, dict[str, int]]:
     """
     Align two DataFrames by timestamp for comparison.
-    
+
     Returns:
         - Aligned DataFrame with columns from both sources
         - Dict of exclusion counts
@@ -195,49 +190,43 @@ def align_by_timestamp(
     # Ensure timestamp is the key
     df_a = df_a.copy()
     df_b = df_b.copy()
-    
-    if 'timestamp' not in df_a.columns:
+
+    if "timestamp" not in df_a.columns:
         if isinstance(df_a.index, pd.DatetimeIndex):
             df_a = df_a.reset_index()
-    if 'timestamp' not in df_b.columns:
+    if "timestamp" not in df_b.columns:
         if isinstance(df_b.index, pd.DatetimeIndex):
             df_b = df_b.reset_index()
-    
+
     # Merge on timestamp (inner join = only overlapping bars)
     merged = pd.merge(
-        df_a, df_b,
-        on='timestamp',
-        how='inner',
-        suffixes=(f'_{label_a}', f'_{label_b}')
+        df_a, df_b, on="timestamp", how="inner", suffixes=(f"_{label_a}", f"_{label_b}")
     )
-    
+
     exclusions = {
-        f'{label_a}_total': len(df_a),
-        f'{label_b}_total': len(df_b),
-        'aligned': len(merged),
-        'excluded_no_match': len(df_a) + len(df_b) - 2 * len(merged)
+        f"{label_a}_total": len(df_a),
+        f"{label_b}_total": len(df_b),
+        "aligned": len(merged),
+        "excluded_no_match": len(df_a) + len(df_b) - 2 * len(merged),
     }
-    
+
     return merged, exclusions
 
 
 def xor_compare_markers(
-    df_aligned: pd.DataFrame,
-    markers: List[str],
-    label_a: str = "dukascopy",
-    label_b: str = "ibkr"
-) -> List[MarkerResult]:
+    df_aligned: pd.DataFrame, markers: list[str], label_a: str = "dukascopy", label_b: str = "ibkr"
+) -> list[MarkerResult]:
     """
     XOR compare boolean markers between two aligned DataFrames.
-    
+
     Returns list of MarkerResult for each marker.
     """
     results = []
-    
+
     for marker in markers:
         col_a = f"{marker}_{label_a}"
         col_b = f"{marker}_{label_b}"
-        
+
         # Check columns exist
         if col_a not in df_aligned.columns:
             print(f"  WARNING: {col_a} not found in aligned data")
@@ -245,29 +234,31 @@ def xor_compare_markers(
         if col_b not in df_aligned.columns:
             print(f"  WARNING: {col_b} not found in aligned data")
             continue
-        
+
         # Get values as boolean
         vals_a = df_aligned[col_a].fillna(False).astype(bool)
         vals_b = df_aligned[col_b].fillna(False).astype(bool)
-        
+
         # XOR comparison
         xor_result = vals_a ^ vals_b
         xor_sum = xor_result.sum()
         total_bars = len(xor_result)
         divergence_rate = xor_sum / total_bars if total_bars > 0 else 0.0
-        
+
         # Get timestamps of divergences (first 5)
         divergent_mask = xor_result
-        divergent_ts = df_aligned.loc[divergent_mask, 'timestamp'].head(5).astype(str).tolist()
-        
-        results.append(MarkerResult(
-            marker=marker,
-            xor_sum=int(xor_sum),
-            total_bars=total_bars,
-            divergence_rate=float(divergence_rate),
-            divergent_timestamps=divergent_ts
-        ))
-    
+        divergent_ts = df_aligned.loc[divergent_mask, "timestamp"].head(5).astype(str).tolist()
+
+        results.append(
+            MarkerResult(
+                marker=marker,
+                xor_sum=int(xor_sum),
+                total_bars=total_bars,
+                divergence_rate=float(divergence_rate),
+                divergent_timestamps=divergent_ts,
+            )
+        )
+
     return results
 
 
@@ -275,14 +266,13 @@ def xor_compare_markers(
 # MAIN TEST
 # =============================================================================
 
+
 def run_mirror_test(
-    start: datetime = TEST_WINDOW_START,
-    end: datetime = TEST_WINDOW_END,
-    symbol: str = TEST_SYMBOL
+    start: datetime = TEST_WINDOW_START, end: datetime = TEST_WINDOW_END, symbol: str = TEST_SYMBOL
 ) -> MirrorTestResult:
     """
     Execute full mirror test: IBKR ↔ Dukascopy boolean marker equivalence.
-    
+
     Returns MirrorTestResult with all details.
     """
     print("=" * 70)
@@ -292,22 +282,22 @@ def run_mirror_test(
     print(f"Test window: {start} to {end}")
     print(f"Symbol: {symbol}")
     print()
-    
+
     failure_reasons = []
-    
+
     # Step 1: Extract Dukascopy data
     print("[1/5] Extracting Dukascopy data...")
     df_dukascopy_raw = extract_dukascopy_data(start, end, symbol)
     print(f"      Found {len(df_dukascopy_raw):,} bars")
-    
+
     if len(df_dukascopy_raw) == 0:
         failure_reasons.append("No Dukascopy data for test window")
-    
+
     # Step 2: Fetch IBKR data
     print()
     print("[2/5] Fetching IBKR historical data...")
     df_ibkr_raw = fetch_ibkr_data(start, end, symbol)
-    
+
     if df_ibkr_raw is None or len(df_ibkr_raw) == 0:
         failure_reasons.append("Failed to fetch IBKR data for test window")
         # Create empty result
@@ -326,11 +316,11 @@ def run_mirror_test(
             marker_results=[],
             exclusions={},
             verdict="FAIL",
-            failure_reasons=failure_reasons
+            failure_reasons=failure_reasons,
         )
-    
+
     print(f"      Found {len(df_ibkr_raw):,} bars")
-    
+
     # Step 3: Run enrichment on both
     print()
     print("[3/5] Running enrichment pipeline...")
@@ -338,43 +328,38 @@ def run_mirror_test(
     df_dukascopy_enriched = run_enrichment(df_dukascopy_raw, symbol)
     print("      IBKR enrichment:")
     df_ibkr_enriched = run_enrichment(df_ibkr_raw, symbol)
-    
+
     # Step 4: Align by timestamp
     print()
     print("[4/5] Aligning data by timestamp...")
     df_aligned, exclusions = align_by_timestamp(
-        df_dukascopy_enriched, df_ibkr_enriched,
-        label_a="dukascopy", label_b="ibkr"
+        df_dukascopy_enriched, df_ibkr_enriched, label_a="dukascopy", label_b="ibkr"
     )
     print(f"      Dukascopy: {exclusions['dukascopy_total']:,} bars")
     print(f"      IBKR: {exclusions['ibkr_total']:,} bars")
     print(f"      Aligned: {exclusions['aligned']:,} bars")
     print(f"      Excluded (no match): {exclusions['excluded_no_match']:,} bars")
-    
-    if exclusions['aligned'] == 0:
+
+    if exclusions["aligned"] == 0:
         failure_reasons.append("No aligned bars between vendors")
-    
+
     # Step 5: XOR compare markers
     print()
     print("[5/5] XOR comparing boolean markers...")
-    
+
     # Filter to markers that exist and aren't excluded
-    markers_to_test = [
-        m for m in MIRROR_MARKER_COLUMNS 
-        if m not in EXCLUDED_FROM_MIRROR
-    ]
+    markers_to_test = [m for m in MIRROR_MARKER_COLUMNS if m not in EXCLUDED_FROM_MIRROR]
     print(f"      Testing {len(markers_to_test)} markers (excluding volume-derived)")
-    
+
     marker_results = xor_compare_markers(
-        df_aligned, markers_to_test,
-        label_a="dukascopy", label_b="ibkr"
+        df_aligned, markers_to_test, label_a="dukascopy", label_b="ibkr"
     )
-    
+
     # Summarize results
     total_xor = sum(r.xor_sum for r in marker_results)
     passed = sum(1 for r in marker_results if r.xor_sum == 0)
     failed = sum(1 for r in marker_results if r.xor_sum > 0)
-    
+
     print()
     print("=" * 70)
     print("RESULTS")
@@ -383,7 +368,7 @@ def run_mirror_test(
     print(f"Markers PASS (XOR=0): {passed}")
     print(f"Markers FAIL (XOR>0): {failed}")
     print(f"Total XOR sum: {total_xor:,}")
-    
+
     # Determine verdict
     if total_xor == 0 and len(failure_reasons) == 0:
         verdict = "PASS"
@@ -397,7 +382,7 @@ def run_mirror_test(
         print("❌ VERDICT: FAIL")
         for reason in failure_reasons:
             print(f"   • {reason}")
-    
+
     # Show failed markers
     if failed > 0:
         print()
@@ -407,17 +392,17 @@ def run_mirror_test(
             print(f"  {r.marker}: XOR={r.xor_sum}, rate={r.divergence_rate:.4%}")
             if r.divergent_timestamps:
                 print(f"    First divergence at: {r.divergent_timestamps[0]}")
-    
+
     print("=" * 70)
-    
+
     return MirrorTestResult(
         test_window_start=str(start),
         test_window_end=str(end),
         symbol=symbol,
         dukascopy_bars=len(df_dukascopy_raw),
         ibkr_bars=len(df_ibkr_raw) if df_ibkr_raw is not None else 0,
-        aligned_bars=exclusions['aligned'],
-        excluded_bars=exclusions.get('excluded_no_match', 0),
+        aligned_bars=exclusions["aligned"],
+        excluded_bars=exclusions.get("excluded_no_match", 0),
         markers_tested=len(marker_results),
         markers_passed=passed,
         markers_failed=failed,
@@ -425,24 +410,21 @@ def run_mirror_test(
         marker_results=[asdict(r) for r in marker_results],
         exclusions=exclusions,
         verdict=verdict,
-        failure_reasons=failure_reasons
+        failure_reasons=failure_reasons,
     )
 
 
 def generate_report(result: MirrorTestResult, output_path: Path) -> None:
     """Generate MIRROR_TEST_REPORT.md from test results."""
-    
+
     # Sort markers by XOR sum (failures first)
-    sorted_markers = sorted(
-        result.marker_results,
-        key=lambda x: (-x['xor_sum'], x['marker'])
-    )
-    
+    sorted_markers = sorted(result.marker_results, key=lambda x: (-x["xor_sum"], x["marker"]))
+
     report = f"""# MIRROR TEST REPORT
 
-**Document:** MIRROR_TEST_REPORT.md  
-**Date:** {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M UTC')}  
-**Sprint:** 26 Track A Day 1  
+**Document:** MIRROR_TEST_REPORT.md
+**Date:** {datetime.now(UTC).strftime('%Y-%m-%d %H:%M UTC')}
+**Sprint:** 26 Track A Day 1
 **Contract:** phoenix/contracts/ICT_DATA_CONTRACT.md v1.0.0
 
 ---
@@ -510,12 +492,14 @@ logic, the same boolean markers fire.
 """
 
     for m in sorted_markers:
-        status = "✅ PASS" if m['xor_sum'] == 0 else "❌ FAIL"
-        rate = f"{m['divergence_rate']:.4%}" if m['divergence_rate'] > 0 else "0%"
-        report += f"| `{m['marker']}` | {m['xor_sum']:,} | {m['total_bars']:,} | {rate} | {status} |\n"
+        status = "✅ PASS" if m["xor_sum"] == 0 else "❌ FAIL"
+        rate = f"{m['divergence_rate']:.4%}" if m["divergence_rate"] > 0 else "0%"
+        report += (
+            f"| `{m['marker']}` | {m['xor_sum']:,} | {m['total_bars']:,} | {rate} | {status} |\n"
+        )
 
     # Add divergence analysis if there are failures
-    failed_markers = [m for m in sorted_markers if m['xor_sum'] > 0]
+    failed_markers = [m for m in sorted_markers if m["xor_sum"] > 0]
     if failed_markers:
         report += f"""
 
@@ -534,7 +518,7 @@ logic, the same boolean markers fire.
 - **Divergence Rate:** {m['divergence_rate']:.4%}
 - **Sample Divergent Timestamps:**
 """
-            for ts in m['divergent_timestamps'][:3]:
+            for ts in m["divergent_timestamps"][:3]:
                 report += f"  - {ts}\n"
 
     report += f"""
@@ -547,7 +531,7 @@ logic, the same boolean markers fire.
 test_window:
   start: {result.test_window_start}
   end: {result.test_window_end}
-  
+
 symbol: {result.symbol}
 
 enrichment_pipeline: nex_lab.data.enrichment.incremental._run_full_enrichment
@@ -580,19 +564,20 @@ schema_hash: b848ffe506fd3fff
 # PYTEST INTEGRATION
 # =============================================================================
 
+
 def test_mirror_xor_sum_zero():
     """
     Pytest test: Mirror Test must pass with XOR_SUM == 0.
-    
+
     This is the gate test for Sprint 26 Track A Day 1.
     """
     result = run_mirror_test()
-    
+
     # Generate report regardless of outcome
     report_dir = Path.home() / "phoenix" / "reports"
     report_dir.mkdir(parents=True, exist_ok=True)
     generate_report(result, report_dir / "MIRROR_TEST_REPORT.md")
-    
+
     # Assert pass condition
     assert result.verdict == "PASS", (
         f"Mirror Test FAILED:\n"
@@ -609,17 +594,17 @@ def test_mirror_xor_sum_zero():
 if __name__ == "__main__":
     # Run test and generate report
     result = run_mirror_test()
-    
+
     # Generate report
     report_dir = Path.home() / "phoenix" / "reports"
     report_dir.mkdir(parents=True, exist_ok=True)
     generate_report(result, report_dir / "MIRROR_TEST_REPORT.md")
-    
+
     # Save raw results as JSON
     results_path = report_dir / "mirror_test_results.json"
-    with open(results_path, 'w') as f:
+    with open(results_path, "w") as f:
         json.dump(asdict(result), f, indent=2, default=str)
     print(f"Raw results saved to: {results_path}")
-    
+
     # Exit with appropriate code
     sys.exit(0 if result.verdict == "PASS" else 1)

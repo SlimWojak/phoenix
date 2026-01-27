@@ -28,20 +28,21 @@ from .layers import (
 )
 
 __all__ = [
-    'l1_time_sessions',
-    'l2_reference_levels',
-    'l3_sweeps',
-    'l4_structure_breaks',
-    'l5_order_blocks',
-    'l6_fvg_imbalances',
+    "l1_time_sessions",
+    "l2_reference_levels",
+    "l3_sweeps",
+    "l4_structure_breaks",
+    "l5_order_blocks",
+    "l6_fvg_imbalances",
 ]
 
-__version__ = '1.0.0'
+__version__ = "1.0.0"
 
 
 # =============================================================================
 # SCHEMA VALIDATION
 # =============================================================================
+
 
 def get_all_columns() -> list:
     """Get all columns produced by L1-L6."""
@@ -58,7 +59,7 @@ def get_all_columns() -> list:
 def validate_no_forbidden_patterns(module_path: str) -> bool:
     """
     Validate module contains no forbidden patterns.
-    
+
     FORBIDDEN:
     - forward_fill
     - ffill
@@ -67,23 +68,23 @@ def validate_no_forbidden_patterns(module_path: str) -> bool:
     """
     import importlib.util
     import re
-    
+
     spec = importlib.util.spec_from_file_location("module", module_path)
     if spec is None:
         return False
-    
-    with open(module_path, 'r') as f:
+
+    with open(module_path) as f:
         content = f.read()
-    
+
     forbidden = [
-        r'\.forward_fill\(',
-        r'\.ffill\(',
-        r'auto_fix',
-        r'\.fillna\([^)]*\)',  # Will need manual audit
+        r"\.forward_fill\(",
+        r"\.ffill\(",
+        r"auto_fix",
+        r"\.fillna\([^)]*\)",  # Will need manual audit
     ]
-    
+
     for pattern in forbidden[:3]:  # First 3 are hard forbidden
         if re.search(pattern, content):
             return False
-    
+
     return True

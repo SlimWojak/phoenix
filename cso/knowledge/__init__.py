@@ -10,16 +10,16 @@ This module manages:
 - ICT concept mappings
 """
 
-from pathlib import Path
-from typing import Dict, List, Optional
-from dataclasses import dataclass
-from datetime import datetime, timezone
 import hashlib
+from dataclasses import dataclass
+from datetime import UTC, datetime
+from pathlib import Path
 
 
 @dataclass
 class KnowledgeEntry:
     """Single knowledge entry."""
+
     entry_id: str
     source_file: str
     content_hash: str
@@ -30,78 +30,78 @@ class KnowledgeEntry:
 class KnowledgeStore:
     """
     Store for loaded knowledge.
-    
+
     READ-ONLY in S27 — loads and indexes, does not modify.
     """
-    
-    def __init__(self, intake_path: Optional[Path] = None):
-        self.intake_path = intake_path or Path(__file__).parent.parent.parent / 'intake' / 'olya'
-        self._entries: Dict[str, KnowledgeEntry] = {}
-    
-    def scan_intake(self) -> List[str]:
+
+    def __init__(self, intake_path: Path | None = None):
+        self.intake_path = intake_path or Path(__file__).parent.parent.parent / "intake" / "olya"
+        self._entries: dict[str, KnowledgeEntry] = {}
+
+    def scan_intake(self) -> list[str]:
         """
         Scan intake directory for new files.
-        
+
         Returns:
             List of new file paths found
         """
         if not self.intake_path.exists():
             return []
-        
+
         new_files = []
-        for file in self.intake_path.glob('*.md'):
-            if file.name != 'README.md':
+        for file in self.intake_path.glob("*.md"):
+            if file.name != "README.md":
                 file_hash = hashlib.sha256(file.read_bytes()).hexdigest()[:16]
                 if file_hash not in [e.content_hash for e in self._entries.values()]:
                     new_files.append(str(file))
-        
-        for file in self.intake_path.glob('*.yaml'):
+
+        for file in self.intake_path.glob("*.yaml"):
             file_hash = hashlib.sha256(file.read_bytes()).hexdigest()[:16]
             if file_hash not in [e.content_hash for e in self._entries.values()]:
                 new_files.append(str(file))
-        
+
         return new_files
-    
-    def load_file(self, file_path: str) -> Optional[KnowledgeEntry]:
+
+    def load_file(self, file_path: str) -> KnowledgeEntry | None:
         """
         Load a knowledge file.
-        
+
         Args:
             file_path: Path to knowledge file
-        
+
         Returns:
             KnowledgeEntry if loaded, None on error
         """
         path = Path(file_path)
         if not path.exists():
             return None
-        
+
         content = path.read_bytes()
         content_hash = hashlib.sha256(content).hexdigest()[:16]
-        
+
         # Infer category from filename
         name = path.stem
-        parts = name.split('_')
-        category = parts[1] if len(parts) > 1 else 'general'
-        
+        parts = name.split("_")
+        category = parts[1] if len(parts) > 1 else "general"
+
         entry = KnowledgeEntry(
             entry_id=f"KNO-{content_hash}",
             source_file=str(path),
             content_hash=content_hash,
-            loaded_at=datetime.now(timezone.utc),
+            loaded_at=datetime.now(UTC),
             category=category,
         )
-        
+
         self._entries[entry.entry_id] = entry
         return entry
-    
-    def get_by_category(self, category: str) -> List[KnowledgeEntry]:
+
+    def get_by_category(self, category: str) -> list[KnowledgeEntry]:
         """Get all entries in a category."""
         return [e for e in self._entries.values() if e.category == category]
-    
-    def get_all(self) -> List[KnowledgeEntry]:
+
+    def get_all(self) -> list[KnowledgeEntry]:
         """Get all loaded entries."""
         return list(self._entries.values())
 
 
-__all__ = ['KnowledgeEntry', 'KnowledgeStore']
+__all__ = ["KnowledgeEntry", "KnowledgeStore"]

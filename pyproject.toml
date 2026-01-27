@@ -1,0 +1,82 @@
+[project]
+name = "phoenix"
+version = "0.30.0"
+description = "Constitutional Trading System — First Application on God_Mode Governance"
+requires-python = ">=3.11"
+readme = "README.md"
+
+dependencies = [
+    "structlog>=24.1.0",
+    "pyyaml>=6.0",
+    "pydantic>=2.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0",
+    "pytest-asyncio>=0.23",
+    "mypy>=1.8",
+    "ruff>=0.2",
+    "pre-commit>=3.6",
+]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
+
+[tool.ruff.lint]
+select = [
+    "E",   # pycodestyle errors
+    "F",   # pyflakes
+    "I",   # isort
+    "B",   # flake8-bugbear
+    "UP",  # pyupgrade
+    "N",   # pep8-naming
+    "S",   # flake8-bandit (security)
+]
+
+ignore = [
+    "S101",  # assert allowed in tests
+    "S311",  # random ok for non-crypto
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["S101", "S106"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["phoenix"]
+
+# NOTE: max-lines enforcement is manual review for now
+# Ruff doesn't have native max-lines-per-file rule
+# See GRANDFATHERED_FILES.md for existing exceptions
+
+[tool.mypy]
+python_version = "3.11"
+strict = true
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
+disallow_incomplete_defs = true
+
+# Gradual adoption for existing code
+[[tool.mypy.overrides]]
+module = [
+    "tests.*",
+    "contracts.*",
+]
+disallow_untyped_defs = false
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_functions = ["test_*"]
+markers = [
+    "invariant: constitutional compliance tests (INV-*)",
+    "chaos: chaos engineering / stress tests",
+    "slow: tests that take >5s",
+]
+asyncio_mode = "auto"
+
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"

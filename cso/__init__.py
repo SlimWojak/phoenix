@@ -15,30 +15,30 @@ S27 CONSTRAINTS:
 BLOCKED_UNTIL: Olya calibration session
 """
 
-from .contract import CSOContract
-from .observer import CSOObserver, CSOWriteViolation
 from .beads import (
     Bead,
     BeadFactory,
     BeadStatus,
+    BeadStatusViolation,
     BeadType,
     ImmutabilityViolation,
-    BeadStatusViolation,
 )
-from .knowledge import KnowledgeStore, KnowledgeEntry
+from .contract import CSOContract
+from .knowledge import KnowledgeEntry, KnowledgeStore
+from .observer import CSOObserver, CSOWriteViolation
 
 __all__ = [
-    'CSOContract',
-    'CSOObserver',
-    'CSOWriteViolation',
-    'Bead',
-    'BeadFactory',
-    'BeadStatus',
-    'BeadType',
-    'ImmutabilityViolation',
-    'BeadStatusViolation',
-    'KnowledgeStore',
-    'KnowledgeEntry',
+    "CSOContract",
+    "CSOObserver",
+    "CSOWriteViolation",
+    "Bead",
+    "BeadFactory",
+    "BeadStatus",
+    "BeadType",
+    "ImmutabilityViolation",
+    "BeadStatusViolation",
+    "KnowledgeStore",
+    "KnowledgeEntry",
 ]
 
-__version__ = '0.2.0'
+__version__ = "0.2.0"

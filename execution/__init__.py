@@ -23,96 +23,92 @@ INVARIANTS:
 - INV-EXEC-LIFECYCLE-1: valid state transitions only
 """
 
-from .intent import (
-    ExecutionIntent,
-    IntentFactory,
-    IntentType,
-    IntentStatus,
-    Direction,
-    IntentMutationError,
-    CapitalActionForbiddenError,
-)
-
-from .halt_gate import (
-    HaltGate,
-    HaltCheckResult,
-    HaltGateViolation,
-    HaltBlockedError,
-    ExecutionGateCoordinator,
-    halt_gated,
-)
-
-from .position import (
-    Position,
-    PositionState,
-    PositionRegistry,
-    InvalidTransitionError,
-    PositionMutationError,
-    VALID_TRANSITIONS,
-    validate_transition,
-)
-
 from .broker_stub import (
-    PaperBrokerStub,
-    OrderResult,
+    BrokerHaltedError,
     ExitResult,
     FillType,
-    BrokerHaltedError,
     OrderRejectedError,
+    OrderResult,
+    PaperBrokerStub,
     PnLCalculator,
 )
-
+from .halt_gate import (
+    ExecutionGateCoordinator,
+    HaltBlockedError,
+    HaltCheckResult,
+    HaltGate,
+    HaltGateViolation,
+    halt_gated,
+)
+from .intent import (
+    CapitalActionForbiddenError,
+    Direction,
+    ExecutionIntent,
+    IntentFactory,
+    IntentMutationError,
+    IntentStatus,
+    IntentType,
+)
+from .position import (
+    VALID_TRANSITIONS,
+    InvalidTransitionError,
+    Position,
+    PositionMutationError,
+    PositionRegistry,
+    PositionState,
+    validate_transition,
+)
 from .replay import (
+    DeterminismVerifier,
+    MockSignal,
+    MockSignalGenerator,
     ReplayHarness,
     ReplayResult,
     ReplayState,
-    MockSignal,
-    MockSignalGenerator,
-    DeterminismVerifier,
 )
 
 __all__ = [
     # Intent
-    'ExecutionIntent',
-    'IntentFactory',
-    'IntentType',
-    'IntentStatus',
-    'Direction',
-    'IntentMutationError',
-    'CapitalActionForbiddenError',
+    "ExecutionIntent",
+    "IntentFactory",
+    "IntentType",
+    "IntentStatus",
+    "Direction",
+    "IntentMutationError",
+    "CapitalActionForbiddenError",
     # Halt Gate
-    'HaltGate',
-    'HaltCheckResult',
-    'HaltGateViolation',
-    'HaltBlockedError',
-    'ExecutionGateCoordinator',
-    'halt_gated',
+    "HaltGate",
+    "HaltCheckResult",
+    "HaltGateViolation",
+    "HaltBlockedError",
+    "ExecutionGateCoordinator",
+    "halt_gated",
     # Position
-    'Position',
-    'PositionState',
-    'PositionRegistry',
-    'InvalidTransitionError',
-    'PositionMutationError',
-    'VALID_TRANSITIONS',
-    'validate_transition',
+    "Position",
+    "PositionState",
+    "PositionRegistry",
+    "InvalidTransitionError",
+    "PositionMutationError",
+    "VALID_TRANSITIONS",
+    "validate_transition",
     # Broker
-    'PaperBrokerStub',
-    'OrderResult',
-    'ExitResult',
-    'FillType',
-    'BrokerHaltedError',
-    'OrderRejectedError',
-    'PnLCalculator',
+    "PaperBrokerStub",
+    "OrderResult",
+    "ExitResult",
+    "FillType",
+    "BrokerHaltedError",
+    "OrderRejectedError",
+    "PnLCalculator",
     # Replay
-    'ReplayHarness',
-    'ReplayResult',
-    'ReplayState',
-    'MockSignal',
-    'MockSignalGenerator',
-    'DeterminismVerifier',
+    "ReplayHarness",
+    "ReplayResult",
+    "ReplayState",
+    "MockSignal",
+    "MockSignalGenerator",
+    "DeterminismVerifier",
 ]
 
-__version__ = '0.2.0'  # S28.C
+__version__ = "0.2.0"  # S28.C
 
 
 # =============================================================================
@@ -120,21 +116,23 @@ __version__ = '0.2.0'  # S28.C
 # =============================================================================
 
 # These patterns are FORBIDDEN in S27
-FORBIDDEN_ACTIONS = frozenset([
-    'submit_order',
-    'execute_order',
-    'broker',
-    'connect',
-    'send_order',
-    'place_trade',
-    'allocate_capital',
-])
+FORBIDDEN_ACTIONS = frozenset(
+    [
+        "submit_order",
+        "execute_order",
+        "broker",
+        "connect",
+        "send_order",
+        "place_trade",
+        "allocate_capital",
+    ]
+)
 
 
 def guard_capital_action(action: str) -> None:
     """
     Guard against capital actions.
-    
+
     Raises CapitalActionForbiddenError if action is forbidden.
     """
     action_lower = action.lower()

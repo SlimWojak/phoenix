@@ -18,137 +18,124 @@ INVARIANTS:
 """
 
 # Core interface
-from .interface import GovernanceInterface
-
-# Types
-from .types import (
-    # Enums
-    ModuleTier,
-    HealthState,
-    LifecycleState,
-    ViolationSeverity,
-    ViolationStatus,
-    ErrorCategory,
-    ErrorAction,
-    
-    # Dataclasses
-    HaltSignalSetResult,
-    AckReceipt,
-    HaltCascadeReport,
-    StateInput,
-    StateTransition,
-    QualityTelemetry,
-    ViolationTicket,
-    ErrorClassification,
-    FailureMode,
-    DegradationAction,
-    SelfCheckReport,
-    InitResult,
-    
-    # Constants
-    TIER_PERMISSIONS,
+# Errors
+from .errors import (
+    ApprovalTokenError,
+    DependencyError,
+    GovernanceError,
+    HaltBlocksActionError,
+    HaltException,
+    InitializationError,
+    InvariantViolationError,
+    TierViolationError,
+    TokenExpiredError,
+    TokenScopeError,
+    TokenStateMismatchError,
+    classify_error,
 )
 
 # Halt mechanism
 from .halt import (
-    HaltSignal,
     HaltManager,
     HaltMesh,
+    HaltSignal,
 )
+from .interface import GovernanceInterface
 
 # Telemetry
 from .telemetry import (
-    TelemetryEmitter,
-    TelemetryAggregator,
     AggregatedTelemetry,
+    TelemetryAggregator,
+    TelemetryEmitter,
 )
 
 # Tokens
 from .tokens import (
     ApprovalToken,
-    TokenValidator,
     TokenIssuer,
+    TokenValidator,
 )
 
-# Errors
-from .errors import (
-    GovernanceError,
-    HaltException,
-    TierViolationError,
-    ApprovalTokenError,
-    TokenExpiredError,
-    TokenStateMismatchError,
-    TokenScopeError,
-    HaltBlocksActionError,
-    InvariantViolationError,
-    InitializationError,
-    DependencyError,
-    classify_error,
+# Types
+from .types import (
+    # Constants
+    TIER_PERMISSIONS,
+    AckReceipt,
+    DegradationAction,
+    ErrorAction,
+    ErrorCategory,
+    ErrorClassification,
+    FailureMode,
+    HaltCascadeReport,
+    # Dataclasses
+    HaltSignalSetResult,
+    HealthState,
+    InitResult,
+    LifecycleState,
+    # Enums
+    ModuleTier,
+    QualityTelemetry,
+    SelfCheckReport,
+    StateInput,
+    StateTransition,
+    ViolationSeverity,
+    ViolationStatus,
+    ViolationTicket,
 )
-
 
 __all__ = [
     # Core
-    'GovernanceInterface',
-    
+    "GovernanceInterface",
     # Enums
-    'ModuleTier',
-    'HealthState',
-    'LifecycleState',
-    'ViolationSeverity',
-    'ViolationStatus',
-    'ErrorCategory',
-    'ErrorAction',
-    
+    "ModuleTier",
+    "HealthState",
+    "LifecycleState",
+    "ViolationSeverity",
+    "ViolationStatus",
+    "ErrorCategory",
+    "ErrorAction",
     # Halt
-    'HaltSignal',
-    'HaltManager',
-    'HaltMesh',
-    'HaltSignalSetResult',
-    'AckReceipt',
-    'HaltCascadeReport',
-    
+    "HaltSignal",
+    "HaltManager",
+    "HaltMesh",
+    "HaltSignalSetResult",
+    "AckReceipt",
+    "HaltCascadeReport",
     # State
-    'StateInput',
-    'StateTransition',
-    
+    "StateInput",
+    "StateTransition",
     # Telemetry
-    'QualityTelemetry',
-    'TelemetryEmitter',
-    'TelemetryAggregator',
-    'AggregatedTelemetry',
-    
+    "QualityTelemetry",
+    "TelemetryEmitter",
+    "TelemetryAggregator",
+    "AggregatedTelemetry",
     # Violations
-    'ViolationTicket',
-    'ErrorClassification',
-    'FailureMode',
-    'DegradationAction',
-    
+    "ViolationTicket",
+    "ErrorClassification",
+    "FailureMode",
+    "DegradationAction",
     # Init
-    'SelfCheckReport',
-    'InitResult',
-    
+    "SelfCheckReport",
+    "InitResult",
     # Tokens
-    'ApprovalToken',
-    'TokenValidator',
-    'TokenIssuer',
-    
+    "ApprovalToken",
+    "TokenValidator",
+    "TokenIssuer",
     # Errors
-    'GovernanceError',
-    'HaltException',
-    'TierViolationError',
-    'ApprovalTokenError',
-    'TokenExpiredError',
-    'TokenStateMismatchError',
-    'TokenScopeError',
-    'HaltBlocksActionError',
-    'InvariantViolationError',
-    'InitializationError',
-    'DependencyError',
-    'classify_error',
-    
+    "GovernanceError",
+    "HaltException",
+    "TierViolationError",
+    "ApprovalTokenError",
+    "TokenExpiredError",
+    "TokenStateMismatchError",
+    "TokenScopeError",
+    "HaltBlocksActionError",
+    "InvariantViolationError",
+    "InitializationError",
+    "DependencyError",
+    "classify_error",
     # Constants
-    'TIER_PERMISSIONS',
+    "TIER_PERMISSIONS",
 ]
 
-__version__ = '0.2.0'
+__version__ = "0.2.0"

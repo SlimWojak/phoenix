@@ -1,13 +1,56 @@
+# Environment
 .env
+.env.local
+.env.*.local
+
+# Python
 __pycache__/
 *.pyc
-.DS_Store
+*.pyo
+*.pyd
+.Python
+*.so
+
+# Virtual environments
 .venv/
+venv/
+ENV/
+
+# Testing
 .pytest_cache/
+.coverage
+htmlcov/
+.tox/
+
+# Type checking
+.mypy_cache/
+.dmypy.json
+
+# Linting
+.ruff_cache/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Build
+dist/
+build/
+*.egg-info/
+
+# Data files
 *.jsonl
 
 # Hive temp files
 hive/next_check_note.txt
 
-# The kingdom is now properly aligned. Ascension begins. 🍌🔥
-
+# Logs (keep structure, ignore contents)
+logs/*.log
+logs/*.json
+!logs/.gitkeep
