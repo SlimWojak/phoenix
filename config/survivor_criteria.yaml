@@ -1,0 +1,125 @@
+# =============================================================================
+# SURVIVOR CRITERIA v1.0
+# =============================================================================
+# CANONICAL SOURCE OF TRUTH
+# Location: phoenix/config/survivor_criteria.yaml
+# Created: 2026-01-27 (S30 Day 1)
+#
+# PURPOSE:
+# Defines thresholds for Hunt survivors. A strategy variant passes
+# only if ALL criteria are met.
+#
+# Hunt bead includes survivor_criteria_hash for reproducibility.
+# =============================================================================
+
+schema_version: "1.0"
+schema_type: survivor_criteria
+last_updated: "2026-01-27"
+
+# =============================================================================
+# SURVIVAL THRESHOLDS
+# =============================================================================
+# ALL thresholds must pass for a variant to be a "survivor"
+
+thresholds:
+  sharpe_min:
+    value: 1.0
+    description: Minimum Sharpe ratio (risk-adjusted return)
+    rationale: "Below 1.0 = not worth the risk"
+
+  win_rate_min:
+    value: 0.45
+    description: Minimum win rate (0.0-1.0)
+    rationale: "Below 45% requires exceptional R:R to be viable"
+
+  max_drawdown_max:
+    value: 0.15
+    description: Maximum drawdown (as decimal, 0.15 = 15%)
+    rationale: "Above 15% drawdown = too volatile for live"
+
+  min_trades:
+    value: 10
+    description: Minimum number of trades in backtest
+    rationale: "Below 10 = insufficient sample for significance"
+
+  profit_factor_min:
+    value: 1.2
+    description: Minimum profit factor (gross profit / gross loss)
+    rationale: "Below 1.2 = edge too thin after costs"
+
+# =============================================================================
+# LOGIC
+# =============================================================================
+
+logic:
+  type: ALL
+  description: |
+    A variant is a survivor if and only if ALL thresholds pass.
+    No partial credit. No weighting.
+
+# =============================================================================
+# HASH COMPUTATION
+# =============================================================================
+
+hash_computation:
+  method: SHA256
+  inputs:
+    - criteria_version
+    - all threshold values (sorted by key)
+  output: survivor_criteria_hash (stored in HUNT bead)
+  purpose: |
+    Reproducibility: Given the same criteria hash, filtering
+    produces identical survivors.
+
+# =============================================================================
+# FUTURE TUNING (via Olya calibration)
+# =============================================================================
+
+tuning_notes:
+  - "Thresholds are starting points, not gospel"
+  - "Olya can request threshold changes via CSO calibration"
+  - "Changes create new criteria_version, new hash"
+  - "Historical Hunts reference their frozen criteria"
+
+# =============================================================================
+# INVARIANTS
+# =============================================================================
+
+invariants:
+  INV-SURVIVOR-FROZEN-1: "Survivor filtering uses frozen criteria hash"
+  INV-SURVIVOR-ALL-1: "ALL thresholds must pass (no partial)"
+
+# =============================================================================
+# EXAMPLE SURVIVOR CHECK
+# =============================================================================
+
+example_check:
+  variant:
+    sharpe: 1.4
+    win_rate: 0.52
+    max_drawdown: 0.12
+    trades: 25
+    profit_factor: 1.5
+
+  thresholds_applied:
+    sharpe_min: "1.4 >= 1.0 → PASS"
+    win_rate_min: "0.52 >= 0.45 → PASS"
+    max_drawdown_max: "0.12 <= 0.15 → PASS"
+    min_trades: "25 >= 10 → PASS"
+    profit_factor_min: "1.5 >= 1.2 → PASS"
+
+  result: SURVIVOR
+
+example_failure:
+  variant:
+    sharpe: 1.2
+    win_rate: 0.41  # BELOW threshold
+    max_drawdown: 0.10
+    trades: 30
+    profit_factor: 1.3
+
+  thresholds_applied:
+    win_rate_min: "0.41 >= 0.45 → FAIL"
+
+  result: NOT_SURVIVOR
+  note: "One failure = rejection (ALL logic)"

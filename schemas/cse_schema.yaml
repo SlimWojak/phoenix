@@ -1,0 +1,224 @@
+# =============================================================================
+# CANONICAL SIGNAL ENVELOPE (CSE) SCHEMA v1.0
+# =============================================================================
+# CANONICAL SOURCE OF TRUTH
+# Location: phoenix/schemas/cse_schema.yaml
+# Created: 2026-01-27 (S30 Day 1)
+#
+# PURPOSE:
+# Single format for ALL signal consumers:
+# - Shadow (S30) — paper tracking
+# - Live execution (S32) — real capital
+# - Signalman (S31) — decay monitoring
+# - Autopsy (S31) — post-trade analysis
+#
+# INVARIANT: INV-CSE-1 "All execution paths consume identical CSE format"
+# =============================================================================
+
+schema_version: "1.0"
+schema_type: cse
+last_updated: "2026-01-27"
+
+# =============================================================================
+# CSE DOCUMENT STRUCTURE
+# =============================================================================
+
+cse_fields:
+  cse_version:
+    type: string
+    default: "1.0"
+    description: CSE schema version
+    required: true
+
+  # -------------------------------------------------------------------------
+  # IDENTITY
+  # -------------------------------------------------------------------------
+  signal_id:
+    type: uuid
+    description: Unique signal identifier
+    required: true
+
+  timestamp:
+    type: datetime
+    format: ISO8601
+    description: Signal generation timestamp (UTC)
+    required: true
+
+  # -------------------------------------------------------------------------
+  # SOURCE
+  # -------------------------------------------------------------------------
+  pair:
+    type: string
+    description: Trading pair (validated against pairs.yaml)
+    required: true
+    validation: "Must exist in phoenix/config/pairs.yaml with status ACTIVE"
+
+  source:
+    type: enum
+    values:
+      - CSO           # Chief Strategy Officer (methodology-based)
+      - HUNT_SURVIVOR # Promoted from Hunt backtesting
+      - MANUAL        # Human-entered signal
+    description: Signal origin
+    required: true
+
+  setup_type:
+    type: string
+    description: ICT setup classification (e.g., "FVG_RETEST", "BOS_CONTINUATION")
+    required: true
+    max_length: 100
+
+  # -------------------------------------------------------------------------
+  # CONFIDENCE
+  # -------------------------------------------------------------------------
+  confidence:
+    type: float
+    min: 0.0
+    max: 1.0
+    description: Signal confidence score
+    required: true
+    note: "0.0 = no confidence, 1.0 = maximum confidence"
+
+  # -------------------------------------------------------------------------
+  # TRADE PARAMETERS
+  # -------------------------------------------------------------------------
+  parameters:
+    type: object
+    required: true
+    fields:
+      entry:
+        type: float
+        description: Entry price
+        required: true
+
+      stop:
+        type: float
+        description: Stop loss price
+        required: true
+        validation: "Must be != entry"
+
+      target:
+        type: float
+        description: Take profit price
+        required: true
+        validation: "Must be != entry"
+
+      risk_percent:
+        type: float
+        min: 0.5
+        max: 2.5
+        default: 1.0
+        description: Risk per trade as percentage of account
+        required: true
+
+  # -------------------------------------------------------------------------
+  # EVIDENCE CHAIN
+  # -------------------------------------------------------------------------
+  evidence_hash:
+    type: string
+    description: SHA256 hash of evidence bundle (reasoning, context)
+    required: true
+    format: hex64
+    note: "Links signal to full reasoning trail"
+
+# =============================================================================
+# DERIVED FIELDS (Computed, not stored)
+# =============================================================================
+
+derived_fields:
+  direction:
+    computation: "LONG if entry < target else SHORT"
+    type: enum
+    values: [LONG, SHORT]
+
+  risk_reward:
+    computation: "abs(target - entry) / abs(entry - stop)"
+    type: float
+
+  stop_distance_pips:
+    computation: "abs(entry - stop) * pip_multiplier"
+    type: float
+
+# =============================================================================
+# CONSUMERS
+# =============================================================================
+
+consumers:
+  shadow:
+    sprint: S30
+    usage: Paper position tracking
+    operations: [receive, track, close]
+
+  live_execution:
+    sprint: S32
+    usage: Real capital execution
+    operations: [receive, validate, submit]
+    gate: T2_HUMAN_APPROVAL
+
+  signalman:
+    sprint: S31
+    usage: Signal decay monitoring
+    operations: [observe, measure_decay, alert]
+
+  autopsy:
+    sprint: S31
+    usage: Post-trade analysis
+    operations: [retrieve, compare_thesis, emit_learnings]
+
+# =============================================================================
+# INVARIANTS
+# =============================================================================
+
+invariants:
+  INV-CSE-1: "All execution paths consume identical CSE format"
+  INV-CSE-VALID-1: "CSE must pass schema validation before consumption"
+  INV-CSE-PAIR-1: "CSE pair must exist in pairs.yaml with ACTIVE status"
+
+# =============================================================================
+# VALIDATION RULES
+# =============================================================================
+
+validation_rules:
+  entry_stop_different:
+    rule: "parameters.entry != parameters.stop"
+    error: "Entry and stop cannot be the same price"
+
+  entry_target_different:
+    rule: "parameters.entry != parameters.target"
+    error: "Entry and target cannot be the same price"
+
+  risk_reward_minimum:
+    rule: "risk_reward >= 1.0"
+    error: "Risk/reward must be at least 1:1"
+    warning_only: true  # Warn but don't reject
+
+  stop_on_correct_side:
+    rule: |
+      IF direction == LONG: stop < entry
+      IF direction == SHORT: stop > entry
+    error: "Stop must be on losing side of entry"
+
+  target_on_correct_side:
+    rule: |
+      IF direction == LONG: target > entry
+      IF direction == SHORT: target < entry
+    error: "Target must be on winning side of entry"
+
+# =============================================================================
+# EXAMPLE CSE
+# =============================================================================
+
+example:
+  cse_version: "1.0"
+  signal_id: "550e8400-e29b-41d4-a716-446655440000"
+  timestamp: "2026-01-27T14:30:00Z"
+  pair: "EURUSD"
+  source: "CSO"
+  setup_type: "FVG_RETEST"
+  confidence: 0.75
+  parameters:
+    entry: 1.0850
+    stop: 1.0820
+    target: 1.0920
+    risk_percent: 1.0
+  evidence_hash: "a1b2c3d4e5f6789012345678901234567890123456789012345678901234abcd"
