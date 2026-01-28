@@ -1,6 +1,6 @@
 # Phoenix
 
-**Status:** S33 Phase 1 COMPLETE | Phase 2 (UX validation) next
+**Status:** S34 COMPLETE | S33 Phase 2 BLOCKED (Olya-dependent)
 **Founded:** 2026-01-24
 
 ---
@@ -16,6 +16,9 @@ Phoenix (App)    = The Trading System — River, CSO, Execution
 
 **Constitutional Anchor:** Human sovereignty over capital is absolute.
 
+**Key Insight (S34):**
+> "Truth before UI. UI freedom is earned by state discipline."
+
 ---
 
 ## Current Status
@@ -28,27 +31,27 @@ Phoenix (App)    = The Trading System — River, CSO, Execution
 | S31 | SIGNAL_AND_DECAY | ✓ Complete |
 | S32 | EXECUTION_PATH | ✓ Complete |
 | S33 P1 | FIRST_BLOOD Infrastructure | ✓ Complete |
-| S33 P2 | FIRST_BLOOD UX Validation | Next |
+| S33 P2 | FIRST_BLOOD UX Validation | Blocked (Olya) |
+| S34 | OPERATIONAL_FINISHING | ✓ Complete |
 
-### S33 Phase 1 Delivered: FIRST_BLOOD Infrastructure
+### S34 Delivered: OPERATIONAL_FINISHING
+
+**Theme:** "Finish plumbing, not brain"
 
 **Tracks:**
-- **Track A:** IBKR connection with paper guards (INV-IBKR-PAPER-GUARD-1)
-- **Track B:** Monitoring + semantic health (30s heartbeat with jitter)
-- **Track C:** 8 Runbooks (RB-001 through RB-008)
-- **Track D:** Telegram real device validation
-- **Track E:** Mock CSE generator for UX testing
-- **Track G:** BUNNY Phase 1 (15/15 vectors)
+- **D1:** File Seam Plumbing — Watcher daemon, Lens injection
+- **D2:** Mock Oracle Pipeline — 5-drawer gate → CSE validation
+- **D3:** Orientation Bead — Machine-verifiable system checksum
+- **D4:** Surface Renderer — Truth-first UI (menu bar widget)
 
-**Exit Gate:** Infrastructure ready for UX testing.
+**Key Patterns Proven:**
+- "Checksum, not briefing" — Orientation defeats session amnesia
+- "Contract before integration" — Mock-first validation
+- "Projection, not participation" — UI subordinate to state
 
-### S33 Phase 2 Focus: UX Validation (Tomorrow)
-- Claude Desktop UX testing with G
-- Paper trade round-trip (3 trades minimum)
-- RB-004 drill completion
-- UX friction documentation
+**Exit Gate:** All 4 tracks green, 18 new invariants, 13 chaos vectors.
 
-See: `docs/build_docs/SPRINT_ROADMAP_S30_S33_v0.2.md`
+See: `docs/PHOENIX_MANIFEST.md` for system topology.
 
 ---
 
@@ -59,14 +62,20 @@ See: `docs/build_docs/SPRINT_ROADMAP_S30_S33_v0.2.md`
 git clone https://github.com/SlimWojak/phoenix.git
 cd phoenix
 
-# 2. Setup (using nex venv)
-cd ~/nex && source .venv/bin/activate
+# 2. Setup venv
+python -m venv .venv && source .venv/bin/activate
+pip install -r requirements.txt
 
 # 3. Run tests
-python -m pytest ~/phoenix/tests/ -v
+python -m pytest tests/ -v
 
-# 4. Run BUNNY chaos tests
-python -m pytest ~/phoenix/tests/chaos/ -v
+# 4. Run S34 verification drills
+python drills/d1_verification.py
+python drills/d3_negative_test.py  # THE KILL TEST
+python drills/d4_verification.py
+
+# 5. Run menu bar widget (macOS)
+python widget/menu_bar.py
 ```
 
 ---
@@ -75,64 +84,60 @@ python -m pytest ~/phoenix/tests/chaos/ -v
 
 | Doc | Purpose |
 |-----|---------|
-| [PRODUCT_VISION](docs/build_docs/PRODUCT_VISION.md) | Why we're building this |
-| [SPRINT_ROADMAP](docs/build_docs/SPRINT_ROADMAP_S30_S33_v0.2.md) | S30-S33 plan |
+| [PHOENIX_MANIFEST](docs/PHOENIX_MANIFEST.md) | System topology (M2M bootstrap) |
 | [SPRINT_STATUS](docs/SPRINT_STATUS.md) | Current sprint status |
+| [S34_BUILD_MAP](docs/build_docs/S34_BUILD_MAP_v0.2.md) | S34 canonical plan |
 | [CONSTITUTION](CONSTITUTION/invariants/) | Proven invariants |
 
 ---
 
-## Proven Invariants (S30 → S33 Cumulative)
+## Proven Invariants (Cumulative: 52+)
 
+### Halt & Governance
 | ID | Description | Status |
 |----|-------------|--------|
-| **Halt** | | |
-| INV-HALT-1 | Local halt <50ms | ✓ 0.003ms |
-| INV-HALT-2 | Cascade <500ms | ✓ 22.59ms |
-| **Data** | | |
-| INV-CONTRACT-1 | Deterministic state | ✓ Hash match |
-| INV-DATA-CANON | Single truth (River) | ✓ Enforced |
-| **Hunt** | | |
-| INV-HUNT-HPG-1 | Valid HPG schema | ✓ BUNNY |
-| INV-HUNT-DET-1 | Deterministic variations | ✓ BUNNY |
-| INV-HUNT-CAP-1 | Max 50 variations | ✓ BUNNY |
-| **Athena** | | |
-| INV-ATHENA-RO-1 | Read-only queries | ✓ BUNNY |
-| INV-ATHENA-CAP-1 | Max 100 rows | ✓ BUNNY |
-| **CSO** | | |
-| INV-CSO-CORE-1 | Immutable core logic | ✓ BUNNY |
-| INV-CSO-CAL-1 | Shadow on param change | ✓ BUNNY |
-| INV-CSO-6PAIR-1 | All 6 pairs scanned | ✓ BUNNY |
-| **Signalman** | | |
-| INV-SIGNALMAN-MULTI-1 | Multi-signal decay | ✓ BUNNY |
-| INV-SIGNALMAN-COLD-1 | No false alerts cold start | ✓ BUNNY |
-| INV-STATE-ANCHOR-1 | Valid state hash | ✓ BUNNY |
-| **Autopsy** | | |
-| INV-AUTOPSY-ASYNC-1 | Non-blocking | ✓ BUNNY |
-| INV-AUTOPSY-FALLBACK-1 | Rule-based fallback | ✓ BUNNY |
-| **Notification** | | |
-| INV-ALERT-THROTTLE-1 | Max 10/hour except HALT | ✓ BUNNY |
-| INV-LENS-1 | Kill-switchable | ✓ BUNNY |
-| **T2 Workflow (S32)** | | |
-| INV-T2-TOKEN-1 | Single-use, time-limited | ✓ BUNNY |
-| INV-T2-GATE-1 | No order without token | ✓ BUNNY |
-| INV-STALE-KILL-1 | >15min → STATE_CONFLICT | ✓ BUNNY |
-| **Position Lifecycle (S32)** | | |
-| INV-POSITION-SM-1 | Valid state transitions | ✓ BUNNY |
-| INV-POSITION-SUBMITTED-TTL-1 | 60s timeout to STALLED | ✓ BUNNY |
-| **Reconciliation (S32)** | | |
-| INV-RECONCILE-READONLY-1 | Reconciler never mutates | ✓ BUNNY |
-| INV-RECONCILE-ALERT-1 | Drift triggers alert | ✓ BUNNY |
-| **Promotion (S32)** | | |
-| INV-PROMOTION-SAFE-1 | Hard blocks on kill/stalled | ✓ BUNNY |
-| INV-PROMOTION-SAFE-2 | One-way promotion | ✓ BUNNY |
-| **IBKR (S33)** | | |
-| INV-IBKR-PAPER-GUARD-1 | Live requires explicit enable | ✓ BUNNY |
-| INV-IBKR-ACCOUNT-CHECK-1 | Account matches mode | ✓ BUNNY |
-| INV-IBKR-RECONNECT-1 | Max 3 reconnect attempts | ✓ BUNNY |
-| **Monitoring (S33)** | | |
-| INV-OPS-HEARTBEAT-SEMANTIC-1 | Semantic health in heartbeat | ✓ BUNNY |
-| INV-OPS-HEARTBEAT-30S-1 | 30s ±5s timing | ✓ BUNNY |
+| INV-HALT-1 | Local halt <50ms | ✓ 0.15ms |
+| INV-HALT-2 | Cascade <500ms | ✓ 22ms |
+| INV-T2-TOKEN-1 | Single-use, 5min expiry | ✓ |
+| INV-T2-GATE-1 | No order without token | ✓ |
+
+### File Seam (S34 D1)
+| ID | Description | Status |
+|----|-------------|--------|
+| INV-D1-WATCHER-1 | Exactly-once processing | ✓ |
+| INV-D1-WATCHER-IMMUTABLE-1 | No payload modification | ✓ |
+| INV-D1-LENS-1 | ≤50 tokens context cost | ✓ 17 tokens |
+| INV-D1-HALT-PRIORITY-1 | HALT bypasses queue | ✓ |
+
+### CSO Contract (S34 D2)
+| ID | Description | Status |
+|----|-------------|--------|
+| INV-D2-FORMAT-1 | Mock == production schema | ✓ |
+| INV-D2-TRACEABLE-1 | Refs resolvable | ✓ |
+| INV-D2-NO-INTELLIGENCE-1 | Zero market logic | ✓ |
+| INV-D2-NO-COMPOSITION-1 | Whitelist only | ✓ |
+
+### Orientation Bead (S34 D3)
+| ID | Description | Status |
+|----|-------------|--------|
+| INV-D3-CHECKSUM-1 | Machine-verifiable, no prose | ✓ |
+| INV-D3-CROSS-CHECK-1 | Every field verifiable | ✓ |
+| INV-D3-CORRUPTION-1 | Corruption → STATE_CONFLICT | ✓ 5/5 |
+| INV-D3-NO-DERIVED-1 | No interpreted fields | ✓ |
+
+### Surface Renderer (S34 D4)
+| ID | Description | Status |
+|----|-------------|--------|
+| INV-D4-GLANCEABLE-1 | Update <100ms | ✓ 0.79ms |
+| INV-D4-ACCURATE-1 | Matches actual state | ✓ |
+| INV-D4-NO-DERIVATION-1 | Verbatim fields only | ✓ |
+| INV-D4-EPHEMERAL-1 | No local persistence | ✓ |
+
+### IBKR (S33)
+| ID | Description | Status |
+|----|-------------|--------|
+| INV-IBKR-PAPER-GUARD-1 | Live requires explicit enable | ✓ |
+| INV-IBKR-ACCOUNT-CHECK-1 | Account matches mode | ✓ |
 
 ---
 
@@ -144,7 +149,8 @@ python -m pytest ~/phoenix/tests/chaos/ -v
 | S31 | 20 | ✓ PASS | `reports/BUNNY_REPORT_S31.md` |
 | S32 | 17 | ✓ PASS | `reports/BUNNY_REPORT_S32.md` |
 | S33 P1 | 15 | ✓ PASS | `reports/BUNNY_REPORT_S33_P1.md` |
-| **Total** | **71** | | |
+| S34 | 13 | ✓ PASS | `reports/S34_COMPLETION_REPORT.md` |
+| **Total** | **84** | | |
 
 ---
 
@@ -156,33 +162,45 @@ phoenix/
 ├── contracts/          # Data & governance contracts
 ├── governance/         # GovernanceInterface, halt, telemetry
 ├── monitoring/         # Signalman, KillManager, StateAnchor
-│   └── ops/            # Heartbeat, semantic health (S33)
-├── execution/          # Position lifecycle, reconciliation, promotion
-├── brokers/            # IBKR connector with paper guards (S33)
-│   └── ibkr/           # Config, real_client, session_bead
-├── cso/                # Chief Strategy Officer (structure detection)
-├── analysis/           # Autopsy, LearningExtractor
-├── notification/       # Telegram, AlertAggregator
-├── lens/               # ResponseWriter (Claude injection)
-├── shadow/             # Paper trading engine
-├── memory/             # BeadStore, Athena
-├── lab/                # Hunt, HPGParser, Backtester
-├── mocks/              # Mock CSE generator (S33)
-├── enrichment/         # Data enrichment layers (L1-L6)
-├── dispatcher/         # Worker coordination
-├── schemas/            # YAML schemas (beads, HPG, CSE, etc)
-├── config/             # CSO params, Telegram params
-├── responses/          # Lens output files
-├── reports/            # BUNNY reports
-├── scripts/            # Utilities
-├── tests/              # Test suite (unit, integration, chaos)
-│   ├── unit/           # Component tests
-│   ├── integration/    # E2E pipeline tests
-│   ├── chaos/          # BUNNY attack vectors
-│   └── notification/   # Telegram validation (S33)
+│   └── ops/            # Heartbeat, semantic health
+├── execution/          # Position lifecycle, reconciliation
+├── brokers/ibkr/       # IBKR connector with paper guards
+├── cso/                # CSO scanner + consumer (S34)
+├── approval/           # T2 evidence display (S34 D2)
+├── orientation/        # Orientation bead system (S34 D3)
+├── widget/             # Surface renderer (S34 D4)
+├── daemons/            # File seam spine (S34 D1)
+│   ├── watcher.py      # Intent routing
+│   ├── lens.py         # Response injection
+│   └── routing.py      # Intent dispatch
+├── mocks/              # Mock CSE generator
+├── schemas/            # YAML schemas (beads, CSE, orientation)
+├── state/              # Runtime state (orientation.yaml)
+├── intents/            # File seam input
+├── responses/          # File seam output
+├── drills/             # Verification scripts
+├── reports/            # Sprint completion reports
 └── docs/
-    ├── build_docs/     # Sprint build maps, roadmaps
-    └── runbooks/       # Operational runbooks (RB-001 through RB-008)
+    ├── build_docs/     # Sprint build maps
+    ├── explorations/   # Future fuel (S35+)
+    └── runbooks/       # Operational runbooks (RB-001 to RB-008)
+```
+
+---
+
+## File Seam (S34)
+
+```
+Claude ──writes──▶ /intents/incoming/intent.yaml
+                          │
+                          ▼
+                     WATCHER ──routes──▶ Workers
+                          │
+                          ▼
+                     /responses/*.md
+                          │
+                          ▼
+                       LENS ──injects──▶ Claude
 ```
 
 ---
@@ -190,35 +208,19 @@ phoenix/
 ## Development
 
 ```bash
-# Install pre-commit hooks
-pre-commit install
+# Install dependencies
+pip install -r requirements.txt
+pip install rumps  # macOS menu bar (optional)
 
 # Run linter
 ruff check .
 
-# Run type checker
-mypy --strict governance/ execution/
+# Run specific drill
+python drills/d3_negative_test.py  # THE KILL TEST
 
-# Run specific test
-pytest tests/test_halt_latency.py -v
-
-# Run integration tests
-pytest tests/integration/ -v
-
-# Run BUNNY chaos tests
-pytest tests/chaos/ -v
+# Run menu bar widget
+python widget/menu_bar.py
 ```
-
----
-
-## Test Suites
-
-| Suite | Location | Purpose |
-|-------|----------|---------|
-| Unit | `tests/unit/` | Component tests |
-| Integration | `tests/integration/` | E2E pipeline tests |
-| Chaos | `tests/chaos/` | BUNNY attack vectors |
-| Notification | `tests/notification/` | Telegram validation |
 
 ---
 
@@ -227,8 +229,17 @@ pytest tests/chaos/ -v
 | Repo | Purpose |
 |------|---------|
 | God_Mode | Forge — governance patterns |
-| nex | Legacy data pipeline |
+| nex | Legacy data pipeline (reference) |
 
 ---
 
-*S33 Phase 1 Infrastructure complete. Phase 2 (UX validation) next.*
+## S35+ Fuel (Dormant)
+
+- **S35:** CSO Harness — Evaluation engine for 5-drawer gates
+- **S36:** Dynamic Workflow Entry Forge — HUD overlay, Pilot whisperer
+
+See: `docs/explorations/` for frontier patterns (Yegge beads, Willison datasette, banteg minimalism).
+
+---
+
+*S34 OPERATIONAL_FINISHING complete. Truth before UI. Phoenix rises.*
