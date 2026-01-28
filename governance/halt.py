@@ -238,6 +238,18 @@ class HaltManager:
         """
         self.signal.check()
 
+    def clear_halt(self) -> None:
+        """
+        Clear halt signal and restore RUNNING state.
+
+        IMPORTANT: Only call after root cause resolved.
+        This is the programmatic equivalent of RB-004 Step 4.
+
+        Requires human decision - this is NOT called automatically.
+        """
+        self.signal.clear()
+        self._lifecycle_state = LifecycleState.RUNNING
+
     @property
     def lifecycle_state(self) -> LifecycleState:
         return self._lifecycle_state

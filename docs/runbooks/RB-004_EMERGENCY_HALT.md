@@ -97,6 +97,19 @@ Only when root cause resolved:
   --operator="<your name>"
 ```
 
+**Python equivalent (until CLI wired):**
+```python
+from governance.halt import HaltManager
+
+# Get your halt manager instance
+manager.clear_halt()  # Clears signal + restores RUNNING state
+
+# Or for global mesh:
+from governance.halt import HaltMesh
+mesh = HaltMesh()
+mesh.clear_all()  # Clears all modules
+```
+
 This emits KILL_FLAG bead with `active=false`.
 
 ---
@@ -130,6 +143,14 @@ For monthly drill:
    ```bash
    ./phoenix kill-flag set --reason="Drill - RB-004"
    ```
+   
+   **Python equivalent:**
+   ```python
+   from governance.halt import HaltManager
+   manager = HaltManager(module_id="drill_test")
+   result = manager.request_halt()
+   print(f"Halt latency: {result.latency_ms:.3f}ms")
+   ```
 
 2. **Verify Behavior**
    - New entries blocked?
@@ -143,6 +164,11 @@ For monthly drill:
 4. **Lift Halt**
    ```bash
    ./phoenix kill-flag lift --reason="Drill complete"
+   ```
+   
+   **Or run full automated drill:**
+   ```bash
+   python drills/rb004_halt_drill.py
    ```
 
 ---
