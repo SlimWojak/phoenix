@@ -5,8 +5,6 @@ E2E Test: Signalman → KillManager
 Tests decay detection triggering ONE-WAY-KILL.
 """
 
-import pytest
-from datetime import UTC, datetime, timedelta
 from unittest.mock import MagicMock
 
 
@@ -15,7 +13,7 @@ class TestSignalmanKillE2E:
 
     def test_decay_triggers_kill_flag(self) -> None:
         """Decay detection triggers KILL_FLAG bead."""
-        from monitoring import Signalman, KillManager
+        from monitoring import KillManager, Signalman
 
         # Create kill manager with mock bead store
         mock_bead_store = MagicMock()

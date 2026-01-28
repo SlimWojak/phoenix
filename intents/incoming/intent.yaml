@@ -1,0 +1,11 @@
+type: APPROVE
+payload:
+  pair: GBPUSD
+  direction: LONG
+  entry: market
+  stop: 1.2620
+  target: 1.2750
+  size: standard
+  thesis: "Liquidity sweep + FVG rebalance"
+timestamp: 2025-01-28T09:05:00Z
+session_id: track_f_test

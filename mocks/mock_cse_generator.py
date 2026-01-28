@@ -1,25 +1,28 @@
 #!/usr/bin/env python3
 """
-Mock CSE Generator — Scripted signal generation for UX testing
-===============================================================
+Mock CSE Generator — 5-Drawer Gate Pipeline Validation
+========================================================
 
-S33: FIRST_BLOOD
+S34: D2 MOCK_ORACLE_PIPELINE_VALIDATION
 
-Generates mock CSE (Claude Signal Emission) signals for testing
-the Phoenix approval workflow without requiring live CSO analysis.
+Generates mock CSE (Canonical Signal Envelope) signals from 5-drawer gates
+for testing the Phoenix approval workflow before Olya arrives.
+
+INVARIANTS:
+- INV-D2-FORMAT-1: Mock CSE schema == production CSE schema
+- INV-D2-TRACEABLE-1: Evidence refs resolvable to conditions.yaml
+- INV-D2-NO-INTELLIGENCE-1: Zero market analysis logic
+- INV-D2-NO-COMPOSITION-1: Whitelist gate IDs only (no synthesis)
 
 Usage:
-    python mock_cse_generator.py --signal READY --pair EURUSD
-    python mock_cse_generator.py --signal FORMING --pair GBPUSD --confidence 0.75
-    python mock_cse_generator.py --help
-
-This writes a valid intent YAML to the Phoenix intent directory
-for processing by the approval workflow.
+    python mock_cse_generator.py --gate GATE-COND-001 --pair EURUSD
+    python mock_cse_generator.py --list-gates
 """
 
 from __future__ import annotations
 
 import argparse
+import hashlib
 import sys
 import uuid
 from dataclasses import dataclass, field
@@ -30,28 +33,29 @@ from typing import Any
 
 import yaml
 
+# =============================================================================
+# CONSTANTS
+# =============================================================================
+
+# Source identifier for mock signals
+MOCK_SOURCE = "MOCK_5DRAWER"
+
+# Path to 5-drawer conditions
+CONDITIONS_PATH = Path(__file__).parent.parent / "cso" / "knowledge" / "conditions.yaml"
+
 
 # =============================================================================
 # ENUMS
 # =============================================================================
 
 
-class SignalType(str, Enum):
-    """CSE signal types."""
+class CSESource(str, Enum):
+    """Valid CSE sources."""
 
-    READY = "READY"       # Full conviction, ready to execute
-    FORMING = "FORMING"   # Setup developing, not yet ready
-    NONE = "NONE"         # No valid setup detected
-
-
-class SetupType(str, Enum):
-    """Valid setup types from CSO methodology."""
-
-    FVG_ENTRY = "FVG_ENTRY"         # Fair Value Gap entry
-    OTE_ENTRY = "OTE_ENTRY"         # Optimal Trade Entry
-    BOS_ENTRY = "BOS_ENTRY"         # Break of Structure entry
-    LIQUIDITY_SWEEP = "LIQUIDITY_SWEEP"
-    ORDER_BLOCK = "ORDER_BLOCK"
+    CSO = "CSO"  # Production: Olya's CSO
+    HUNT_SURVIVOR = "HUNT_SURVIVOR"  # Production: Promoted strategy
+    MANUAL = "MANUAL"  # Production: Human-entered
+    MOCK_5DRAWER = "MOCK_5DRAWER"  # Mock: 5-drawer gate simulation
 
 
 class Pair(str, Enum):
@@ -66,280 +70,499 @@ class Pair(str, Enum):
 
 
 # =============================================================================
-# DATA CLASSES
+# 5-DRAWER GATE LOADER
 # =============================================================================
 
 
 @dataclass
-class CSESignal:
-    """
-    Claude Signal Emission structure.
+class GateDefinition:
+    """Definition of a composite gate from conditions.yaml."""
 
-    Represents a mock signal from the CSO analysis system.
+    gate_id: str
+    name: str
+    requires: list[str]
+    output: str
+    source_ref: str = ""
+
+    def to_evidence_ref(self) -> dict[str, Any]:
+        """Create evidence reference for traceability."""
+        return {
+            "gate_id": self.gate_id,
+            "name": self.name,
+            "source": "conditions.yaml",
+            "ref": self.source_ref,
+            "requires": self.requires,
+        }
+
+
+class GateLoader:
+    """
+    Loads and validates gate definitions from conditions.yaml.
+
+    INVARIANT: INV-D2-NO-COMPOSITION-1
+    Only whitelisted gate IDs from conditions.yaml are valid.
     """
 
+    def __init__(self, conditions_path: Path | None = None) -> None:
+        """Load gates from conditions.yaml."""
+        self._path = conditions_path or CONDITIONS_PATH
+        self._gates: dict[str, GateDefinition] = {}
+        self._load_gates()
+
+    def _load_gates(self) -> None:
+        """Parse composite_gates from conditions.yaml."""
+        if not self._path.exists():
+            raise FileNotFoundError(f"Conditions file not found: {self._path}")
+
+        with open(self._path) as f:
+            data = yaml.safe_load(f)
+
+        composite_gates = data.get("composite_gates", {})
+
+        for gate_key, gate_def in composite_gates.items():
+            gate_id = gate_def.get("id", f"GATE-UNKNOWN-{gate_key}")
+            self._gates[gate_id] = GateDefinition(
+                gate_id=gate_id,
+                name=gate_def.get("name", gate_key),
+                requires=gate_def.get("requires", []),
+                output=gate_def.get("output", ""),
+                source_ref=gate_def.get("ref", "conditions.yaml"),
+            )
+
+    @property
+    def valid_gate_ids(self) -> list[str]:
+        """Return list of valid (whitelisted) gate IDs."""
+        return list(self._gates.keys())
+
+    def get_gate(self, gate_id: str) -> GateDefinition | None:
+        """Get gate definition by ID."""
+        return self._gates.get(gate_id)
+
+    def is_valid_gate(self, gate_id: str) -> bool:
+        """
+        Check if gate ID is in whitelist.
+
+        INV-D2-NO-COMPOSITION-1: Reject non-whitelisted gates.
+        """
+        return gate_id in self._gates
+
+
+# =============================================================================
+# CSE DATA CLASSES
+# =============================================================================
+
+
+@dataclass
+class CSEParameters:
+    """Trade parameters within CSE."""
+
+    entry: float
+    stop: float
+    target: float
+    risk_percent: float = 1.0
+
+
+@dataclass
+class CSE:
+    """
+    Canonical Signal Envelope.
+
+    INV-D2-FORMAT-1: This must match cse_schema.yaml exactly.
+    Both mock and production validate against the same schema.
+    """
+
+    # Identity
+    cse_version: str = "1.0"
     signal_id: str = field(default_factory=lambda: str(uuid.uuid4()))
-    signal_type: SignalType = SignalType.READY
-    pair: Pair = Pair.EURUSD
     timestamp: datetime = field(default_factory=lambda: datetime.now(UTC))
 
-    # Confidence and setup
-    confidence: float = 0.85
-    setup_type: SetupType = SetupType.FVG_ENTRY
+    # Source
+    pair: Pair = Pair.EURUSD
+    source: CSESource = CSESource.MOCK_5DRAWER
+    setup_type: str = ""
 
-    # Price levels
-    entry_price: float = 0.0
-    stop_loss: float = 0.0
-    take_profit: float = 0.0
+    # Confidence
+    confidence: float = 0.75
 
-    # Risk parameters
-    risk_percent: float = 1.0
-    position_size: float = 0.0  # Calculated or specified
+    # Parameters
+    parameters: CSEParameters = field(default_factory=lambda: CSEParameters(0, 0, 0))
 
-    # Context
-    htf_bias: str = "BULLISH"  # Higher timeframe bias
-    session: str = "LONDON"    # Trading session
-    notes: str = ""
+    # Evidence chain
+    evidence_hash: str = ""
+
+    # Mock-specific: 5-drawer traceability
+    gate_id: str = ""
+    gate_ref: dict[str, Any] = field(default_factory=dict)
+
+    def compute_evidence_hash(self) -> str:
+        """
+        Compute evidence hash from gate reference.
+
+        INV-D2-TRACEABLE-1: Hash links to source refs.
+        """
+        evidence = {
+            "gate_id": self.gate_id,
+            "gate_ref": self.gate_ref,
+            "signal_id": self.signal_id,
+            "timestamp": self.timestamp.isoformat(),
+        }
+        json_str = str(sorted(evidence.items()))
+        return hashlib.sha256(json_str.encode()).hexdigest()
+
+    @property
+    def direction(self) -> str:
+        """Derived: LONG or SHORT."""
+        if self.parameters.entry < self.parameters.target:
+            return "LONG"
+        return "SHORT"
+
+    @property
+    def risk_reward(self) -> float:
+        """Derived: Risk/reward ratio."""
+        entry = self.parameters.entry
+        stop = self.parameters.stop
+        target = self.parameters.target
+
+        stop_dist = abs(entry - stop)
+        target_dist = abs(target - entry)
+
+        if stop_dist == 0:
+            return 0.0
+        return target_dist / stop_dist
 
     def validate(self) -> list[str]:
-        """Validate signal parameters."""
+        """
+        Validate CSE against schema rules.
+
+        Returns list of validation errors (empty if valid).
+        """
         errors: list[str] = []
+
+        # Required fields
+        if not self.signal_id:
+            errors.append("signal_id is required")
+        if not self.pair:
+            errors.append("pair is required")
+        if not self.source:
+            errors.append("source is required")
+        if not self.setup_type:
+            errors.append("setup_type is required")
+        if not self.evidence_hash:
+            errors.append("evidence_hash is required")
 
         # Confidence range
         if not 0.0 <= self.confidence <= 1.0:
-            errors.append(f"Confidence must be 0-1, got {self.confidence}")
+            errors.append(f"confidence must be 0-1, got {self.confidence}")
 
-        # Price levels for READY signal
-        if self.signal_type == SignalType.READY:
-            if self.entry_price <= 0:
-                errors.append("READY signal requires entry_price > 0")
-            if self.stop_loss <= 0:
-                errors.append("READY signal requires stop_loss > 0")
+        # Risk percent range
+        if not 0.5 <= self.parameters.risk_percent <= 2.5:
+            errors.append(f"risk_percent must be 0.5-2.5, got {self.parameters.risk_percent}")
 
-            # Stop loss direction check
-            if self.htf_bias == "BULLISH" and self.stop_loss >= self.entry_price:
-                errors.append("BULLISH: stop_loss must be below entry_price")
-            if self.htf_bias == "BEARISH" and self.stop_loss <= self.entry_price:
-                errors.append("BEARISH: stop_loss must be above entry_price")
+        # Entry != stop
+        if self.parameters.entry == self.parameters.stop:
+            errors.append("entry and stop cannot be equal")
 
-        # Risk percent
-        if not 0.1 <= self.risk_percent <= 5.0:
-            errors.append(f"Risk percent should be 0.1-5.0, got {self.risk_percent}")
+        # Entry != target
+        if self.parameters.entry == self.parameters.target:
+            errors.append("entry and target cannot be equal")
+
+        # Stop on correct side
+        if self.direction == "LONG" and self.parameters.stop >= self.parameters.entry:
+            errors.append("LONG: stop must be below entry")
+        if self.direction == "SHORT" and self.parameters.stop <= self.parameters.entry:
+            errors.append("SHORT: stop must be above entry")
+
+        # Target on correct side
+        if self.direction == "LONG" and self.parameters.target <= self.parameters.entry:
+            errors.append("LONG: target must be above entry")
+        if self.direction == "SHORT" and self.parameters.target >= self.parameters.entry:
+            errors.append("SHORT: target must be below entry")
 
         return errors
 
     def to_dict(self) -> dict[str, Any]:
-        """Convert to dictionary for YAML output."""
+        """Convert to dictionary matching cse_schema.yaml."""
         return {
+            "cse_version": self.cse_version,
             "signal_id": self.signal_id,
-            "signal_type": self.signal_type.value,
-            "pair": self.pair.value,
             "timestamp": self.timestamp.isoformat(),
+            "pair": self.pair.value,
+            "source": self.source.value,
+            "setup_type": self.setup_type,
             "confidence": self.confidence,
-            "setup_type": self.setup_type.value,
-            "entry_price": self.entry_price,
-            "stop_loss": self.stop_loss,
-            "take_profit": self.take_profit,
-            "risk_percent": self.risk_percent,
-            "position_size": self.position_size,
-            "htf_bias": self.htf_bias,
-            "session": self.session,
-            "notes": self.notes,
-        }
-
-
-@dataclass
-class IntentPayload:
-    """
-    Intent payload for Phoenix approval workflow.
-
-    Wraps CSE signal in intent format.
-    """
-
-    intent_id: str = field(default_factory=lambda: str(uuid.uuid4()))
-    intent_type: str = "DISPATCH"
-    action: str = "APPROVE"
-    created_at: datetime = field(default_factory=lambda: datetime.now(UTC))
-    signal: CSESignal = field(default_factory=CSESignal)
-    source: str = "mock_cse_generator"
-    mock: bool = True
-
-    def to_dict(self) -> dict[str, Any]:
-        """Convert to dictionary for YAML output."""
-        return {
-            "intent_id": self.intent_id,
-            "intent_type": self.intent_type,
-            "action": self.action,
-            "created_at": self.created_at.isoformat(),
-            "signal": self.signal.to_dict(),
-            "source": self.source,
-            "mock": self.mock,
+            "parameters": {
+                "entry": self.parameters.entry,
+                "stop": self.parameters.stop,
+                "target": self.parameters.target,
+                "risk_percent": self.parameters.risk_percent,
+            },
+            "evidence_hash": self.evidence_hash,
+            # Mock extension for traceability
+            "_mock_metadata": {
+                "gate_id": self.gate_id,
+                "gate_ref": self.gate_ref,
+            },
         }
 
 
 # =============================================================================
-# GENERATOR
+# MOCK CSE GENERATOR
 # =============================================================================
 
 
 class MockCSEGenerator:
     """
-    Generates mock CSE signals for testing.
+    Generates mock CSE signals from 5-drawer gates.
 
-    Usage:
-        generator = MockCSEGenerator()
-        signal = generator.create_signal(
-            signal_type=SignalType.READY,
-            pair=Pair.EURUSD,
-            confidence=0.85,
-        )
-        generator.write_intent(signal)
+    INVARIANT: INV-D2-NO-INTELLIGENCE-1
+    This generator contains ZERO market analysis logic.
+    It only maps gate IDs to mock trade parameters.
     """
 
-    # Default prices for pairs
-    DEFAULT_PRICES = {
+    # Default prices per pair (static, no market logic)
+    DEFAULT_PRICES: dict[Pair, float] = {
         Pair.EURUSD: 1.0850,
-        Pair.GBPUSD: 1.2500,
+        Pair.GBPUSD: 1.2700,
         Pair.USDJPY: 150.00,
         Pair.AUDUSD: 0.6500,
         Pair.USDCAD: 1.3500,
         Pair.NZDUSD: 0.5800,
     }
 
-    # Default stop distance in pips
-    DEFAULT_STOP_PIPS = 30
-
-    # Default target multiplier (R:R)
-    DEFAULT_RR_RATIO = 2.0
-
     def __init__(
         self,
-        intent_dir: str | Path | None = None,
+        gate_loader: GateLoader | None = None,
+        intent_dir: Path | None = None,
     ) -> None:
         """
         Initialize generator.
 
         Args:
-            intent_dir: Directory for intent output (default: phoenix/intents/incoming)
+            gate_loader: Loader for 5-drawer gates
+            intent_dir: Directory for intent output
         """
-        if intent_dir:
-            self._intent_dir = Path(intent_dir)
-        else:
-            # Default to phoenix/intents/incoming
-            self._intent_dir = Path(__file__).parent.parent / "intents" / "incoming"
-
-        # Ensure directory exists
+        self._gate_loader = gate_loader or GateLoader()
+        self._intent_dir = intent_dir or (Path(__file__).parent.parent / "intents" / "incoming")
         self._intent_dir.mkdir(parents=True, exist_ok=True)
 
-    def create_signal(
+    @property
+    def valid_gate_ids(self) -> list[str]:
+        """Return list of valid (whitelisted) gate IDs."""
+        return self._gate_loader.valid_gate_ids
+
+    def create_cse_from_gate(
         self,
-        signal_type: SignalType = SignalType.READY,
+        gate_id: str,
         pair: Pair = Pair.EURUSD,
-        confidence: float = 0.85,
-        setup_type: SetupType = SetupType.FVG_ENTRY,
-        entry_price: float | None = None,
-        stop_loss: float | None = None,
-        take_profit: float | None = None,
-        htf_bias: str = "BULLISH",
         risk_percent: float = 1.0,
-        session: str = "LONDON",
-        notes: str = "",
-    ) -> CSESignal:
+    ) -> CSE:
         """
-        Create a mock CSE signal.
+        Create a mock CSE from a 5-drawer gate.
+
+        INVARIANT: INV-D2-NO-COMPOSITION-1
+        Only whitelisted gate IDs accepted.
 
         Args:
-            signal_type: READY, FORMING, or NONE
+            gate_id: Gate ID from conditions.yaml (e.g., GATE-COND-001)
             pair: Trading pair
-            confidence: Signal confidence (0-1)
-            setup_type: Type of setup
-            entry_price: Entry price (auto-calculated if not provided)
-            stop_loss: Stop loss price (auto-calculated if not provided)
-            take_profit: Take profit price (auto-calculated if not provided)
-            htf_bias: Higher timeframe bias (BULLISH/BEARISH)
-            risk_percent: Risk per trade (%)
-            session: Trading session
-            notes: Additional notes
+            risk_percent: Risk per trade
 
         Returns:
-            CSESignal with all parameters set
+            Valid CSE
+
+        Raises:
+            ValueError: If gate_id not in whitelist
         """
-        # Auto-calculate prices if not provided
-        if entry_price is None:
-            entry_price = self.DEFAULT_PRICES.get(pair, 1.0)
+        # Enforce whitelist (INV-D2-NO-COMPOSITION-1)
+        if not self._gate_loader.is_valid_gate(gate_id):
+            raise ValueError(
+                f"Gate ID '{gate_id}' not in whitelist. "
+                f"Valid gates: {self._gate_loader.valid_gate_ids}"
+            )
 
-        if stop_loss is None:
-            pip_value = 0.0001 if "JPY" not in pair.value else 0.01
-            stop_distance = self.DEFAULT_STOP_PIPS * pip_value
+        gate = self._gate_loader.get_gate(gate_id)
+        if gate is None:
+            raise ValueError(f"Gate {gate_id} not found")
 
-            if htf_bias == "BULLISH":
-                stop_loss = entry_price - stop_distance
-            else:
-                stop_loss = entry_price + stop_distance
+        # Derive direction from gate output
+        direction = self._derive_direction(gate)
 
-        if take_profit is None:
-            stop_distance = abs(entry_price - stop_loss)
-            target_distance = stop_distance * self.DEFAULT_RR_RATIO
+        # Generate static prices (NO market logic - INV-D2-NO-INTELLIGENCE-1)
+        entry, stop, target = self._generate_prices(pair, direction)
 
-            if htf_bias == "BULLISH":
-                take_profit = entry_price + target_distance
-            else:
-                take_profit = entry_price - target_distance
-
-        signal = CSESignal(
-            signal_type=signal_type,
+        # Create CSE
+        cse = CSE(
             pair=pair,
-            confidence=confidence,
-            setup_type=setup_type,
-            entry_price=entry_price,
-            stop_loss=stop_loss,
-            take_profit=take_profit,
-            htf_bias=htf_bias,
-            risk_percent=risk_percent,
-            session=session,
-            notes=notes or f"Mock signal from mock_cse_generator ({signal_type.value})",
+            source=CSESource.MOCK_5DRAWER,
+            setup_type=gate.output,
+            confidence=0.75,  # Static confidence (no intelligence)
+            parameters=CSEParameters(
+                entry=entry,
+                stop=stop,
+                target=target,
+                risk_percent=risk_percent,
+            ),
+            gate_id=gate_id,
+            gate_ref=gate.to_evidence_ref(),
         )
 
-        return signal
+        # Compute evidence hash (INV-D2-TRACEABLE-1)
+        cse.evidence_hash = cse.compute_evidence_hash()
 
-    def create_intent(self, signal: CSESignal) -> IntentPayload:
-        """Wrap signal in intent payload."""
-        return IntentPayload(signal=signal)
+        return cse
 
-    def write_intent(
-        self,
-        signal: CSESignal,
-        filename: str | None = None,
-    ) -> Path:
+    def _derive_direction(self, gate: GateDefinition) -> str:
         """
-        Write intent to file.
+        Derive trade direction from gate output.
+
+        NO market analysis - just pattern matching on gate name.
+        """
+        output = gate.output.upper()
+        if "LONG" in output:
+            return "LONG"
+        if "SHORT" in output:
+            return "SHORT"
+        # Default to LONG for ambiguous gates
+        return "LONG"
+
+    def _generate_prices(
+        self,
+        pair: Pair,
+        direction: str,
+    ) -> tuple[float, float, float]:
+        """
+        Generate static trade prices.
+
+        INVARIANT: INV-D2-NO-INTELLIGENCE-1
+        NO market analysis. Static offsets only.
+        """
+        base_price = self.DEFAULT_PRICES.get(pair, 1.0)
+
+        # Static pip offsets (no intelligence)
+        pip_value = 0.0001 if "JPY" not in pair.value else 0.01
+        stop_pips = 30
+        target_pips = 60  # 2:1 R:R
+
+        if direction == "LONG":
+            entry = base_price
+            stop = entry - (stop_pips * pip_value)
+            target = entry + (target_pips * pip_value)
+        else:
+            entry = base_price
+            stop = entry + (stop_pips * pip_value)
+            target = entry - (target_pips * pip_value)
+
+        return entry, stop, target
+
+    def write_cse_intent(self, cse: CSE, filename: str | None = None) -> Path:
+        """
+        Write CSE as intent file for D1 watcher.
 
         Args:
-            signal: CSE signal to wrap
-            filename: Output filename (auto-generated if not provided)
+            cse: CSE to write
+            filename: Optional filename
 
         Returns:
             Path to written file
         """
-        # Validate signal
-        errors = signal.validate()
+        # Validate CSE (INV-D2-FORMAT-1)
+        errors = cse.validate()
         if errors:
-            raise ValueError(f"Signal validation failed: {errors}")
+            raise ValueError(f"CSE validation failed: {errors}")
 
-        # Create intent
-        intent = self.create_intent(signal)
+        # Create intent wrapper
+        intent = {
+            "type": "CSE",
+            "payload": cse.to_dict(),
+            "timestamp": datetime.now(UTC).isoformat(),
+            "session_id": f"mock_cse_{cse.signal_id[:8]}",
+        }
 
         # Generate filename
         if filename is None:
-            timestamp = datetime.now(UTC).strftime("%Y%m%d_%H%M%S")
-            filename = f"mock_intent_{timestamp}.yaml"
+            ts = datetime.now(UTC).strftime("%Y%m%d_%H%M%S")
+            filename = f"cse_{cse.gate_id}_{ts}.yaml"
 
         # Write file
         output_path = self._intent_dir / filename
         with open(output_path, "w") as f:
-            yaml.dump(intent.to_dict(), f, default_flow_style=False)
+            yaml.dump(intent, f, default_flow_style=False)
 
         return output_path
+
+
+# =============================================================================
+# CSE VALIDATOR
+# =============================================================================
+
+
+class CSEValidator:
+    """
+    Validates CSE against schema.
+
+    INV-D2-FORMAT-1: Mock and production use same validation.
+    """
+
+    @staticmethod
+    def validate(cse_dict: dict[str, Any]) -> tuple[bool, list[str]]:
+        """
+        Validate CSE dictionary against schema.
+
+        Returns:
+            (is_valid, list of errors)
+        """
+        errors: list[str] = []
+
+        # Required fields
+        required = [
+            "cse_version",
+            "signal_id",
+            "timestamp",
+            "pair",
+            "source",
+            "setup_type",
+            "confidence",
+            "parameters",
+            "evidence_hash",
+        ]
+
+        for field_name in required:
+            if field_name not in cse_dict:
+                errors.append(f"Missing required field: {field_name}")
+
+        if errors:
+            return False, errors
+
+        # Type validations
+        if not isinstance(cse_dict.get("confidence"), (int, float)):
+            errors.append("confidence must be numeric")
+        elif not 0.0 <= cse_dict["confidence"] <= 1.0:
+            errors.append("confidence must be 0-1")
+
+        params = cse_dict.get("parameters", {})
+        for param in ["entry", "stop", "target", "risk_percent"]:
+            if param not in params:
+                errors.append(f"Missing parameter: {param}")
+
+        if errors:
+            return False, errors
+
+        # Risk percent range
+        risk = params.get("risk_percent", 0)
+        if not 0.5 <= risk <= 2.5:
+            errors.append(f"risk_percent must be 0.5-2.5, got {risk}")
+
+        # Price validations
+        entry = params.get("entry", 0)
+        stop = params.get("stop", 0)
+        target = params.get("target", 0)
+
+        if entry == stop:
+            errors.append("entry and stop cannot be equal")
+        if entry == target:
+            errors.append("entry and target cannot be equal")
+
+        return len(errors) == 0, errors
 
 
 # =============================================================================
@@ -350,27 +573,13 @@ class MockCSEGenerator:
 def parse_args() -> argparse.Namespace:
     """Parse command line arguments."""
     parser = argparse.ArgumentParser(
-        description="Generate mock CSE signals for Phoenix UX testing",
-        formatter_class=argparse.RawDescriptionHelpFormatter,
-        epilog="""
-Examples:
-    # Generate READY signal for EUR/USD
-    python mock_cse_generator.py --signal READY --pair EURUSD
-
-    # Generate with custom confidence and entry
-    python mock_cse_generator.py --signal READY --pair GBPUSD --confidence 0.90 --entry 1.2550
-
-    # Generate FORMING signal (not ready to execute)
-    python mock_cse_generator.py --signal FORMING --pair USDJPY
-        """,
+        description="Generate mock CSE signals from 5-drawer gates",
     )
 
     parser.add_argument(
-        "--signal",
+        "--gate",
         type=str,
-        choices=["READY", "FORMING", "NONE"],
-        default="READY",
-        help="Signal type (default: READY)",
+        help="Gate ID from conditions.yaml (e.g., GATE-COND-001)",
     )
 
     parser.add_argument(
@@ -382,50 +591,6 @@ Examples:
     )
 
     parser.add_argument(
-        "--confidence",
-        type=float,
-        default=0.85,
-        help="Signal confidence 0-1 (default: 0.85)",
-    )
-
-    parser.add_argument(
-        "--entry",
-        type=float,
-        default=None,
-        help="Entry price (auto-calculated if not provided)",
-    )
-
-    parser.add_argument(
-        "--stop",
-        type=float,
-        default=None,
-        help="Stop loss price (auto-calculated if not provided)",
-    )
-
-    parser.add_argument(
-        "--target",
-        type=float,
-        default=None,
-        help="Take profit price (auto-calculated if not provided)",
-    )
-
-    parser.add_argument(
-        "--setup-type",
-        type=str,
-        choices=["FVG_ENTRY", "OTE_ENTRY", "BOS_ENTRY", "LIQUIDITY_SWEEP", "ORDER_BLOCK"],
-        default="FVG_ENTRY",
-        help="Setup type (default: FVG_ENTRY)",
-    )
-
-    parser.add_argument(
-        "--bias",
-        type=str,
-        choices=["BULLISH", "BEARISH"],
-        default="BULLISH",
-        help="Higher timeframe bias (default: BULLISH)",
-    )
-
-    parser.add_argument(
         "--risk",
         type=float,
         default=1.0,
@@ -433,23 +598,21 @@ Examples:
     )
 
     parser.add_argument(
-        "--session",
-        type=str,
-        default="LONDON",
-        help="Trading session (default: LONDON)",
-    )
-
-    parser.add_argument(
-        "--output-dir",
-        type=str,
-        default=None,
-        help="Output directory for intent file",
+        "--list-gates",
+        action="store_true",
+        help="List valid gate IDs",
     )
 
     parser.add_argument(
         "--dry-run",
         action="store_true",
-        help="Print intent without writing file",
+        help="Print CSE without writing file",
+    )
+
+    parser.add_argument(
+        "--output-dir",
+        type=str,
+        help="Output directory for intent file",
     )
 
     return parser.parse_args()
@@ -459,44 +622,48 @@ def main() -> int:
     """Main entry point."""
     args = parse_args()
 
-    # Create generator
-    generator = MockCSEGenerator(intent_dir=args.output_dir)
+    try:
+        generator = MockCSEGenerator(intent_dir=Path(args.output_dir) if args.output_dir else None)
+    except FileNotFoundError as e:
+        print(f"ERROR: {e}")
+        return 1
 
-    # Create signal
-    signal = generator.create_signal(
-        signal_type=SignalType(args.signal),
-        pair=Pair(args.pair),
-        confidence=args.confidence,
-        setup_type=SetupType(args.setup_type),
-        entry_price=args.entry,
-        stop_loss=args.stop,
-        take_profit=args.target,
-        htf_bias=args.bias,
-        risk_percent=args.risk,
-        session=args.session,
-    )
+    # List gates
+    if args.list_gates:
+        print("Valid gate IDs (from conditions.yaml):")
+        for gate_id in generator.valid_gate_ids:
+            print(f"  - {gate_id}")
+        return 0
 
-    # Validate
-    errors = signal.validate()
-    if errors:
-        print("ERROR: Signal validation failed:")
-        for error in errors:
-            print(f"  - {error}")
+    # Require gate ID for CSE generation
+    if not args.gate:
+        print("ERROR: --gate is required (use --list-gates to see options)")
+        return 1
+
+    # Generate CSE
+    try:
+        cse = generator.create_cse_from_gate(
+            gate_id=args.gate,
+            pair=Pair(args.pair),
+            risk_percent=args.risk,
+        )
+    except ValueError as e:
+        print(f"ERROR: {e}")
         return 1
 
     # Output
-    intent = generator.create_intent(signal)
-
     if args.dry_run:
-        print("=== DRY RUN - Intent would be written: ===")
-        print(yaml.dump(intent.to_dict(), default_flow_style=False))
+        print("=== DRY RUN - CSE would be written: ===")
+        print(yaml.dump(cse.to_dict(), default_flow_style=False))
+        print(f"\nValidation: {'PASS' if not cse.validate() else 'FAIL'}")
         return 0
 
     # Write file
-    output_path = generator.write_intent(signal)
-    print(f"Intent written to: {output_path}")
-    print(f"Signal ID: {signal.signal_id}")
-    print(f"Intent ID: {intent.intent_id}")
+    output_path = generator.write_cse_intent(cse)
+    print(f"CSE written to: {output_path}")
+    print(f"Signal ID: {cse.signal_id}")
+    print(f"Gate: {cse.gate_id}")
+    print(f"Direction: {cse.direction}")
 
     return 0
 

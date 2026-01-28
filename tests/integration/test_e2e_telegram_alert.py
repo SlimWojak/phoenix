@@ -5,9 +5,8 @@ E2E Test: CSO → Telegram
 Tests setup detection triggering Telegram alerts.
 """
 
-import pytest
 from datetime import UTC, datetime
-from unittest.mock import MagicMock, AsyncMock
+from unittest.mock import MagicMock
 
 
 class TestTelegramAlertE2E:
@@ -33,9 +32,9 @@ class TestTelegramAlertE2E:
 
     def test_throttle_enforced(self) -> None:
         """Throttle limits alerts per hour."""
-        from notification import TelegramNotifier, NotificationLevel
+
+        from notification import NotificationLevel, TelegramNotifier
         from notification.telegram_notifier import ThrottleState
-        from datetime import timedelta
 
         notifier = TelegramNotifier()
 
@@ -53,7 +52,7 @@ class TestTelegramAlertE2E:
 
     def test_critical_bypasses_throttle(self) -> None:
         """CRITICAL alerts bypass throttle."""
-        from notification import TelegramNotifier, NotificationLevel
+        from notification import NotificationLevel, TelegramNotifier
         from notification.telegram_notifier import ThrottleState
 
         notifier = TelegramNotifier()
@@ -71,7 +70,7 @@ class TestTelegramAlertE2E:
 
     def test_aggregator_batches_alerts(self) -> None:
         """Aggregator batches multiple alerts."""
-        from notification import AlertAggregator, Alert
+        from notification import Alert, AlertAggregator
 
         aggregator = AlertAggregator(window_seconds=60, max_batch_size=10)
 
@@ -94,7 +93,7 @@ class TestTelegramAlertE2E:
 
     def test_critical_immediate_flush(self) -> None:
         """CRITICAL alert triggers immediate flush."""
-        from notification import AlertAggregator, Alert
+        from notification import Alert, AlertAggregator
 
         aggregator = AlertAggregator()
 

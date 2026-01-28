@@ -17,14 +17,15 @@ to be configured in .env for real delivery.
 from __future__ import annotations
 
 import os
-import pytest
-from datetime import UTC, datetime
-from unittest.mock import patch, MagicMock
-
 import sys
+from datetime import UTC, datetime
+from unittest.mock import MagicMock, patch
+
+import pytest
+
 sys.path.insert(0, '.')
 
-from notification import TelegramNotifier, NotificationLevel, AlertAggregator, Alert
+from notification import Alert, AlertAggregator, NotificationLevel, TelegramNotifier
 
 
 class TestTelegramConfiguration:

@@ -1,7 +1,7 @@
 # Sprint Status
 
-**Current:** S33 Phase 1 COMPLETE | Phase 2 (UX) NEXT
-**Updated:** 2026-01-27
+**Current:** S34 COMPLETE | S33 Phase 2 BLOCKED (Olya)
+**Updated:** 2026-01-28
 
 ---
 
@@ -15,7 +15,8 @@
 | S31 | SIGNAL_AND_DECAY | ✓ Complete | CSO, Signalman, Autopsy |
 | S32 | EXECUTION_PATH | ✓ Complete | IBKR mock, T2, lifecycle |
 | S33 P1 | FIRST_BLOOD Infrastructure | ✓ Complete | Real IBKR, monitoring, runbooks |
-| S33 P2 | FIRST_BLOOD UX | Next | Paper trades, UX validation |
+| S33 P2 | FIRST_BLOOD UX | Blocked | Paper trades (Olya-dependent) |
+| S34 | OPERATIONAL_FINISHING | ✓ Complete | File seam, CSO contract, orientation, widget |
 
 ---
 
@@ -103,23 +104,73 @@
 
 ---
 
-## S33 Phase 2: FIRST_BLOOD UX (NEXT)
+## S34: OPERATIONAL_FINISHING (COMPLETE)
+
+**Theme:** "Finish plumbing, not brain"
+
+### Tracks Delivered
+- **D1:** File Seam Plumbing
+  - `daemons/watcher.py` — Intent detection + routing
+  - `daemons/lens.py` — Response injection
+  - `daemons/routing.py` — Intent type dispatch
+- **D2:** Mock Oracle Pipeline
+  - `mocks/mock_cse_generator.py` — 5-drawer gate → CSE
+  - `cso/consumer.py` — CSE validation + routing
+  - `approval/evidence.py` — T2 evidence display
+- **D3:** Orientation Bead Checksum
+  - `schemas/orientation_bead.yaml` — Machine-verifiable schema
+  - `orientation/generator.py` — State aggregation
+  - `orientation/validator.py` — Corruption detection (KILL TEST)
+- **D4:** Surface Renderer POC
+  - `widget/surface_renderer.py` — Verbatim state projection
+  - `widget/menu_bar.py` — macOS rumps menu bar
+
+### Key Metrics
+| Track | Key Metric | Value |
+|-------|------------|-------|
+| D1 | E2E latency | 0.07s (target <5s) |
+| D1 | Lens tokens | 17 (target ≤50) |
+| D3 | Kill test | 5/5 corruption variants detected |
+| D4 | Read latency | 0.79ms (target <100ms) |
+
+### Invariants Proven (18 new)
+- D1: INV-D1-WATCHER-1, INV-D1-WATCHER-IMMUTABLE-1, INV-D1-LENS-1, INV-D1-HALT-PRIORITY-1
+- D2: INV-D2-FORMAT-1, INV-D2-TRACEABLE-1, INV-D2-NO-INTELLIGENCE-1, INV-D2-NO-COMPOSITION-1
+- D3: INV-D3-CHECKSUM-1, INV-D3-CROSS-CHECK-1, INV-D3-CORRUPTION-1, INV-D3-NO-DERIVED-1
+- D4: INV-D4-GLANCEABLE-1, INV-D4-ACCURATE-1, INV-D4-NO-ACTIONS-1, INV-D4-NO-DERIVATION-1, INV-D4-EPHEMERAL-1
+
+### Chaos Vectors (13)
+- D1: 3/3 (flood, malformed, halt race)
+- D2: 3/3 (invalid CSE, unresolvable ref, whitelist miss)
+- D3: 5/5 (hash, enum, stale, mode, positions)
+- D4: 2/2 (source missing, stale orientation)
+
+### Exit Gate
+"Operational friction materially reduced"
+**Status: ACHIEVED**
+
+### Key Insight
+> "Truth-First UI Surfacing"
+> UI freedom is earned by state discipline.
+
+---
+
+## S33 Phase 2: FIRST_BLOOD UX (BLOCKED)
 
 **Theme:** "First Blood with Human Validation"
+**Status:** BLOCKED (Olya-dependent)
 
-### Planned Tasks (Tomorrow)
-1. Configure Claude Desktop with Phoenix file seam
-2. Test mock_cse_generator.py integration
-3. Paper trade round-trip (3 trades minimum)
-4. RB-004 drill completion
-5. Document UX friction points → UX_VALIDATION_LOG.md
-
-### Prerequisites
+### Prerequisites Met
 - ✓ IBKR paper guards operational
 - ✓ Monitoring + heartbeat operational
 - ✓ Runbooks written
 - ✓ Mock CSE generator ready
-- IB Gateway running (required)
+- ✓ File seam operational (S34 D1)
+- ✓ Orientation bead ready (S34 D3)
+
+### Blocking
+- CSO office calibration (Olya track)
+- Live EUR/USD trading preparation
 
 ### Exit Gate
 "Paper trade round-trip complete, UX validated"
@@ -134,7 +185,8 @@
 | S31 | `reports/BUNNY_REPORT_S31.md` | 20/20 | 14 |
 | S32 | `reports/BUNNY_REPORT_S32.md` | 17/17 | 17 |
 | S33 P1 | `reports/BUNNY_REPORT_S33_P1.md` | 15/15 | 6 |
-| **Total** | | **71/71** | |
+| S34 | `reports/S34_COMPLETION_REPORT.md` | 13/13 | 18 |
+| **Total** | | **84/84** | |
 
 ---
 
@@ -142,14 +194,14 @@
 
 ```yaml
 PHOENIX_STATUS:
-  sprints_complete: 6 (S28 → S33 P1)
-  chaos_vectors: 71/71 PASS
-  invariants_proven: 34+
+  sprints_complete: 7 (S28 → S34)
+  chaos_vectors: 84/84 PASS
+  invariants_proven: 52+
   runbooks: 8
-  bead_types: 13
-  
+  bead_types: 14 (added ORIENTATION_BEAD)
+
 VELOCITY_PATTERN:
-  S29 + S30 + S31 + S32 + S33_P1: Single day
+  S29 + S30 + S31 + S32 + S33_P1 + S34: Two days
   pattern: "Rigorous prep → rapid execution"
 ```
 

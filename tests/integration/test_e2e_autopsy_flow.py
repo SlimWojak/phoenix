@@ -5,7 +5,6 @@ E2E Test: Shadow → Autopsy
 Tests position close triggering autopsy bead emission.
 """
 
-import pytest
 from datetime import UTC, datetime
 from unittest.mock import MagicMock
 
@@ -15,8 +14,7 @@ class TestAutopsyFlowE2E:
 
     def test_position_close_triggers_autopsy(self) -> None:
         """Closed position triggers autopsy via _trigger_autopsy method."""
-        from shadow.shadow import Shadow, ShadowConfig, CSESignal
-        from analysis import Autopsy
+        from shadow.shadow import CSESignal, Shadow, ShadowConfig
 
         # Create mock autopsy that tracks calls
         mock_autopsy = MagicMock()
@@ -53,7 +51,7 @@ class TestAutopsyFlowE2E:
 
     def test_autopsy_bead_contains_learnings(self) -> None:
         """Autopsy bead contains extracted learnings."""
-        from analysis import Autopsy, LearningExtractor
+        from analysis import Autopsy
 
         mock_bead_store = MagicMock()
         mock_bead_store.write_dict = MagicMock()

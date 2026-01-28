@@ -70,6 +70,7 @@ disallow_untyped_defs = false
 testpaths = ["tests"]
 python_files = ["test_*.py"]
 python_functions = ["test_*"]
+pythonpath = ["."]
 markers = [
     "invariant: constitutional compliance tests (INV-*)",
     "chaos: chaos engineering / stress tests",

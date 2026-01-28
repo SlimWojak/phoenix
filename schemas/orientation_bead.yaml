@@ -1,0 +1,283 @@
+# =============================================================================
+# ORIENTATION_BEAD SCHEMA v1.0
+# =============================================================================
+# S34: D3 ORIENTATION_BEAD_CHECKSUM
+#
+# PURPOSE: Deterministic system state checksum for machine-verifiable orientation
+# MANTRA: "Checksum, not briefing. Verification, not understanding."
+#
+# INVARIANTS:
+# - INV-D3-CHECKSUM-1: All fields machine-verifiable, no prose
+# - INV-D3-CROSS-CHECK-1: Every field verifiable against source system
+# - INV-D3-CORRUPTION-1: Corruption → STATE_CONFLICT
+# - INV-D3-NO-DERIVED-1: No interpreted/summary/derived fields
+#
+# CONSTRAINT: Output ≤1000 tokens
+# =============================================================================
+
+schema_version: "1.0"
+schema_type: orientation_bead
+last_updated: "2026-01-28"
+
+# =============================================================================
+# ENUMS
+# =============================================================================
+
+enums:
+  execution_phase:
+    type: enum
+    values:
+      - S29_FOUNDATION
+      - S30_BASELINE
+      - S31_HARDENING
+      - S32_EXECUTION_PATH
+      - S33_P1_INFRASTRUCTURE
+      - S33_P2_LIVE
+      - S34_OPERATIONAL
+      - S35_PILOT_STRATEGIST
+    description: Current sprint phase (frozen enum, no "latest")
+
+  mode:
+    type: enum
+    values:
+      - MOCK     # Mock mode (no broker connection)
+      - PAPER    # Paper trading (real broker, fake capital)
+      - LIVE_LOCKED  # Live with human gate
+    description: Execution mode
+
+  heartbeat_status:
+    type: enum
+    values:
+      - HEALTHY   # All checks pass
+      - DEGRADED  # Some checks failing
+      - MISSED    # Heartbeat not received
+      - UNKNOWN   # Cannot determine
+    description: System health status
+
+# =============================================================================
+# ORIENTATION_BEAD FIELDS
+# =============================================================================
+# CRITICAL: ALL fields must be:
+# 1. Machine-verifiable (no prose summaries)
+# 2. Cross-checkable against source systems
+# 3. Sufficient for hostile Strategist to detect inconsistency
+#
+# FORBIDDEN:
+# - system_stable (derived from multiple fields)
+# - risk_level (interpreted judgment)
+# - narrative_state (prose)
+# - summary (prose)
+# - recommendation (intelligence)
+# - phase_description (prose explanation)
+# - trading_allowed (derived boolean)
+# =============================================================================
+
+orientation_bead_fields:
+  # ---------------------------------------------------------------------------
+  # IDENTITY
+  # ---------------------------------------------------------------------------
+  bead_id:
+    type: uuid
+    description: Unique identifier for this orientation bead
+    required: true
+    source: Generated on creation
+
+  generated_at:
+    type: datetime
+    format: ISO8601
+    description: When this orientation was generated (UTC)
+    required: true
+    source: System clock
+    stale_threshold_sec: 3600  # >1 hour = stale warning
+
+  # ---------------------------------------------------------------------------
+  # PHASE & MODE (INV-D3-CROSS-CHECK-1: Verify against config)
+  # ---------------------------------------------------------------------------
+  execution_phase:
+    type: enum
+    enum_ref: execution_phase
+    description: Current execution phase
+    required: true
+    source: config/system_phase.yaml
+    verify_against: system phase configuration
+
+  mode:
+    type: enum
+    enum_ref: mode
+    description: Current execution mode
+    required: true
+    source: .env IBKR_MODE
+    verify_against: environment variables
+
+  # ---------------------------------------------------------------------------
+  # INVARIANTS & GOVERNANCE (INV-D3-CROSS-CHECK-1: Verify against bead store)
+  # ---------------------------------------------------------------------------
+  active_invariants_count:
+    type: int
+    min: 0
+    max: 500
+    description: Count of active invariants in system
+    required: true
+    source: Invariant registry
+    verify_against: docs/invariants.yaml count
+
+  kill_flags_active:
+    type: int
+    min: 0
+    max: 100
+    description: Number of active kill flags
+    required: true
+    source: Halt manager
+    verify_against: halt_manager.get_active_count()
+
+  unresolved_drift_count:
+    type: int
+    min: 0
+    max: 100
+    description: Unresolved reconciliation drift beads
+    required: true
+    source: Bead store query
+    verify_against: RECONCILIATION_DRIFT beads without RESOLUTION
+
+  # ---------------------------------------------------------------------------
+  # POSITIONS (INV-D3-CROSS-CHECK-1: Verify against position tracker)
+  # ---------------------------------------------------------------------------
+  positions_open:
+    type: int
+    min: 0
+    max: 100
+    description: Number of open positions
+    required: true
+    source: Position tracker
+    verify_against: execution/positions/ state
+
+  # ---------------------------------------------------------------------------
+  # HEALTH (INV-D3-CROSS-CHECK-1: Verify against heartbeat)
+  # ---------------------------------------------------------------------------
+  heartbeat_status:
+    type: enum
+    enum_ref: heartbeat_status
+    description: Latest heartbeat status
+    required: true
+    source: Heartbeat daemon
+    verify_against: Last HEARTBEAT_BEAD status field
+
+  # ---------------------------------------------------------------------------
+  # AUDIT TRAIL (INV-D3-CROSS-CHECK-1: Verify against bead chain)
+  # ---------------------------------------------------------------------------
+  last_human_action_bead_id:
+    type: uuid_or_null
+    description: Most recent human-signed bead ID (or null if none)
+    required: true
+    source: Bead store query (signer=human)
+    verify_against: Most recent bead where signer=human
+
+  last_alert_id:
+    type: uuid_or_null
+    description: Most recent alert ID (or null if none)
+    required: true
+    source: Alert store
+    verify_against: Alert history latest
+
+  # ---------------------------------------------------------------------------
+  # CHECKSUM (INV-D3-CHECKSUM-1: Machine-verifiable integrity)
+  # ---------------------------------------------------------------------------
+  bead_hash:
+    type: string
+    format: hex64
+    description: SHA256 of sorted field values (excludes bead_hash itself)
+    required: true
+    computation: |
+      SHA256(json.dumps({
+        execution_phase, mode, active_invariants_count,
+        kill_flags_active, unresolved_drift_count, positions_open,
+        heartbeat_status, last_human_action_bead_id, last_alert_id,
+        generated_at
+      }, sort_keys=True))
+
+# =============================================================================
+# VALIDATION RULES
+# =============================================================================
+
+validation_rules:
+  timestamp_freshness:
+    rule: "generated_at must be within 1 hour of current time"
+    severity: WARNING
+    error_code: STATE_CONFLICT_STALE
+
+  hash_integrity:
+    rule: "bead_hash must match computed hash of fields"
+    severity: CRITICAL
+    error_code: STATE_CONFLICT_HASH
+
+  mode_consistency:
+    rule: "mode must match IBKR_MODE environment variable"
+    severity: CRITICAL
+    error_code: STATE_CONFLICT_MODE
+
+  position_count_consistency:
+    rule: "positions_open must match position tracker count"
+    severity: CRITICAL
+    error_code: STATE_CONFLICT_POSITIONS
+
+  enum_validity:
+    rule: "All enum fields must contain valid enum values"
+    severity: CRITICAL
+    error_code: STATE_CONFLICT_INVALID_ENUM
+
+# =============================================================================
+# STATE_CONFLICT CODES
+# =============================================================================
+
+state_conflict_codes:
+  STATE_CONFLICT_HASH:
+    description: "bead_hash does not match computed hash"
+    severity: CRITICAL
+    action: REJECT_ORIENTATION
+
+  STATE_CONFLICT_STALE:
+    description: "Orientation bead is more than 1 hour old"
+    severity: WARNING
+    action: WARN_AND_REQUIRE_REFRESH
+
+  STATE_CONFLICT_MODE:
+    description: "mode field does not match system mode"
+    severity: CRITICAL
+    action: REJECT_ORIENTATION
+
+  STATE_CONFLICT_POSITIONS:
+    description: "positions_open does not match position tracker"
+    severity: CRITICAL
+    action: REJECT_ORIENTATION
+
+  STATE_CONFLICT_INVALID_ENUM:
+    description: "Enum field contains invalid value"
+    severity: CRITICAL
+    action: REJECT_ORIENTATION
+
+# =============================================================================
+# EXAMPLE ORIENTATION_BEAD
+# =============================================================================
+
+example:
+  bead_id: "a1b2c3d4-e5f6-7890-1234-567890abcdef"
+  generated_at: "2026-01-28T14:30:00Z"
+  execution_phase: "S34_OPERATIONAL"
+  mode: "PAPER"
+  active_invariants_count: 71
+  kill_flags_active: 0
+  unresolved_drift_count: 0
+  positions_open: 0
+  heartbeat_status: "HEALTHY"
+  last_human_action_bead_id: "f0e1d2c3-b4a5-9687-0123-456789fedcba"
+  last_alert_id: null
+  bead_hash: "a1b2c3d4e5f6789012345678901234567890123456789012345678901234abcd"
+
+# =============================================================================
+# TOKEN BUDGET
+# =============================================================================
+
+token_budget:
+  max_tokens: 1000
+  typical_tokens: 150  # Compact YAML representation
+  constraint: "Output ≤1000 tokens"

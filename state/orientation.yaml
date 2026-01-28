@@ -1,0 +1,12 @@
+bead_id: b6bf356a-0175-406b-b415-c319ce63a432
+generated_at: '2026-01-28T07:13:01.079828+00:00'
+execution_phase: S34_OPERATIONAL
+mode: PAPER
+active_invariants_count: 71
+kill_flags_active: 0
+unresolved_drift_count: 0
+positions_open: 0
+heartbeat_status: UNKNOWN
+last_human_action_bead_id: null
+last_alert_id: null
+bead_hash: b8ac611ce37ef256fb5f561df03a1756c5dc2306fbc45ea1c1f2f718f6899315

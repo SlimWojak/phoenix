@@ -10,11 +10,9 @@ Run with: pytest tests/chaos/test_bunny_s30.py -v
 
 from __future__ import annotations
 
-import hashlib
-import re
 import tempfile
 import uuid
-from datetime import UTC, datetime, timedelta
+from datetime import UTC, datetime
 from pathlib import Path
 
 import pytest
@@ -60,7 +58,7 @@ class TestHuntInvariants:
 
         INV-HUNT-HPG-1: Hunt only accepts valid HPG JSON
         """
-        from lab.hpg_parser import HPG, HPGParser, ValidationResult
+        from lab.hpg_parser import HPG, HPGParser
 
         parser = HPGParser()
 
@@ -97,7 +95,7 @@ class TestHuntInvariants:
 
         INV-HUNT-HPG-1: Hunt only accepts valid HPG JSON
         """
-        from lab.hpg_parser import HPG, HPGParser, SignalType, Session, StopModel
+        from lab.hpg_parser import HPG, HPGParser, Session, SignalType, StopModel
 
         parser = HPGParser()
 
@@ -145,8 +143,8 @@ class TestHuntInvariants:
 
         INV-HUNT-CAP-1: Max 50 variations
         """
-        from lab.hpg_parser import HPG, SignalType, Session, StopModel
-        from lab.variation_generator import VariationGenerator, VariationConfig
+        from lab.hpg_parser import HPG, Session, SignalType, StopModel
+        from lab.variation_generator import VariationConfig, VariationGenerator
 
         # Create base HPG
         hpg = HPG(
@@ -201,7 +199,7 @@ class TestHuntInvariants:
         window = DataWindow.default(30)
 
         # Create multiple variants
-        from lab.hpg_parser import HPG, SignalType, Session, StopModel
+        from lab.hpg_parser import HPG, Session, SignalType, StopModel
 
         hpg = HPG(
             hpg_version="1.0",
@@ -341,7 +339,7 @@ class TestCheckpointInvariants:
 
         INV-CHECKPOINT-ATOMIC-1: State transitions are atomic
         """
-        from checkpoint import Checkpoint, CheckpointState
+        from checkpoint import Checkpoint
         from checkpoint.checkpoint import ContextSnapshot, TransitionType
 
         initial_count = temp_bead_store.count_beads()
@@ -378,7 +376,6 @@ class TestCheckpointInvariants:
         """
         from checkpoint import Checkpoint
         from checkpoint.checkpoint import (
-            CheckpointState,
             CommitError,
             ContextSnapshot,
             TransitionType,
@@ -420,8 +417,9 @@ class TestShadowInvariants:
 
         INV-SHADOW-ISO-1: Shadow NEVER affects live capital
         """
-        import shadow
         from pathlib import Path
+
+        import shadow
 
         # Get shadow module path
         shadow_path = Path(shadow.__file__).parent

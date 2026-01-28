@@ -16,14 +16,9 @@ WAVE ORDER:
 TOTAL: 20 vectors
 """
 
-import pytest
-import tempfile
 from datetime import UTC, datetime, timedelta
-from pathlib import Path
-from unittest.mock import MagicMock, patch
 
 import pandas as pd
-
 
 # =============================================================================
 # WAVE 1: CSO (5 vectors)
@@ -100,7 +95,8 @@ class TestBunnyWave1CSO:
         Expect: No false READY signals (quality too low)
         """
         import random
-        from cso import StructureDetector, StrategyCore
+
+        from cso import StrategyCore, StructureDetector
 
         # Generate garbage data
         dates = [datetime(2026, 1, 20, tzinfo=UTC) + timedelta(hours=i) for i in range(50)]
@@ -180,7 +176,7 @@ class TestBunnyWave2Signalman:
         Inject: Single signal type only
         Expect: Still detects decay (graceful degradation)
         """
-        from monitoring.signalman import Signalman, DecaySignal, DecayType
+        from monitoring.signalman import DecaySignal, DecayType, Signalman
 
         signalman = Signalman(min_beads=5)
 
@@ -410,7 +406,7 @@ class TestBunnyWave4Telegram:
         Inject: Alert flood
         Expect: Throttled to max
         """
-        from notification import TelegramNotifier, NotificationLevel
+        from notification import NotificationLevel, TelegramNotifier
 
         notifier = TelegramNotifier()
 
@@ -434,7 +430,7 @@ class TestBunnyWave4Telegram:
         Inject: HALT alert when throttled
         Expect: Immediate delivery (bypass)
         """
-        from notification import TelegramNotifier, NotificationLevel
+        from notification import NotificationLevel, TelegramNotifier
         from notification.telegram_notifier import ThrottleState
 
         notifier = TelegramNotifier()
@@ -458,7 +454,7 @@ class TestBunnyWave4Telegram:
         Inject: 5 READY signals
         Expect: Batched into summary
         """
-        from notification import AlertAggregator, Alert
+        from notification import Alert, AlertAggregator
 
         aggregator = AlertAggregator(max_batch_size=10)
 
@@ -492,7 +488,7 @@ class TestBunnyWave5Lens:
         Inject: 5 simultaneous writes
         Expect: Serialized, no corruption, latest wins
         """
-        from lens import ResponseWriter, Response, ResponseType
+        from lens import Response, ResponseType, ResponseWriter
 
         writer = ResponseWriter()
 
@@ -517,7 +513,7 @@ class TestBunnyWave5Lens:
         Inject: Spam writes
         Expect: Reader gets complete content
         """
-        from lens import ResponseWriter, Response, ResponseType
+        from lens import Response, ResponseType, ResponseWriter
 
         writer = ResponseWriter()
 

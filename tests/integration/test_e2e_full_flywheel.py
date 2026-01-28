@@ -5,11 +5,9 @@ E2E Test: Full S30+S31 Flywheel
 Tests complete pipeline from Hunt to Autopsy.
 """
 
-import pytest
 import tempfile
 from datetime import UTC, datetime
 from pathlib import Path
-from unittest.mock import MagicMock
 
 
 class TestFullFlywheelE2E:
@@ -20,9 +18,6 @@ class TestFullFlywheelE2E:
         Complete flywheel: Hunt → CSO → Shadow → Autopsy → Athena
         """
         from memory.bead_store import BeadStore
-        from shadow.shadow import Shadow, ShadowConfig, CSESignal
-        from analysis import Autopsy
-        from monitoring import KillManager
 
         # Create shared bead store with temp file
         with tempfile.TemporaryDirectory() as tmpdir:
@@ -32,9 +27,9 @@ class TestFullFlywheelE2E:
 
     def _run_flywheel_test(self, bead_store: "BeadStore") -> None:
         """Run the actual flywheel test."""
-        from shadow.shadow import Shadow, ShadowConfig, CSESignal
         from analysis import Autopsy
         from monitoring import KillManager
+        from shadow.shadow import CSESignal, Shadow, ShadowConfig
 
         # Create components
         autopsy = Autopsy(bead_store=bead_store)
@@ -102,7 +97,7 @@ class TestFullFlywheelE2E:
     def test_flywheel_with_decay(self) -> None:
         """Flywheel with decay detection and kill."""
         from memory.bead_store import BeadStore
-        from monitoring import Signalman, KillManager
+        from monitoring import KillManager
 
         with tempfile.TemporaryDirectory() as tmpdir:
             db_path = Path(tmpdir) / "decay_test.db"
@@ -141,7 +136,7 @@ class TestFullFlywheelE2E:
 
     def test_lens_response_cycle(self) -> None:
         """Lens writes response, can be read back."""
-        from lens import ResponseWriter, ResponseType
+        from lens import ResponseType, ResponseWriter
 
         writer = ResponseWriter()
 

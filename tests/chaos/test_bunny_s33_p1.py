@@ -18,13 +18,9 @@ Run with:
 
 from __future__ import annotations
 
-import time
-from datetime import UTC, datetime, timedelta
-from unittest.mock import MagicMock, patch
-
-import pytest
-
 import sys
+from datetime import UTC, datetime, timedelta
+
 sys.path.insert(0, '.')
 
 from brokers.ibkr import (
@@ -32,25 +28,19 @@ from brokers.ibkr import (
     IBKRConnector,
     IBKRMode,
     MockIBKRClient,
-    ChaosMode,
     Order,
     OrderStatus,
     OrderType,
     ReconnectTracker,
-    SessionBeadEmitter,
 )
 from brokers.ibkr.orders import OrderSide
 from monitoring.ops import (
-    Heartbeat,
-    HeartbeatConfig,
-    HeartbeatBeadEmitter,
     HealthStatus,
+    HeartbeatBeadEmitter,
+    HeartbeatConfig,
     SemanticHealthChecker,
-    SemanticHealthResult,
 )
-from monitoring.ops.heartbeat_bead import HealthChecks
-from monitoring.ops.semantic_health import CheckStatus, CheckResult
-
+from monitoring.ops.semantic_health import CheckStatus
 
 # =============================================================================
 # WAVE 1: IBKR CONNECTION (3 vectors)
@@ -320,7 +310,7 @@ class TestWave3Telegram:
         """
         # Import from correct path (phoenix root, not tests)
         sys.path.insert(0, '/Users/echopeso/phoenix')
-        from notification.telegram_notifier import TelegramNotifier, NotificationLevel
+        from notification.telegram_notifier import TelegramNotifier
         
         # Create notifier without real credentials
         notifier = TelegramNotifier(
@@ -348,7 +338,7 @@ class TestWave3Telegram:
         """
         # Import from correct path
         sys.path.insert(0, '/Users/echopeso/phoenix')
-        from notification.alert_aggregator import AlertAggregator, Alert
+        from notification.alert_aggregator import Alert, AlertAggregator
         
         aggregator = AlertAggregator(
             window_seconds=60,
@@ -469,7 +459,7 @@ class TestWave5RunbookDrill:
         
         Tests kill flag path without full execution.
         """
-        from monitoring import KillManager, KillFlag
+        from monitoring import KillManager
         
         # Create kill manager
         manager = KillManager()
@@ -507,7 +497,7 @@ class TestWave5RunbookDrill:
         
         Tests reconciliation drift detection.
         """
-        from execution.reconciliation import DriftType, DriftSeverity
+        from execution.reconciliation import DriftSeverity, DriftType
         from execution.reconciliation.drift import DriftRecord
         
         # Create drift record (simulating detection)
@@ -609,7 +599,6 @@ class TestWave6Guards:
         
         # Verify CONFIG_CHANGE bead type exists in schema
         # (Just a structural test here)
-        from execution.reconciliation.drift import DriftRecord
         
         # The invariant INV-PHASE2-REVALIDATE-1 will be enforced when:
         # - CONFIG_CHANGE bead is emitted

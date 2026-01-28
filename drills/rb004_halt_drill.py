@@ -67,7 +67,7 @@ def run_drill() -> bool:
     
     result = manager.request_halt()
     
-    print(f"\n  HaltSignalSetResult:")
+    print("\n  HaltSignalSetResult:")
     print(f"    success:    {result.success}")
     print(f"    halt_id:    {result.halt_id}")
     print(f"    latency_ms: {result.latency_ms:.6f}")

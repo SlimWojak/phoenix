@@ -15,9 +15,9 @@ WAVE ORDER:
 EXIT GATE: 17/17 PASS
 """
 
-import pytest
 from datetime import UTC, datetime, timedelta
 
+import pytest
 
 # =============================================================================
 # WAVE 1: TOKEN SECURITY (4 vectors)
@@ -35,7 +35,7 @@ class TestWave1TokenSecurity:
         Inject: Use token, then try to use again.
         Expect: Second use rejected with ALREADY_USED.
         """
-        from governance.t2.tokens import TokenStore, RejectionReason
+        from governance.t2.tokens import RejectionReason, TokenStore
 
         store = TokenStore()
         token = store.issue(intent_id="INT-001", evidence_hash="hash001")
@@ -60,7 +60,7 @@ class TestWave1TokenSecurity:
         Inject: Create token, backdate expiry to past.
         Expect: Validation rejected with EXPIRED.
         """
-        from governance.t2.tokens import Token, TokenStore, RejectionReason
+        from governance.t2.tokens import RejectionReason, TokenStore
 
         store = TokenStore()
         token = store.issue(intent_id="INT-002", evidence_hash="hash002")
@@ -81,7 +81,7 @@ class TestWave1TokenSecurity:
         Inject: Use token with wrong intent_id.
         Expect: Rejected with INTENT_MISMATCH.
         """
-        from governance.t2.tokens import TokenStore, RejectionReason
+        from governance.t2.tokens import RejectionReason, TokenStore
 
         store = TokenStore()
         token = store.issue(intent_id="INT-003", evidence_hash="hash003")
@@ -136,7 +136,7 @@ class TestWave2IBKRChaos:
         Inject: Set ADVERSARIAL mode with high reject rate.
         Expect: Some orders rejected (system handles gracefully).
         """
-        from brokers.ibkr import MockIBKRClient, ChaosMode
+        from brokers.ibkr import ChaosMode, MockIBKRClient
         from brokers.ibkr.orders import Order, OrderSide, OrderStatus, OrderType
 
         mock = MockIBKRClient(mode=ChaosMode.ADVERSARIAL, seed=42)
@@ -170,7 +170,7 @@ class TestWave2IBKRChaos:
         Inject: Set ADVERSARIAL mode with partial fill rate.
         Expect: Some orders partially filled.
         """
-        from brokers.ibkr import MockIBKRClient, ChaosMode
+        from brokers.ibkr import ChaosMode, MockIBKRClient
         from brokers.ibkr.orders import Order, OrderSide, OrderStatus, OrderType
 
         mock = MockIBKRClient(mode=ChaosMode.ADVERSARIAL, seed=123)
@@ -214,7 +214,7 @@ class TestWave3Lifecycle:
         Inject: Attempt PROPOSED → FILLED (skipping states).
         Expect: TransitionError raised.
         """
-        from execution.positions.lifecycle import create_position, PositionLifecycle
+        from execution.positions.lifecycle import PositionLifecycle, create_position
         from execution.positions.states import PositionState, TransitionError
 
         lifecycle = PositionLifecycle()
@@ -241,7 +241,7 @@ class TestWave3Lifecycle:
         Inject: Transition through states with bead callback.
         Expect: Bead emitted for each transition.
         """
-        from execution.positions.lifecycle import create_position, PositionLifecycle
+        from execution.positions.lifecycle import PositionLifecycle, create_position
         from execution.positions.states import PositionState
 
         beads_emitted = []
@@ -275,7 +275,7 @@ class TestWave3Lifecycle:
         Inject: Position in SUBMITTED, backdate to 65s.
         Expect: check_stale_submitted transitions to STALLED.
         """
-        from execution.positions.lifecycle import create_position, PositionLifecycle
+        from execution.positions.lifecycle import PositionLifecycle, create_position
         from execution.positions.states import PositionState
 
         lifecycle = PositionLifecycle()
@@ -346,7 +346,7 @@ class TestWave4Reconciliation:
         Inject: Create drift, resolve drift.
         Expect: Position state unchanged throughout.
         """
-        from execution.positions.lifecycle import create_position, PositionLifecycle
+        from execution.positions.lifecycle import PositionLifecycle, create_position
         from execution.positions.states import PositionState
         from execution.reconciliation import Reconciler
 
@@ -398,7 +398,7 @@ class TestWave4Reconciliation:
         Inject: Position with 75% fill, broker shows 80%.
         Expect: PARTIAL_FILL drift detected.
         """
-        from execution.reconciliation.drift import DriftRecord, DriftType, DriftSeverity
+        from execution.reconciliation.drift import DriftRecord, DriftSeverity, DriftType
 
         # Simulate partial fill mismatch
         phoenix_ratio = 0.75

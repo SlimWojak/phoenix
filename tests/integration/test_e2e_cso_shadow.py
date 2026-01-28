@@ -5,9 +5,7 @@ E2E Test: CSO → Shadow
 Tests complete flow from CSO setup detection to Shadow paper position.
 """
 
-import pytest
 from datetime import UTC, datetime, timedelta
-from unittest.mock import MagicMock, patch
 
 import pandas as pd
 
@@ -18,9 +16,8 @@ class TestCSOShadowE2E:
     def test_cso_detects_setup_shadow_tracks(self) -> None:
         """CSO detects READY setup → Shadow creates paper position."""
         # Setup mocks
-        from cso import CSOScanner, StrategyCore
-        from cso.structure_detector import StructureDetector, Direction
-        from shadow.shadow import Shadow, ShadowConfig, CSESignal
+        from cso.structure_detector import StructureDetector
+        from shadow.shadow import CSESignal, Shadow, ShadowConfig
 
         # Create Shadow
         shadow = Shadow(config=ShadowConfig(initial_balance=10000))
@@ -88,7 +85,7 @@ class TestCSOShadowE2E:
 
     def test_shadow_position_lifecycle(self) -> None:
         """Test full position lifecycle in Shadow."""
-        from shadow.shadow import Shadow, ShadowConfig, CSESignal
+        from shadow.shadow import CSESignal, Shadow, ShadowConfig
 
         shadow = Shadow(config=ShadowConfig(initial_balance=10000))
 
@@ -120,7 +117,7 @@ class TestCSOShadowE2E:
 
     def test_multiple_pairs_tracked(self) -> None:
         """Shadow tracks positions across multiple pairs."""
-        from shadow.shadow import Shadow, ShadowConfig, CSESignal
+        from shadow.shadow import CSESignal, Shadow, ShadowConfig
 
         shadow = Shadow(config=ShadowConfig(max_positions=5))
 
