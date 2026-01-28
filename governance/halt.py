@@ -22,7 +22,7 @@ from dataclasses import dataclass, field
 from datetime import UTC, datetime
 from typing import Optional
 
-from .errors import HaltException
+from .errors import HaltError
 from .types import (
     AckReceipt,
     HaltCascadeReport,
@@ -96,7 +96,7 @@ class HaltSignal:
         Called at yield points.
         """
         if self._signal:
-            raise HaltException(self._halt_id or "unknown")
+            raise HaltError(self._halt_id or "unknown")
 
 
 # =============================================================================
@@ -234,7 +234,7 @@ class HaltManager:
         Cooperative yield point.
 
         MUST be called at declared yield_points.
-        Raises HaltException if signal set.
+        Raises HaltError if signal set.
         """
         self.signal.check()
 
