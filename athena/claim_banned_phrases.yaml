@@ -1,0 +1,81 @@
+# =============================================================================
+# CLAIM BANNED PHRASES — Language Linter Configuration
+# =============================================================================
+# S37 TRACK A DELIVERABLE
+# Created: 2026-01-29
+#
+# Claims must not contain absolute/confident language.
+# Confidence sneaks in via language, not fields.
+#
+# INVARIANT: INV-CLAIM-NO-EXECUTION
+# =============================================================================
+
+schema_version: "1.0.0"
+created: "2026-01-29"
+
+# =============================================================================
+# BANNED PHRASES — Absolute Confidence
+# =============================================================================
+
+banned_phrases:
+  # Absolute certainty
+  - "always"
+  - "never"
+  - "guaranteed"
+  - "definitely"
+  - "certainly"
+  - "100%"
+  - "impossible"
+  - "without fail"
+  - "every time"
+  - "no exceptions"
+  
+  # High confidence language
+  - "high probability"
+  - "low risk"
+  - "almost certain"
+  - "virtually guaranteed"
+  - "highly likely"
+  - "extremely reliable"
+  
+  # Predictive certainty
+  - "will always"
+  - "will never"
+  - "must happen"
+  - "cannot fail"
+  
+  # Grade/score language
+  - "best setup"
+  - "worst setup"
+  - "top quality"
+  - "A+ setup"
+  - "perfect setup"
+  - "ideal conditions"
+
+# =============================================================================
+# ALLOWED PATTERNS — Implicit Uncertainty
+# =============================================================================
+
+allowed_patterns:
+  - "tends to"
+  - "often"
+  - "usually"
+  - "in my experience"
+  - "I believe"
+  - "I've observed"
+  - "seems to"
+  - "appears to"
+  - "about X%"
+  - "roughly"
+  - "approximately"
+  - "typically"
+  - "generally"
+
+# =============================================================================
+# FALSE POSITIVE EXCEPTIONS
+# =============================================================================
+
+exceptions:
+  # Domain-specific terms that contain banned words
+  - "never trade against HTF bias"  # Allowed as rule statement
+  # These should be reviewed case-by-case

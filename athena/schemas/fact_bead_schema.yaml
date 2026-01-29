@@ -1,0 +1,123 @@
+# =============================================================================
+# FACT BEAD SCHEMA — Machine Computations
+# =============================================================================
+# S37 TRACK A DELIVERABLE
+# Created: 2026-01-29
+#
+# Facts are MACHINE TRUTH. Computed, with full provenance.
+# Facts come from verified modules (CFP, River, CSO).
+#
+# INVARIANTS:
+#   - INV-ATTR-PROVENANCE: Facts require full provenance quadruplet
+# =============================================================================
+
+schema_version: "1.0.0"
+created: "2026-01-29"
+status: "S37_ACTIVE"
+
+# =============================================================================
+# FACT BEAD STRUCTURE
+# =============================================================================
+
+fact_bead:
+  # Required fields
+  bead_id:
+    type: str
+    required: true
+    description: "Unique identifier"
+    
+  bead_type:
+    type: str
+    required: true
+    const: "FACT"
+    description: "Always FACT for this bead type"
+    
+  timestamp:
+    type: datetime
+    required: true
+    
+  # Source (always computation)
+  source:
+    type:
+      type: str
+      required: true
+      const: "COMPUTATION"
+      description: "Facts always come from machine computation"
+    module:
+      type: str
+      required: true
+      description: "Source module (e.g., 'cfp', 'river', 'cso')"
+    formula:
+      type: str
+      required: true
+      description: "Explicit computation description"
+      
+  # Content
+  content:
+    statement:
+      type: str
+      required: true
+      description: "The fact statement"
+    value:
+      type: any
+      required: true
+      description: "Numeric/boolean result"
+    domain:
+      type: str
+      required: true
+      description: "Domain (e.g., 'performance', 'gate_status')"
+      
+  # Provenance (MANDATORY - from CFP pattern)
+  provenance:
+    query_string:
+      type: str
+      required: true
+      description: "Original query that produced this fact"
+    dataset_hash:
+      type: str
+      required: true
+      description: "Hash of source data"
+    governance_hash:
+      type: str
+      required: true
+      description: "Hash of governance rules active at computation"
+    strategy_config_hash:
+      type: str
+      required: true
+      description: "Hash of strategy configuration"
+    computed_at:
+      type: datetime
+      required: true
+      description: "When the computation occurred"
+      
+  # Status
+  status:
+    valid_until:
+      type: datetime
+      required: false
+      description: "Optional expiry"
+    recomputed_from:
+      type: str
+      required: false
+      description: "Prior fact_id if recomputation"
+
+# =============================================================================
+# FORBIDDEN FIELDS
+# =============================================================================
+
+forbidden_fields:
+  - importance
+  - priority
+  - weight
+  - score
+  - quality
+  - confidence
+
+# =============================================================================
+# VALIDATION RULES
+# =============================================================================
+
+validation:
+  provenance_required: true
+  all_provenance_fields_required: true
+  module_must_be_valid: true

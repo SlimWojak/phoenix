@@ -1,0 +1,55 @@
+# =============================================================================
+# POLAR PAIRS — Semantic Polarity Configuration
+# =============================================================================
+# S37 TRACK D DELIVERABLE
+# Created: 2026-01-29
+#
+# Domain opposites that must maintain minimum distance.
+# If polar match found at low distance, flag as AMBIGUOUS.
+#
+# INVARIANT: INV-SEMANTIC-POLARITY
+# =============================================================================
+
+schema_version: "1.0.0"
+created: "2026-01-29"
+
+# =============================================================================
+# POLAR PAIRS
+# =============================================================================
+
+polar_pairs:
+  # Direction
+  - [bullish, bearish]
+  - [long, short]
+  - [buy, sell]
+  
+  # Levels
+  - [support, resistance]
+  - [floor, ceiling]
+  
+  # Patterns
+  - [continuation, reversal]
+  - [breakout, breakdown]
+  
+  # Bias
+  - [risk-on, risk-off]
+  - [expansion, contraction]
+  
+  # Results
+  - [profit, loss]
+  - [winner, loser]
+
+# =============================================================================
+# CONFIGURATION
+# =============================================================================
+
+config:
+  # Minimum distance threshold for polar pairs
+  # Below this = FLAG_AMBIGUOUS
+  min_distance_threshold: 0.20
+  
+  # How to handle polar matches
+  on_polar_match:
+    action: FLAG_AMBIGUOUS
+    include_in_results: false
+    log_warning: true

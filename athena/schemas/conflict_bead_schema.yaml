@@ -1,0 +1,133 @@
+# =============================================================================
+# CONFLICT BEAD SCHEMA — Tension Between Claim and Fact
+# =============================================================================
+# S37 TRACK A DELIVERABLE
+# Created: 2026-01-29
+#
+# Conflicts are TENSION. System surfaces, NEVER resolves.
+# No severity ranking. No auto-resolution. Human decides.
+#
+# INVARIANTS:
+#   - INV-ATTR-SILENCE: System does not resolve conflicts
+#   - INV-CONFLICT-SHUFFLE: Conflicts returned shuffled
+#   - INV-CONFLICT-NO-AGGREGATION: No counting or ranking
+# =============================================================================
+
+schema_version: "1.0.0"
+created: "2026-01-29"
+status: "S37_ACTIVE"
+
+# =============================================================================
+# CONFLICT BEAD STRUCTURE
+# =============================================================================
+
+conflict_bead:
+  # Required fields
+  bead_id:
+    type: str
+    required: true
+    description: "Unique identifier"
+    
+  bead_type:
+    type: str
+    required: true
+    const: "CONFLICT"
+    description: "Always CONFLICT for this bead type"
+    
+  timestamp:
+    type: datetime
+    required: true
+    
+  # References to conflicting beads
+  references:
+    claim_bead_id:
+      type: str
+      required: true
+      description: "The claim that conflicts"
+    fact_bead_id:
+      type: str
+      required: true
+      description: "The fact that contradicts the claim"
+    supersession_chain:
+      type: list[str]
+      required: false
+      default: []
+      description: "Claim evolution context for recursive conflict mapping"
+      
+  # Conflict details
+  conflict:
+    description:
+      type: str
+      required: true
+      description: "Auto-generated: 'CLAIM asserts X, FACT shows Y'"
+    domain:
+      type: str
+      required: true
+      description: "Domain where conflict occurred"
+    conflict_type:
+      type: enum
+      values: [BOOLEAN, NUMERIC, STATISTICAL]
+      required: true
+      description: "Type of contradiction"
+    severity:
+      type: null
+      required: false
+      forbidden: true
+      description: "FORBIDDEN — no ranking conflicts"
+      
+  # Resolution (human-controlled)
+  resolution:
+    status:
+      type: str
+      required: true
+      default: "OPEN"
+      description: "Only OPEN until human acts"
+    resolved_by:
+      type: str
+      required: false
+      description: "Human attribution when resolved"
+    resolution_action:
+      type: enum
+      values: [CLAIM_UPDATED, CLAIM_RETAINED, FACT_DISPUTED, RESOLVED_BY_SUPERSESSION]
+      required: false
+      description: "What action resolved the conflict"
+    resolved_at:
+      type: datetime
+      required: false
+
+# =============================================================================
+# FORBIDDEN FIELDS
+# =============================================================================
+
+forbidden_fields:
+  - severity
+  - urgency
+  - importance
+  - priority
+  - weight
+  - score
+  - quality
+  - auto_resolution
+  - suggested_resolution
+  - confidence
+
+# =============================================================================
+# FORBIDDEN OPERATIONS
+# =============================================================================
+
+forbidden_operations:
+  - count_by_domain
+  - sort_by_time_open
+  - sort_by_severity
+  - aggregate_conflicts
+  - rank_conflicts
+  - auto_resolve
+
+# =============================================================================
+# VALIDATION RULES
+# =============================================================================
+
+validation:
+  severity_must_be_null: true
+  status_default_open: true
+  references_required: true

@@ -1,0 +1,144 @@
+# =============================================================================
+# CLAIM BEAD SCHEMA — Human Assertions
+# =============================================================================
+# S37 TRACK A DELIVERABLE
+# Created: 2026-01-29
+#
+# Claims are HUMAN WISDOM. Queryable, never executable.
+# No claim can mutate doctrine. No claim is "verified" by system.
+#
+# INVARIANTS:
+#   - INV-CLAIM-NO-EXECUTION: Claims cannot be CSO predicates
+#   - INV-ATTR-NO-WRITEBACK: Claims cannot mutate doctrine
+# =============================================================================
+
+schema_version: "1.0.0"
+created: "2026-01-29"
+status: "S37_ACTIVE"
+
+# =============================================================================
+# CLAIM BEAD STRUCTURE
+# =============================================================================
+
+claim_bead:
+  # Required fields
+  bead_id:
+    type: str
+    required: true
+    description: "Unique identifier"
+    
+  bead_type:
+    type: str
+    required: true
+    const: "CLAIM"
+    description: "Always CLAIM for this bead type"
+    
+  timestamp:
+    type: datetime
+    required: true
+    
+  # Source (always human)
+  source:
+    type:
+      type: str
+      required: true
+      const: "HUMAN"
+      description: "Claims always come from humans"
+    attribution:
+      type: str
+      required: true
+      description: "Who made the claim (e.g., 'Olya', 'G')"
+    context:
+      type: str
+      required: false
+      description: "Session/conversation reference"
+      
+  # Content
+  content:
+    assertion:
+      type: str
+      required: true
+      description: "The claim text"
+    domain:
+      type: str
+      required: true
+      description: "Domain (e.g., 'ICT', 'risk', 'timing')"
+    confidence_declared:
+      type: null
+      required: false
+      forbidden: true
+      description: "FORBIDDEN — no self-rating allowed"
+      
+  # MANDATORY disclaimer (v0.2 addition)
+  disclaimer:
+    type: str
+    required: true
+    default: "HUMAN_ASSERTION_ONLY — no doctrine impact"
+    immutable: true
+    description: "Explicit signal that claims are queryable, not executable"
+    
+  # Statistical parameters (v0.2 addition - optional)
+  statistical_parameters:
+    type: object
+    required: false
+    description: "For range-based conflict detection"
+    fields:
+      type:
+        type: enum
+        values: [point_estimate, range, percentage]
+      value:
+        type: any
+      bounds:
+        type: object
+        fields:
+          lower: float
+          upper: float
+      # confidence_interval is FORBIDDEN - system cannot assign
+      
+  # Status
+  status:
+    verified:
+      type: bool
+      required: true
+      const: false
+      description: "Claims are NEVER verified by system"
+    superseded_by:
+      type: str
+      required: false
+      description: "Newer claim_id if superseded"
+      
+  # Provenance
+  provenance:
+    session_id:
+      type: str
+      required: true
+    created_at:
+      type: datetime
+      required: true
+
+# =============================================================================
+# FORBIDDEN FIELDS
+# =============================================================================
+
+forbidden_fields:
+  - importance
+  - priority
+  - weight
+  - score
+  - quality
+  - confidence  # system-assigned
+  - confidence_interval  # system-assigned
+  - verified: true  # claims cannot be system-verified
+  - executable
+  - predicate_ref
+  - alert_ref
+
+# =============================================================================
+# VALIDATION RULES
+# =============================================================================
+
+validation:
+  disclaimer_required: true
+  verified_must_be_false: true
+  attribution_required: true
+  assertion_must_pass_linter: true
