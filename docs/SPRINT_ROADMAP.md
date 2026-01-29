@@ -15,20 +15,22 @@ audience: Advisors (GPT, GROK, OWL, Opus)
 ## CURRENT STATE
 
 ```yaml
-current_sprint: S35_CFP
-status: READY_TO_EXECUTE
+current_sprint: S40_DORMANT
+status: S35-S39_BLOCK_COMPLETE
 s33_p2: BLOCKED (Olya CSO calibration)
+completion_date: 2026-01-29
 cumulative:
-  sprints_complete: 7 (S28 → S34)
-  chaos_vectors: 84/84 PASS
-  invariants_proven: 52+
-  bead_types: 14
+  sprints_complete: 12 (S28 → S39)
+  tests_passing: 336
+  chaos_vectors: 189/189 PASS
+  invariants_proven: 69+
+  bead_types: 17
   runbooks: 8
 ```
 
 ---
 
-## SPRINT ARCHAEOLOGY (S28-S34)
+## SPRINT ARCHAEOLOGY (S28-S39)
 
 | Sprint | Codename | Key Deliverables | Exit Gate |
 |--------|----------|------------------|-----------|
@@ -39,6 +41,11 @@ cumulative:
 | S32 | EXECUTION_PATH | IBKR mock, T2, 9-state lifecycle | ✓ 17/17 BUNNY |
 | S33.P1 | FIRST_BLOOD | Real IBKR, monitoring, 8 runbooks | ✓ 15/15 BUNNY |
 | S34 | OPERATIONAL_FINISHING | File seam, CSO contract, orientation, widget | ✓ 13/13 BUNNY |
+| **S35** | **CFP** | **Conditional facts, causal ban, provenance** | **✓ 62 tests, 21 BUNNY** |
+| **S36** | **CSO_HARNESS** | **Gate status, no grades, bit-vector** | **✓ 45 tests, 18 BUNNY** |
+| **S37** | **ATHENA** | **Memory discipline, CLAIM/FACT/CONFLICT** | **✓ 51 tests, 15 BUNNY** |
+| **S38** | **HUNT** | **Exhaustive grid, no survivor ranking** | **✓ 69 tests, 23 BUNNY** |
+| **S39** | **VALIDATION** | **Decomposed outputs, scalar ban linter** | **✓ 109 tests, 28 BUNNY** |
 
 ### Key Assets Built
 ```yaml
@@ -64,7 +71,10 @@ widget/: surface_renderer.py, menu_bar.py  # READ_ONLY projection
 ## S35: CFP (CONDITIONAL FACT PROJECTOR)
 
 ```yaml
-status: LOCKED
+status: COMPLETE ✓
+completion_date: 2026-01-29
+tests: 62
+bunny_vectors: 21
 theme: "Where/when does performance concentrate?"
 ref: DEFINITIVE_FATE.yaml → sprint_allocation.S35_CFP
 ```
@@ -116,7 +126,10 @@ ref: DEFINITIVE_FATE.yaml → sprint_allocation.S35_CFP
 ## S36: CSO HARNESS
 
 ```yaml
-status: LOCKED
+status: COMPLETE ✓
+completion_date: 2026-01-29
+tests: 45
+bunny_vectors: 18
 theme: "Gate status per pair, facts not grades"
 ref: DEFINITIVE_FATE.yaml → sprint_allocation.S36_CSO_HARNESS
 ```
@@ -163,7 +176,10 @@ ref: DEFINITIVE_FATE.yaml → sprint_allocation.S36_CSO_HARNESS
 ## S37: MEMORY DISCIPLINE
 
 ```yaml
-status: PLANNED
+status: COMPLETE ✓
+completion_date: 2026-01-29
+tests: 51
+bunny_vectors: 15
 theme: "Memory, not myth"
 ref: DEFINITIVE_FATE.yaml → sprint_allocation.S37_MEMORY_DISCIPLINE
 ```
@@ -225,7 +241,10 @@ CONFLICT_BEAD:
 ## S38: HUNT INFRASTRUCTURE
 
 ```yaml
-status: PLANNED
+status: COMPLETE ✓
+completion_date: 2026-01-29
+tests: 69
+bunny_vectors: 23
 theme: "Compute engine, not idea engine"
 ref: DEFINITIVE_FATE.yaml → sprint_allocation.S38_HUNT_INFRASTRUCTURE
 ```
@@ -278,9 +297,13 @@ rationale: "Exhaustive grids can explode"
 ## S39: RESEARCH VALIDATION
 
 ```yaml
-status: PLANNED
+status: COMPLETE ✓
+completion_date: 2026-01-29
+tests: 109
+bunny_vectors: 28
 theme: "Decomposed outputs, no viability scores"
 ref: DEFINITIVE_FATE.yaml → sprint_allocation.S39_RESEARCH_VALIDATION
+codename: CONSTITUTIONAL_CEILING
 ```
 
 ### Scope
@@ -340,21 +363,37 @@ source: GROK frontier synthesis
 
 ## INVARIANT REFERENCE (CUMULATIVE)
 
-### Attribution (CFP)
+### Attribution (CFP) — S35 ✓
 - INV-ATTR-CAUSAL-BAN, INV-ATTR-PROVENANCE, INV-ATTR-NO-RANKING
 - INV-ATTR-SILENCE, INV-ATTR-NO-WRITEBACK, INV-ATTR-CONFLICT-DISPLAY
 
-### Safety
-- INV-NO-UNSOLICITED, INV-LLM-REMOVAL-TEST, INV-SCALAR-BAN, INV-NO-ROLLUP
+### Harness — S36 ✓
+- INV-HARNESS-1 through INV-HARNESS-4
+- INV-NO-GRADE-RECONSTRUCTION
+
+### Memory — S37 ✓
+- INV-CLAIM-FACT-SEPARATION, INV-CONFLICT-NO-RESOLUTION
+- INV-MEMORY-PROVENANCE
+
+### Hunt — S38 ✓
+- INV-HUNT-EXHAUSTIVE, INV-HUNT-BUDGET
+- INV-HUNT-NO-SURVIVOR-RANKING, INV-HUNT-NO-SELECTION
+
+### Validation — S39 ✓ (CONSTITUTIONAL CEILING)
+- INV-SCALAR-BAN, INV-NO-AGGREGATE-SCALAR
+- INV-NEUTRAL-ADJECTIVES, INV-VISUAL-PARITY
+- INV-NO-IMPLICIT-VERDICT, INV-CROSS-MODULE-NO-SYNTH
+
+### Safety (Cross-Sprint)
+- INV-NO-UNSOLICITED, INV-LLM-REMOVAL-TEST, INV-NO-ROLLUP
 - INV-NO-DEFAULT-SALIENCE, INV-SLICE-MINIMUM-N, INV-BIAS-PREDICATE
 
 ### Governance
-- INV-REGIME-EXPLICIT, INV-REGIME-GOVERNANCE, INV-HUNT-EXHAUSTIVE, INV-HUNT-BUDGET
+- INV-REGIME-EXPLICIT, INV-REGIME-GOVERNANCE
 
-### Harness
-- INV-HARNESS-1 through INV-HARNESS-4
-
-**Total: 17 new (DEFINITIVE_FATE) + 52 proven (S28-S34) = 69+ invariants**
+**Total: 69+ invariants proven (S28-S39)**
+**Tests: 336 passing**
+**Chaos vectors: 189 handled**
 
 ---
 
@@ -387,3 +426,37 @@ first_questions:
 
 *"Quality > Speed. Explicit > Implicit. Facts > Stories."*
 *Phoenix builds with discipline. Phoenix builds with purpose.*
+
+---
+
+## S35-S39 BLOCK SUMMARY
+
+```yaml
+completion_date: 2026-01-29
+total_tests: 336
+total_bunny_vectors: 189
+total_invariants: 69+
+
+block_theme: "CONSTITUTIONAL CEILING"
+
+what_this_means: |
+  NEX died saying: "Strategy Stability Index: 78/100"
+  Phoenix says: "Walk-forward delta: +0.3 Sharpe. Monte Carlo 95th DD: -12%. You interpret."
+  
+  No scalar scores. No rankings. No verdicts.
+  Human frames, machine computes. Human interprets.
+
+key_modules_delivered:
+  cfp/: Conditional facts with provenance
+  cso/: Gate status (facts, not grades)
+  athena/: Memory discipline (CLAIM/FACT/CONFLICT)
+  hunt/: Exhaustive grid compute
+  validation/: Decomposed outputs + ScalarBanLinter
+
+the_linter_of_linters: |
+  S39's ScalarBanLinter is the constitutional ceiling.
+  Any future module that tries to sneak in a composite score
+  gets caught at the integration seam.
+```
+
+*S35-S39 BLOCK COMPLETE. The constitutional ceiling has been set. 🐗🔥*

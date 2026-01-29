@@ -18,7 +18,9 @@
 ```yaml
 project: Phoenix
 purpose: Constitutional trading system
-status: S35_ACTIVE | S33_P2_BLOCKED (Olya)
+status: S39_COMPLETE | S33_P2_BLOCKED (Olya)
+block_complete: S35-S39 (CONSTITUTIONAL_CEILING)
+completion_date: 2026-01-29
 relationship: Sibling to God_Mode (forge builds tools, Phoenix protects capital)
 canonical_fate: docs/DEFINITIVE_FATE.yaml
 ```
@@ -69,21 +71,37 @@ daemons/:
   purpose: File seam spine
   authority: ROUTING_ONLY
 
-# S35+
+# S35-S39 (COMPLETE)
 cfp/:
   purpose: Conditional Fact Projector
   authority: COMPUTED (conditional facts only, no causal claims)
-  status: S35_TARGET
+  status: S35_COMPLETE ✓
+  tests: 62
+
+cso/:
+  purpose: Gate status (facts, not grades)
+  authority: READ_ONLY (consumes, never generates grades)
+  status: S36_COMPLETE ✓
+  tests: 45
 
 athena/:
   purpose: Memory discipline (CLAIM/FACT/CONFLICT beads)
   authority: STORAGE_ONLY (no doctrine mutation)
-  status: S37_TARGET
+  status: S37_COMPLETE ✓
+  tests: 51
 
 hunt/:
   purpose: Exhaustive variant computation
   authority: COMPUTE_ONLY (human-declared grids, no selection)
-  status: S38_TARGET
+  status: S38_COMPLETE ✓
+  tests: 69
+
+validation/:
+  purpose: Research validation suite (decomposed outputs)
+  authority: COMPUTE_ONLY (no viability scores, no verdicts)
+  status: S39_COMPLETE ✓
+  tests: 109
+  codename: CONSTITUTIONAL_CEILING
 ```
 
 ### DAEMONS
@@ -117,9 +135,14 @@ nodes:
   approval/evidence.py: BUILT
   execution/: STUB
   brokers/ibkr/: BUILT (paper mode)
-  cfp/: S35_TARGET
-  athena/: S37_TARGET
-  hunt/: S38_TARGET
+  cfp/: S35_COMPLETE ✓
+  cso_harness/: S36_COMPLETE ✓
+  athena/: S37_COMPLETE ✓
+  hunt/: S38_COMPLETE ✓
+  validation/: S39_COMPLETE ✓
+
+validation_flow:
+  River → CFP (conditional facts) → Athena (memory) → Hunt (grid) → Validation (decomposed)
 ```
 
 ---
@@ -190,45 +213,71 @@ INV-T2-TOKEN-1: single-use, 5min expiry
 INV-T2-GATE-1: no order without token
 ```
 
-### ATTRIBUTION (S35 CFP)
+### ATTRIBUTION (S35 CFP) ✓
 
 ```yaml
-INV-ATTR-CAUSAL-BAN: "No causal claims; only conditional facts"
-INV-ATTR-PROVENANCE: "All outputs include query_string + dataset_hash + bead_id"
-INV-ATTR-NO-RANKING: "No ranking, no best/worst, no implied priority"
-INV-ATTR-SILENCE: "System does not resolve conflicts; surfaces and waits"
-INV-ATTR-NO-WRITEBACK: "Stored facts cannot mutate doctrine"
-INV-ATTR-CONFLICT-DISPLAY: "When showing best, must show worst alongside"
+INV-ATTR-CAUSAL-BAN: "No causal claims; only conditional facts" ✓
+INV-ATTR-PROVENANCE: "All outputs include query_string + dataset_hash + bead_id" ✓
+INV-ATTR-NO-RANKING: "No ranking, no best/worst, no implied priority" ✓
+INV-ATTR-SILENCE: "System does not resolve conflicts; surfaces and waits" ✓
+INV-ATTR-NO-WRITEBACK: "Stored facts cannot mutate doctrine" ✓
+INV-ATTR-CONFLICT-DISPLAY: "When showing best, must show worst alongside" ✓
 ```
 
-### SAFETY (S35-S39)
+### HARNESS (S36) ✓
 
 ```yaml
-INV-NO-UNSOLICITED: "System never says 'I noticed' or proposes hypotheses"
-INV-LLM-REMOVAL-TEST: "If removing LLM prevents reconstruction from raw output → invalid"
-INV-SCALAR-BAN: "No composite scores (0-100); decompose to factor traffic lights"
-INV-NO-ROLLUP: "No aggregation across traffic lights; no 'overall' label"
-INV-NO-DEFAULT-SALIENCE: "UI must not imply importance without explicit user selection"
-INV-SLICE-MINIMUM-N: "N < 30 → warn or fail-silent"
-INV-BIAS-PREDICATE: "HTF bias as predicate status, not directional words"
+INV-HARNESS-1: "CSO outputs gate status only, never grades" ✓
+INV-HARNESS-2: "No confidence scores unless explicit formula" ✓
+INV-HARNESS-3: "Alerts fire on gate combinations, not quality" ✓
+INV-HARNESS-4: "Multi-pair sorted alphabetically by default" ✓
+INV-NO-GRADE-RECONSTRUCTION: "No A/B/C/D/F grades anywhere" ✓
 ```
 
-### GOVERNANCE (S35-S38)
+### MEMORY (S37) ✓
 
 ```yaml
-INV-REGIME-EXPLICIT: "Regimes = explicit predicates, never auto-detected"
-INV-REGIME-GOVERNANCE: "Regimes versioned, capped (~20 max)"
-INV-HUNT-EXHAUSTIVE: "Hunt computes ALL declared variants, never selects"
-INV-HUNT-BUDGET: "Compute/token cap enforced per run"
+INV-CLAIM-FACT-SEPARATION: "Claims and facts are distinct bead types" ✓
+INV-CONFLICT-NO-RESOLUTION: "System flags conflicts, never resolves" ✓
+INV-MEMORY-PROVENANCE: "All memories have full provenance chain" ✓
 ```
 
-### HARNESS (S36)
+### HUNT (S38) ✓
 
 ```yaml
-INV-HARNESS-1: "CSO outputs gate status only, never grades"
-INV-HARNESS-2: "No confidence scores unless explicit formula"
-INV-HARNESS-3: "Alerts fire on gate combinations, not quality"
-INV-HARNESS-4: "Multi-pair sorted alphabetically by default"
+INV-HUNT-EXHAUSTIVE: "Hunt computes ALL declared variants, never selects" ✓
+INV-HUNT-BUDGET: "Compute/token cap enforced per run" ✓
+INV-HUNT-NO-SURVIVOR-RANKING: "No 'best performer' rankings" ✓
+INV-HUNT-NO-SELECTION: "Grid returns full table, never filters" ✓
+```
+
+### VALIDATION (S39) ✓ — CONSTITUTIONAL CEILING
+
+```yaml
+INV-SCALAR-BAN: "No composite scores (0-100); decompose to factors" ✓
+INV-NO-AGGREGATE-SCALAR: "No avg_* fields; return full arrays" ✓
+INV-NEUTRAL-ADJECTIVES: "No evaluative words (strong, weak, robust)" ✓
+INV-VISUAL-PARITY: "No color metadata (red=bad, green=good)" ✓
+INV-NO-IMPLICIT-VERDICT: "Mandatory disclaimer on all outputs" ✓
+INV-CROSS-MODULE-NO-SYNTH: "Chain outputs remain decomposed" ✓
+```
+
+### SAFETY (Cross-Sprint)
+
+```yaml
+INV-NO-UNSOLICITED: "System never says 'I noticed' or proposes hypotheses" ✓
+INV-LLM-REMOVAL-TEST: "If removing LLM prevents reconstruction → invalid" ✓
+INV-NO-ROLLUP: "No aggregation across traffic lights; no 'overall' label" ✓
+INV-NO-DEFAULT-SALIENCE: "UI must not imply importance" ✓
+INV-SLICE-MINIMUM-N: "N < 30 → warn or fail-silent" ✓
+INV-BIAS-PREDICATE: "HTF bias as predicate status, not directional words" ✓
+```
+
+### GOVERNANCE
+
+```yaml
+INV-REGIME-EXPLICIT: "Regimes = explicit predicates, never auto-detected" ✓
+INV-REGIME-GOVERNANCE: "Regimes versioned, capped (~20 max)" ✓
 ```
 
 ---
@@ -361,7 +410,7 @@ TOKEN_COST_INFRASTRUCTURE:
 ## 8. SPRINT_ARCHAEOLOGY
 
 ```yaml
-# COMPLETE
+# FOUNDATION (S28-S34)
 S28-S31: Foundation (River, Governance, Halt, CSO, Signalman)
 S32: Execution path (IBKR mock, T2, lifecycle) | 17/17 BUNNY
 S33_P1: Infrastructure (Real IBKR, monitoring, runbooks) | 15/15 BUNNY
@@ -370,14 +419,19 @@ S34: Operational finishing (D1-D4) | 13/13 BUNNY
 # BLOCKED
 S33_P2: BLOCKED (Olya CSO calibration)
 
-# ACTIVE
-S35: CFP (Conditional Fact Projector) | LOCKED
+# CONSTITUTIONAL BLOCK (S35-S39) — COMPLETE ✓
+S35: CFP (Conditional Fact Projector) | ✓ 62 tests, 21 BUNNY
+S36: CSO Harness (gate status, not grades) | ✓ 45 tests, 18 BUNNY
+S37: Memory Discipline (CLAIM/FACT/CONFLICT) | ✓ 51 tests, 15 BUNNY
+S38: Hunt Infrastructure (exhaustive compute) | ✓ 69 tests, 23 BUNNY
+S39: Research Validation (decomposed outputs) | ✓ 109 tests, 28 BUNNY
 
-# PLANNED
-S36: CSO Harness (gate status, not grades) | LOCKED
-S37: Memory Discipline (CLAIM/FACT/CONFLICT) | PLANNED
-S38: Hunt Infrastructure (exhaustive compute) | PLANNED
-S39: Research Validation (decomposed outputs) | PLANNED
+block_summary:
+  completion_date: 2026-01-29
+  total_tests: 336
+  total_bunny_vectors: 189
+  total_invariants: 69+
+  theme: "CONSTITUTIONAL CEILING"
 
 # DORMANT
 S40+: Multi-agent, self-healing, workflow learning
@@ -461,4 +515,6 @@ beads.yaml:
 
 ---
 
-*S35 active. Human frames, machine computes. Phoenix rises.*
+*S35-S39 BLOCK COMPLETE. Human frames, machine computes. Human interprets.*
+*No scalar scores. No rankings. No verdicts. Ever.*
+*The constitutional ceiling has been set. Phoenix rises. 🐗🔥*
