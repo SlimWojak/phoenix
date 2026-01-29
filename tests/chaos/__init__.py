@@ -1,1 +1,6 @@
-"""Chaos tests — BUNNY validation suite."""
+"""
+Chaos Tests — Phoenix
+=====================
+
+BUNNY adversarial testing.
+"""
