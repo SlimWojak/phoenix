@@ -1,10 +1,49 @@
 # PHOENIX PRODUCT VISION
 
 **Document:** PRODUCT_VISION.md  
-**Version:** 1.2 CANONICAL  
-**Date:** 2026-01-27  
-**Status:** CANONICAL_LOCKED  
-**Evolution:** NEX magic + Phoenix skeleton + God_Mode patterns
+**Version:** 2.0 CANONICAL  
+**Date:** 2026-01-29  
+**Status:** CANONICAL  
+**Evolution:** NEX magic + Phoenix skeleton + God_Mode patterns + DEFINITIVE_FATE synthesis
+
+---
+
+## Current State (S35)
+
+```yaml
+status: S35_READY | S33_P2_BLOCKED (Olya)
+sprints_complete: S28 → S34
+chaos_vectors: 84/84 PASS
+invariants_proven: 52+
+new_invariants_defined: 17 (DEFINITIVE_FATE)
+
+key_docs:
+  fate_table: docs/DEFINITIVE_FATE.yaml (61 capabilities decisioned)
+  roadmap: docs/SPRINT_ROADMAP.md (S35-S39 detailed scope)
+  system_map: docs/PHOENIX_MANIFEST.md (M2M bootstrap)
+```
+
+> **What's changed since v1.2:** S28-S34 complete. DEFINITIVE_FATE synthesis done. CFP (Conditional Fact Projector) emerges as major new superpower. "Human frames, machine computes" elevated to constitutional anchor.
+
+---
+
+## The Balance Principle
+
+> "Discipline WITH innovation, not discipline AGAINST innovation.
+> Governance protects the system; it should not starve the user."
+
+This is the line Phoenix surfs:
+
+| We Believe | We Also Believe |
+|------------|-----------------|
+| Quality > Speed | But "right" includes "useful" |
+| Explicit > Implicit | Features must earn their place |
+| Projection > Interpretation | "NEX had it" is not justification |
+| Facts > Stories | Every feature must prove value |
+| Human frames > System proposes | And pass the LLM removal test |
+| Receipts > Narratives | And not transfer authority |
+
+**The litmus test:** If removing the LLM prevents reconstruction from raw output, the feature is invalid.
 
 ---
 
@@ -588,6 +627,63 @@ Claude: [Queries Datasette on Beads]
 - "Show me when I was right" — build confidence
 - Recombobulation supremacy
 
+### Conditional Fact Projector (CFP) — S35+
+
+**The NEX death:** "Why does this work?" (LLM authors meaning, creates recommendation pressure)
+
+**The Phoenix pattern:** "Where/when does performance concentrate?" (conditional facts, human interprets)
+
+**What Olya Experiences:**
+```
+Olya: "Show me performance when London FVG fires after 8:30am"
+
+Claude: [Queries CFP]
+
+  CONDITIONAL FACT:
+    Query: "P&L when session=London AND entry_time>8:30 AND trigger=FVG"
+    
+    Result:
+      Sharpe: 1.6 (vs 1.1 baseline)
+      Win rate: 61% (vs 52% baseline)
+      Sample: N=47
+      
+    Provenance:
+      query_string: [above]
+      dataset_hash: abc123
+      bead_id: CFP_2026_01_29_001
+      
+  NOTE: This is a conditional fact, not a recommendation.
+  You interpret the pattern.
+
+Olya: "Show me worst-performing conditions too."
+
+Claude: [CFP with INV-ATTR-CONFLICT-DISPLAY]
+
+  WORST CONDITIONS:
+    Query: "P&L when volatility_regime=low AND news_proximity<30min"
+    
+    Result:
+      Sharpe: 0.3
+      Win rate: 38%
+      Sample: N=31
+      
+  When showing best, must show worst. You decide the meaning.
+```
+
+**The Key Invariants:**
+- **INV-ATTR-CAUSAL-BAN:** No causal claims ("factor X contributed Y%")
+- **INV-ATTR-PROVENANCE:** All outputs include query + hash + bead_id
+- **INV-ATTR-CONFLICT-DISPLAY:** When showing best, must show worst
+- **INV-NO-UNSOLICITED:** System never says "I noticed"
+
+**Why This Matters:**
+- NEX killed features because they authored meaning
+- CFP resurrects the VALUE (know where edge lives)
+- Without the POISON (system recommending)
+- Human frames the question, machine computes the answer
+
+---
+
 ### Autopsy & Decay
 
 **Autopsy:** Post-trade analysis (async, never blocks)
@@ -677,15 +773,17 @@ ACTION: ONE-WAY-KILL active (exits only)
 ### Constitutional Anchors
 
 1. **Human sovereignty over capital is absolute.**
-2. **The River is sacred.** Data integrity is lifeblood.
-3. **Thinking precedes acting.** EXPLORE is always safe.
-4. **Claude is the thinking partner, not the system.**
-5. **Context is finite.** Protect it. Checkpoint gracefully.
-6. **Beads are atoms.** Continuity survives instance death.
-7. **Reasoning must be visible.** No opaque proposals.
-8. **<50ms halt always works.**
-9. **File seam is the boundary.** No tools in Claude's context.
-10. **Stale context cannot execute.** State hash guards T2 actions.
+2. **Human frames, machine computes.** The system never proposes. (INV-NO-UNSOLICITED)
+3. **The River is sacred.** Data integrity is lifeblood.
+4. **Thinking precedes acting.** EXPLORE is always safe.
+5. **Claude is the thinking partner, not the system.**
+6. **Context is finite.** Protect it. Checkpoint gracefully.
+7. **Beads are atoms.** Continuity survives instance death.
+8. **Reasoning must be visible.** No opaque proposals.
+9. **<50ms halt always works.**
+10. **File seam is the boundary.** No tools in Claude's context.
+11. **Stale context cannot execute.** State hash guards T2 actions.
+12. **Facts over stories.** Conditional facts, never causal claims. (INV-ATTR-CAUSAL-BAN)
 
 ---
 
@@ -718,77 +816,60 @@ ACTION: ONE-WAY-KILL active (exits only)
 
 ## 8. The Roadmap
 
-### S29: COGNITIVE_FOUNDATION
+> **Full Detail:** See `docs/SPRINT_ROADMAP.md` for M2M dense S35-S39 scope with invariants.
 
-**Theme:** "The thinking partner comes alive"
+### COMPLETE (S28-S34)
 
-| Track | Deliverable |
-|-------|-------------|
-| A | File seam architecture (intent.yaml ↔ response.md) |
-| B | EXPLORE mode in Claude Desktop |
-| C | Phoenix watcher + Inquisitor |
-| D | Morning Briefing worker |
-| E | Lens daemon for response injection |
+| Sprint | Theme | Status |
+|--------|-------|--------|
+| S28-S31 | Foundation (River, Governance, Halt, CSO) | ✓ Complete |
+| S32 | EXECUTION_PATH (IBKR, T2, lifecycle) | ✓ 17/17 BUNNY |
+| S33 P1 | FIRST_BLOOD Infrastructure | ✓ 15/15 BUNNY |
+| S34 | OPERATIONAL_FINISHING (file seam, orientation) | ✓ 13/13 BUNNY |
 
-**Exit:** Olya can think with Claude AND get a briefing.
+### CURRENT: S35 CFP (Conditional Fact Projector)
 
-### S30: LEARNING_LOOP
+**Theme:** "Where/when does performance concentrate?"
 
-**Theme:** "The flywheel spins"
+| Component | Purpose |
+|-----------|---------|
+| Lens schema | YAML: group_by, filter, agg |
+| Query executor | Against River/beads |
+| Output schema | facts + provenance |
+| Causal-ban linter | TEST enforcement |
+| Conflict display | best/worst always paired |
 
-| Track | Deliverable |
-|-------|-------------|
-| A | Hunt Engine (test my idea) |
-| B | Athena + Datasette (memory palace) |
-| C | Context checkpoint mechanics + cognitive momentum |
-| D | Shadow boxing |
+**Key Invariants:** INV-ATTR-CAUSAL-BAN, INV-ATTR-PROVENANCE, INV-ATTR-NO-RANKING
 
-**Exit:** Hypothesis → test → learn → surface.
+### LOCKED: S36 CSO Harness
 
-### S31: SIGNAL_AND_DECAY
+**Theme:** "Gate status per pair, facts not grades"
 
-**Theme:** "Phoenix watches"
+| Component | Purpose |
+|-----------|---------|
+| 5-drawer gate evaluation | conditions.yaml predicates |
+| Gate status output | gates_passed[] + gates_failed[] |
+| Multi-pair scan | alphabetical, no ranking |
 
-| Track | Deliverable |
-|-------|-------------|
-| A | Setup detection (what's setting up) |
-| B | Signalman + ONE-WAY-KILL |
-| C | Autopsy worker |
-| D | Telegram notification plane |
-| E | State hash validation (stale market guard) |
+**Key Invariants:** INV-HARNESS-1 through INV-HARNESS-4, INV-NO-UNSOLICITED
 
-**Exit:** Phoenix warns before problems prove themselves.
+### PLANNED: S37-S39
 
-### S32: EXECUTION_PATH
+| Sprint | Theme | Key Capability |
+|--------|-------|----------------|
+| S37 | Memory Discipline | CLAIM/FACT/CONFLICT beads |
+| S38 | Hunt Infrastructure | Exhaustive variant computation |
+| S39 | Research Validation | Decomposed outputs, no viability scores |
 
-**Theme:** "Real markets"
+### S40+ DORMANT (Carpark)
 
-| Track | Deliverable |
-|-------|-------------|
-| A | IBKR connector |
-| B | T2 approval workflow with state hash |
-| C | Position reconciliation |
-| D | Staging enforcement |
+- Multi-agent orchestration
+- Self-healing mechanisms
+- Workflow learning (human veto)
+- RBAC for sub-agents
+- Token/cost infrastructure
 
-**Exit:** T2 workflow proven.
-
-### S33: FIRST_BLOOD
-
-**Theme:** "One pair, real money"
-
-| Track | Deliverable |
-|-------|-------------|
-| A | EUR/USD live |
-| B | Incident procedures |
-| C | 24/7 monitoring |
-
-**Exit:** N days live trading.
-
-### S34+: EXPANSION
-
-- Additional pairs
-- Echo domain (crypto)
-- Foundry-as-a-Service
+> **Dead Features:** See `docs/DEFINITIVE_FATE.yaml` kill_list — 12 capabilities PERMANENTLY DEAD (authority transfer, LLM authors meaning)
 
 ---
 
@@ -1061,28 +1142,43 @@ If yes to all, we've built what we set out to build.
 
 ## Invariant Summary
 
-### Quick Reference
+> **Full List:** See `docs/PHOENIX_MANIFEST.md` → Section 4 for complete invariant catalog (52+ proven, 17 new defined)
+
+### Foundation Invariants (Proven S28-S34)
 
 | ID | Rule |
 |----|------|
 | INV-HALT-1 | Halt < 50ms |
 | INV-DATA-CANON | Single truth from River |
-| INV-CONTRACT-1 | Deterministic state machine |
 | INV-SOVEREIGN-1 | Human sovereignty over capital |
 | INV-EXPLORE-1 | EXPLORE never triggers workers |
-| INV-EXPLORE-2 | EXPLORE never persists (unless promoted) |
-| INV-EXPLORE-3 | EXPLORE cannot emit intent.yaml |
 | INV-CONTEXT-1 | Claude holds conversation only |
-| INV-CONTEXT-2 | Checkpoint before collapse |
-| INV-SNAPSHOT-1 | CONTEXT_SNAPSHOT includes cognitive_momentum |
-| INV-REASONING-1 | All proposals decomposable |
 | INV-LENS-1 | ONE response mechanism, ZERO tool definitions |
-| INV-STATE-ANCHOR-1 | T2 requires state_hash; reject stale with STATE_CONFLICT |
-| INV-STATE-ANCHOR-2 | Sessions >30min require refresh before T2 |
-| INV-EVIDENCE-1 | No entry without evidence bundle |
-| INV-RISK-DEFENSIVE | ONE-WAY-KILL on decay/drawdown |
-| INV-STAGE-BEFORE-LIVE | Shadow period before live |
-| INV-EXPOSURE-LIMIT | 2.5% max per currency |
+| INV-STATE-ANCHOR-1 | T2 requires state_hash; reject stale |
+| INV-D3-CORRUPTION-1 | Corrupted bead → STATE_CONFLICT |
+
+### New Invariants (DEFINITIVE_FATE S35-S39)
+
+| ID | Rule | Sprint |
+|----|------|--------|
+| INV-NO-UNSOLICITED | System never proposes | S36 |
+| INV-ATTR-CAUSAL-BAN | No causal claims | S35 |
+| INV-ATTR-PROVENANCE | query + hash + bead_id | S35 |
+| INV-ATTR-CONFLICT-DISPLAY | Show best AND worst | S35 |
+| INV-HARNESS-1 | Gate status only, no grades | S36 |
+| INV-SCALAR-BAN | No composite scores (0-100) | S39 |
+| INV-HUNT-EXHAUSTIVE | Compute ALL variants, no selection | S38 |
+
+### Key Addition: Human Frames, Machine Computes
+
+```yaml
+INV-NO-UNSOLICITED:
+  rule: "System never says 'I noticed' or proposes hypotheses by default"
+  applies_to: [Hunt, Memory, Alerts, CFP]
+  rationale: |
+    NEX died because the system authored meaning.
+    Phoenix computes what humans frame.
+    The difference is sovereignty.
 
 ---
 
@@ -1090,10 +1186,29 @@ If yes to all, we've built what we set out to build.
 
 **The magic without the death. The skeleton with a soul.**
 
+---
+
+## The Definitive Record
+
+The canonical fate of all NEX capabilities lives in `docs/DEFINITIVE_FATE.yaml`:
+
+| Fate | Count | Meaning |
+|------|-------|---------|
+| KEEP | 32 | Already aligned, build into Phoenix |
+| REIMAGINE | 17 | Valuable but poisoned, redesign with discipline |
+| KILL | 12 | Cannot be rehabilitated, never resurrect |
+
+**Key Insight:** The line between KEEP and KILL is authority transfer. If the system authors meaning, it dies. If the human frames and the machine computes, it lives.
+
+**The Pattern:** CFP proves the resurrection pattern — NEX's "why does this work" was dangerous, but "where/when does performance concentrate" is safe.
+
+---
+
 **OINK OINK.** 🐗🔥
 
 ---
 
-*Document locked: 2026-01-27*
-*Version: 1.2 CANONICAL*
-*Status: CANONICAL_LOCKED*
+*Document updated: 2026-01-29*
+*Version: 2.0 CANONICAL*
+*Status: CANONICAL*
+*Reference: DEFINITIVE_FATE.yaml, SPRINT_ROADMAP.md, PHOENIX_MANIFEST.md*
