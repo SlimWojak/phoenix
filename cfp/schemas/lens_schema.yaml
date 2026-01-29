@@ -1,0 +1,475 @@
+# =============================================================================
+# LENS SCHEMA v1.0 — Constitutional Boundary for CFP Queries
+# =============================================================================
+# CANONICAL SOURCE OF TRUTH
+# Location: phoenix/cfp/schemas/lens_schema.yaml
+# Created: 2026-01-29 (S35 Day 1)
+#
+# This schema IS the contract — if it's not in the schema, it can't be queried.
+# The Lens defines what questions are ALLOWED to be asked.
+#
+# INVARIANTS ENFORCED:
+#   - INV-REGIME-EXPLICIT: Regimes from conditions.yaml only
+#   - INV-METRIC-DEFINITION-EXPLICIT: All metrics have computational definitions
+#   - INV-ATTR-CAUSAL-BAN: No causal predicates allowed
+# =============================================================================
+
+schema_version: "1.0"
+schema_type: lens_query
+last_updated: "2026-01-29"
+status: S35_DAY1
+
+# =============================================================================
+# LENS QUERY STRUCTURE
+# =============================================================================
+
+lens_query:
+  # ---------------------------------------------------------------------------
+  # REQUIRED FIELDS
+  # ---------------------------------------------------------------------------
+  
+  source:
+    type: enum
+    values: [river, beads, positions]
+    description: "Data source to query"
+    required: true
+    
+  strategy_config_hash:
+    type: string
+    format: hex64
+    description: "Hash of operator's active strategy config — anchors fact to specific version"
+    required: true
+    rationale: "Prevents Cross-Version Drift (OWL mandate)"
+    
+  aggregate:
+    type: object
+    required: true
+    fields:
+      metrics:
+        type: list
+        item_type: metric_reference
+        min_items: 1
+        max_items: 5
+        description: "Metrics to compute (see METRIC_DEFINITIONS)"
+        
+  output:
+    type: object
+    required: true
+    fields:
+      format:
+        type: enum
+        values: [table, single_value]
+        default: table
+      include_provenance:
+        type: boolean
+        default: true
+        immutable: true  # Cannot be set to false
+        description: "Provenance is MANDATORY — this field exists for documentation only"
+
+  # ---------------------------------------------------------------------------
+  # OPTIONAL FIELDS
+  # ---------------------------------------------------------------------------
+  
+  group_by:
+    type: list
+    item_type: string
+    max_items: 4
+    description: "Dimensions to group by"
+    allowed_values:
+      - session      # London, NY, Asia, Sydney
+      - kill_zone    # London Open, NY Open, etc.
+      - pair         # EURUSD, GBPUSD, etc.
+      - regime       # From conditions.yaml only
+      - direction    # LONG, SHORT
+      - day_of_week  # Monday-Friday
+      - hour         # 0-23 UTC
+    forbidden_values:
+      - timestamp    # Would explode cardinality
+      - tick         # Would explode cardinality
+      - trade_id     # Not a dimension
+      
+  filter:
+    type: object
+    fields:
+      conditions:
+        type: list
+        item_type: predicate
+        max_items: 10
+        description: "Filter predicates"
+      time_range:
+        type: object
+        fields:
+          start:
+            type: datetime
+            format: ISO8601
+          end:
+            type: datetime
+            format: ISO8601
+        validation:
+          - "end > start"
+          - "No overlapping ranges in same query"
+          
+  max_groups:
+    type: integer
+    default: 100
+    max: 1000
+    description: "Maximum groups to return"
+    override_rule: "T2 approval required for > 100"
+
+# =============================================================================
+# PREDICATE STRUCTURE
+# =============================================================================
+
+predicate:
+  type: object
+  required_fields: [field, op, value]
+  
+  fields:
+    field:
+      type: string
+      description: "Field to filter on"
+      
+    op:
+      type: enum
+      values: ["==", "!=", ">", "<", ">=", "<=", "in", "not_in"]
+      description: "Comparison operator"
+      
+    value:
+      type: any
+      description: "Value to compare against"
+
+  # ---------------------------------------------------------------------------
+  # ALLOWED PREDICATES
+  # ---------------------------------------------------------------------------
+  
+  allowed_patterns:
+    field_comparisons:
+      - pattern: "session == 'London'"
+        example: {field: session, op: "==", value: London}
+      - pattern: "pair == 'EURUSD'"
+        example: {field: pair, op: "==", value: EURUSD}
+      - pattern: "direction == 'LONG'"
+        example: {field: direction, op: "==", value: LONG}
+        
+    numeric_ranges:
+      - pattern: "entry_hour >= 8"
+        example: {field: entry_hour, op: ">=", value: 8}
+      - pattern: "entry_hour < 16"
+        example: {field: entry_hour, op: "<", value: 16}
+        
+    gate_cardinality:
+      - pattern: "gates_passed_count >= 3"
+        example: {field: gates_passed_count, op: ">=", value: 3}
+        note: "Cardinality ONLY — not specific gate names"
+        
+    explicit_regimes:
+      - pattern: "regime == 'trending'"
+        example: {field: regime, op: "==", value: trending}
+        constraint: "Value MUST exist in cso/knowledge/conditions.yaml"
+        ref: "INV-REGIME-EXPLICIT"
+        
+    gate_predicates:
+      - pattern: "composite_gates.alignment_gate == true"
+        example: {field: "composite_gates.alignment_gate", op: "==", value: true}
+        constraint: "Gate MUST be defined in conditions.yaml composite_gates"
+
+  # ---------------------------------------------------------------------------
+  # FORBIDDEN PREDICATES — INV-ATTR-CAUSAL-BAN enforcement
+  # ---------------------------------------------------------------------------
+  
+  forbidden_patterns:
+    auto_detected:
+      - pattern: "auto_*"
+        reason: "No auto-detected anything"
+        
+    quality_scores:
+      - pattern: "quality_score > X"
+        reason: "No quality scores — implies ranking"
+      - pattern: "grade == 'A'"
+        reason: "No grades — INV-HARNESS-1"
+        
+    confidence_thresholds:
+      - pattern: "confidence > 0.8"
+        reason: "No confidence thresholds unless explicit formula provided"
+        
+    superlatives:
+      - pattern: "best_*"
+        reason: "No 'best' in predicates"
+      - pattern: "worst_*"
+        reason: "No 'worst' in predicates"
+      - pattern: "optimal_*"
+        reason: "No 'optimal' in predicates"
+        
+    specific_gates:
+      - pattern: "gates_passed contains 'htf_alignment'"
+        reason: "Use gates_passed_count >= N instead"
+        exception: "Unless gate explicitly named in conditions.yaml composite_gates"
+        
+    causal_language:
+      - pattern: "*contributed*"
+        reason: "INV-ATTR-CAUSAL-BAN"
+      - pattern: "*caused*"
+        reason: "INV-ATTR-CAUSAL-BAN"
+      - pattern: "*because*"
+        reason: "INV-ATTR-CAUSAL-BAN"
+
+# =============================================================================
+# METRIC DEFINITIONS — INV-METRIC-DEFINITION-EXPLICIT
+# =============================================================================
+
+metric_definitions:
+  sharpe:
+    id: METRIC-001
+    name: "Sharpe Ratio"
+    requires:
+      - explicit_return_series
+      - volatility_definition
+    computation: "(mean_return - risk_free) / std_return"
+    risk_free_default: 0.0
+    precision: 2
+    unit: ratio
+    
+  win_rate:
+    id: METRIC-002
+    name: "Win Rate"
+    requires:
+      - explicit_trade_definition
+    computation: "winning_trades / total_trades"
+    precision: 2
+    unit: percentage
+    display: "0.00 to 1.00"
+    
+  pnl:
+    id: METRIC-003
+    name: "Profit & Loss"
+    requires:
+      - currency_precision
+    computation: "sum(trade_pnl)"
+    precision: 2
+    unit: currency
+    currency_default: USD
+    
+  profit_factor:
+    id: METRIC-004
+    name: "Profit Factor"
+    requires:
+      - explicit_trade_definition
+    computation: "gross_profit / abs(gross_loss)"
+    precision: 2
+    unit: ratio
+    edge_case: "Return null if gross_loss == 0"
+    
+  max_drawdown:
+    id: METRIC-005
+    name: "Maximum Drawdown"
+    requires:
+      - equity_curve
+    computation: "max(peak - trough) / peak"
+    precision: 2
+    unit: percentage
+    display: "Negative value (e.g., -0.15)"
+    
+  trade_count:
+    id: METRIC-006
+    name: "Trade Count"
+    requires: []
+    computation: "count(trades)"
+    precision: 0
+    unit: integer
+
+# =============================================================================
+# VALIDATION RULES
+# =============================================================================
+
+validation_rules:
+  
+  strategy_hash_required:
+    rule: "strategy_config_hash must be present and valid hex64"
+    error: "MISSING_STRATEGY_HASH"
+    
+  regime_governance:
+    rule: "Any regime predicate value must exist in conditions.yaml"
+    ref: "cso/knowledge/conditions.yaml"
+    error: "REGIME_NOT_IN_CONDITIONS"
+    
+  max_groups_limit:
+    rule: "max_groups <= 100 without T2 approval"
+    error: "MAX_GROUPS_EXCEEDED"
+    
+  no_timestamp_groupby:
+    rule: "group_by cannot contain 'timestamp' or 'tick'"
+    error: "CARDINALITY_EXPLOSION"
+    
+  metric_exists:
+    rule: "All metrics in aggregate.metrics must be defined in metric_definitions"
+    error: "UNKNOWN_METRIC"
+    
+  time_range_valid:
+    rule: "filter.time_range.end > filter.time_range.start"
+    error: "INVALID_TIME_RANGE"
+    
+  no_overlapping_ranges:
+    rule: "Multiple time_range filters must not overlap"
+    error: "OVERLAPPING_TIME_RANGES"
+    
+  predicate_field_valid:
+    rule: "Predicate fields must be in allowed_fields list"
+    error: "UNKNOWN_PREDICATE_FIELD"
+
+# =============================================================================
+# ALLOWED FIELDS FOR PREDICATES
+# =============================================================================
+
+allowed_predicate_fields:
+  # Time-based
+  - session
+  - kill_zone
+  - day_of_week
+  - entry_hour
+  - exit_hour
+  
+  # Pair/Direction
+  - pair
+  - direction
+  
+  # Gate-based (cardinality only)
+  - gates_passed_count
+  - gates_failed_count
+  
+  # Regime (from conditions.yaml)
+  - regime
+  - trade_bias
+  - htf_direction
+  
+  # Composite gates (from conditions.yaml)
+  - composite_gates.alignment_gate
+  - composite_gates.freshness_gate
+  - composite_gates.high_quality_long
+  - composite_gates.high_quality_short
+  
+  # Outcome
+  - result  # WIN, LOSS, BREAKEVEN
+  
+  # Enrichment layers (read-only reference)
+  - zone  # premium, discount, equilibrium
+  - in_fvg
+  - in_ob
+  - htf_unanimous
+
+# =============================================================================
+# ERROR CODES
+# =============================================================================
+
+error_codes:
+  MISSING_STRATEGY_HASH:
+    severity: REJECT
+    message: "strategy_config_hash is required"
+    
+  REGIME_NOT_IN_CONDITIONS:
+    severity: REJECT
+    message: "Regime '{value}' not found in conditions.yaml"
+    
+  MAX_GROUPS_EXCEEDED:
+    severity: REJECT
+    message: "max_groups {value} exceeds limit of 100 (T2 required for override)"
+    
+  CARDINALITY_EXPLOSION:
+    severity: REJECT
+    message: "group_by '{field}' would cause cardinality explosion"
+    
+  UNKNOWN_METRIC:
+    severity: REJECT
+    message: "Metric '{value}' not in metric_definitions"
+    
+  INVALID_TIME_RANGE:
+    severity: REJECT
+    message: "time_range.end must be after time_range.start"
+    
+  OVERLAPPING_TIME_RANGES:
+    severity: REJECT
+    message: "Multiple time ranges overlap — ambiguous query"
+    
+  UNKNOWN_PREDICATE_FIELD:
+    severity: REJECT
+    message: "Field '{field}' not in allowed_predicate_fields"
+    
+  FORBIDDEN_PREDICATE:
+    severity: REJECT
+    message: "Predicate pattern '{pattern}' is forbidden: {reason}"
+    
+  CAUSAL_LANGUAGE_DETECTED:
+    severity: REJECT
+    message: "Causal language detected in query: '{text}'"
+    ref: "INV-ATTR-CAUSAL-BAN"
+
+# =============================================================================
+# EXAMPLES
+# =============================================================================
+
+examples:
+  valid_queries:
+    - name: "Session breakdown for EURUSD"
+      query:
+        source: river
+        group_by: [session]
+        filter:
+          conditions:
+            - {field: pair, op: "==", value: EURUSD}
+          time_range:
+            start: "2025-01-01T00:00:00Z"
+            end: "2026-01-01T00:00:00Z"
+        aggregate:
+          metrics: [sharpe, win_rate, trade_count]
+        strategy_config_hash: "abc123def456..."
+        output:
+          format: table
+          include_provenance: true
+          
+    - name: "Gate count performance"
+      query:
+        source: beads
+        group_by: []
+        filter:
+          conditions:
+            - {field: gates_passed_count, op: ">=", value: 3}
+        aggregate:
+          metrics: [sharpe, pnl]
+        strategy_config_hash: "abc123def456..."
+        output:
+          format: single_value
+          include_provenance: true
+          
+  invalid_queries:
+    - name: "Missing strategy hash"
+      query:
+        source: river
+        group_by: [session]
+        aggregate:
+          metrics: [sharpe]
+        output:
+          format: table
+      error: MISSING_STRATEGY_HASH
+      
+    - name: "Unknown regime"
+      query:
+        source: river
+        filter:
+          conditions:
+            - {field: regime, op: "==", value: "magic_regime"}
+        aggregate:
+          metrics: [sharpe]
+        strategy_config_hash: "abc123..."
+        output:
+          format: table
+      error: REGIME_NOT_IN_CONDITIONS
+      
+    - name: "Cardinality explosion"
+      query:
+        source: river
+        group_by: [timestamp]
+        aggregate:
+          metrics: [sharpe]
+        strategy_config_hash: "abc123..."
+        output:
+          format: table
+      error: CARDINALITY_EXPLOSION
