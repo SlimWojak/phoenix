@@ -1,0 +1,204 @@
+# =============================================================================
+# GATE SCHEMA — Individual Gate Definitions
+# =============================================================================
+# S36 TRACK A DELIVERABLE
+# Created: 2026-01-29
+#
+# Gates are predicates. Predicates return boolean.
+# NO WEIGHTS. NO SCORES. NO GRADES.
+#
+# INVARIANTS:
+#   - INV-HARNESS-1: Gate status only, never grades
+#   - INV-BIAS-PREDICATE: Bias as predicate status, not directional words
+# =============================================================================
+
+schema_version: "1.0.0"
+created: "2026-01-29"
+
+# =============================================================================
+# GATE STRUCTURE
+# =============================================================================
+
+gate_schema:
+  required_fields:
+    - id          # unique identifier (e.g., "htf_structure_bullish")
+    - drawer      # drawer number (1-5)
+    - name        # human-readable name
+    - predicate   # reference to predicate logic
+    - required    # must pass for drawer rule evaluation
+
+  optional_fields:
+    - description
+    - data_requirements
+    - threshold   # for numeric predicates (enables delta calculation)
+
+  forbidden_fields:
+    - weight
+    - priority
+    - quality_score
+    - confidence
+    - grade
+    - rank
+    - score
+    - importance
+
+# =============================================================================
+# DRAWER 1: HTF FOUNDATION GATES
+# =============================================================================
+
+gates:
+  htf_structure_bullish:
+    id: "htf_structure_bullish"
+    drawer: 1
+    name: "HTF Structure Bullish"
+    predicate: "htf_bias == 'bullish' AND structure_valid"
+    required: false  # One directional gate required
+    data_requirements: [htf_data, structure_breaks]
+    description: "Higher timeframe shows bullish structure"
+
+  htf_structure_bearish:
+    id: "htf_structure_bearish"
+    drawer: 1
+    name: "HTF Structure Bearish"
+    predicate: "htf_bias == 'bearish' AND structure_valid"
+    required: false  # One directional gate required
+    data_requirements: [htf_data, structure_breaks]
+    description: "Higher timeframe shows bearish structure"
+
+  htf_poi_identified:
+    id: "htf_poi_identified"
+    drawer: 1
+    name: "HTF POI Identified"
+    predicate: "poi_distance_pips <= poi_threshold"
+    required: true
+    threshold: 50  # pips — enables delta calculation
+    data_requirements: [htf_data, current_price, poi_levels]
+    description: "Price within range of HTF point of interest"
+
+# =============================================================================
+# DRAWER 2: SESSION CONTEXT GATES
+# =============================================================================
+
+  kill_zone_active:
+    id: "kill_zone_active"
+    drawer: 2
+    name: "Kill Zone Active"
+    predicate: "current_session in ['london', 'new_york', 'london_close']"
+    required: false
+    data_requirements: [current_time, session_schedule]
+    description: "Currently in an active kill zone"
+
+  asia_range_defined:
+    id: "asia_range_defined"
+    drawer: 2
+    name: "Asia Range Defined"
+    predicate: "asia_high IS NOT NULL AND asia_low IS NOT NULL"
+    required: false
+    data_requirements: [asia_session_data]
+    description: "Asia session range is defined"
+
+  session_bias_aligned:
+    id: "session_bias_aligned"
+    drawer: 2
+    name: "Session Bias Aligned"
+    predicate: "session_bias == htf_bias OR session_bias == 'neutral'"
+    required: false
+    data_requirements: [session_data, htf_data]
+    description: "Session bias aligns with HTF or is neutral"
+
+# =============================================================================
+# DRAWER 3: ENTRY CONDITIONS GATES
+# =============================================================================
+
+  fvg_present:
+    id: "fvg_present"
+    drawer: 3
+    name: "FVG Present"
+    predicate: "active_fvg_count > 0 AND fvg_direction == trade_direction"
+    required: false  # 2 of 3 required
+    data_requirements: [fvg_data, trade_direction]
+    description: "Fair value gap present in trade direction"
+
+  displacement_sufficient:
+    id: "displacement_sufficient"
+    drawer: 3
+    name: "Displacement Sufficient"
+    predicate: "displacement_pips >= displacement_threshold"
+    required: false  # 2 of 3 required
+    threshold: 15  # pips — enables delta calculation
+    data_requirements: [price_data, displacement_calculation]
+    description: "Sufficient displacement from equilibrium"
+
+  liquidity_swept:
+    id: "liquidity_swept"
+    drawer: 3
+    name: "Liquidity Swept"
+    predicate: "recent_sweep_detected AND sweep_age_bars <= sweep_threshold"
+    required: false  # 2 of 3 required
+    threshold: 10  # bars — enables delta calculation
+    data_requirements: [sweep_data, liquidity_levels]
+    description: "Recent liquidity sweep detected"
+
+# =============================================================================
+# DRAWER 4: ENTRY TRIGGER GATES
+# =============================================================================
+
+  ltf_confirmation:
+    id: "ltf_confirmation"
+    drawer: 4
+    name: "LTF Confirmation"
+    predicate: "ltf_structure_break AND ltf_direction == htf_direction"
+    required: true
+    data_requirements: [ltf_data, htf_data]
+    description: "Lower timeframe confirms direction"
+
+  entry_model_valid:
+    id: "entry_model_valid"
+    drawer: 4
+    name: "Entry Model Valid"
+    predicate: "entry_model in ['fvg_entry', 'ob_entry', 'breaker_entry']"
+    required: true
+    data_requirements: [entry_model_detection]
+    description: "Valid entry model identified"
+
+  stop_defined:
+    id: "stop_defined"
+    drawer: 4
+    name: "Stop Defined"
+    predicate: "stop_price IS NOT NULL AND stop_distance_pips <= max_stop"
+    required: true
+    threshold: 30  # pips max stop — enables delta
+    data_requirements: [stop_calculation]
+    description: "Stop loss level defined within limits"
+
+# =============================================================================
+# DRAWER 5: TRADE MANAGEMENT GATES
+# =============================================================================
+
+  target_defined:
+    id: "target_defined"
+    drawer: 5
+    name: "Target Defined"
+    predicate: "target_price IS NOT NULL"
+    required: true
+    data_requirements: [target_calculation]
+    description: "Take profit target defined"
+
+  rr_acceptable:
+    id: "rr_acceptable"
+    drawer: 5
+    name: "R:R Acceptable"
+    predicate: "risk_reward_ratio >= min_rr"
+    required: true
+    threshold: 2.0  # minimum R:R — enables delta
+    data_requirements: [risk_reward_calculation]
+    description: "Risk-reward ratio meets minimum"
+
+  partials_planned:
+    id: "partials_planned"
+    drawer: 5
+    name: "Partials Planned"
+    predicate: "partial_levels IS NOT NULL AND len(partial_levels) > 0"
+    required: true
+    data_requirements: [partial_calculation]
+    description: "Partial take profit levels planned"
