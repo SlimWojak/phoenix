@@ -1,0 +1,172 @@
+# =============================================================================
+# CAUSAL BAN PATTERNS — INV-ATTR-CAUSAL-BAN Enforcement
+# =============================================================================
+# Location: phoenix/cfp/banned_patterns.yaml
+# Created: 2026-01-29 (S35 Track D)
+#
+# These patterns are BANNED from CFP queries, results, and UI text.
+# If it smells causal, it fails. No exceptions.
+# =============================================================================
+
+schema_version: "1.0"
+last_updated: "2026-01-29"
+
+# =============================================================================
+# BANNED PHRASES
+# =============================================================================
+# Direct pattern matching (case-insensitive)
+
+banned_phrases:
+  # Core causal language
+  - contributed
+  - caused
+  - responsible for
+  - because
+  - drove
+  - explains
+  - factor
+  - attribution
+
+  # GPT additions (v0.2)
+  - predicts
+  - leads to
+  - drives outcomes
+  - signal
+  - edge
+  - alpha
+  - outperforms
+  - improvement explained by
+
+  # Implicit causality
+  - responsible
+  - determine
+  - determines
+  - impact
+  - impacted
+  - influence
+  - influenced
+  - affect
+  - affected
+  - result of
+  - results from
+  - due to
+
+# =============================================================================
+# BANNED STRUCTURES
+# =============================================================================
+# Regex patterns for structural violations
+
+banned_structures:
+  - pattern: "\\w+\\s+contributed\\s+\\d+%"
+    description: "X contributed Y%"
+    example: "London contributed 40%"
+
+  - pattern: "due\\s+to\\s+\\w+"
+    description: "due to X"
+    example: "due to news"
+
+  - pattern: "\\w+\\s+explains?\\s+\\w+"
+    description: "X explains Y"
+    example: "timing explains performance"
+
+  - pattern: "\\d+%\\s+(of\\s+)?(the\\s+)?improvement"
+    description: "Percentage attribution"
+    example: "60% of the improvement"
+
+  - pattern: "\\w+\\s+outperforms?\\s+\\w+\\s+because"
+    description: "X outperforms Y because"
+    example: "London outperforms Tokyo because"
+
+# =============================================================================
+# METRIC + AGENT RULES (GPT v0.2)
+# =============================================================================
+# Combination of metric name + past tense verb implies causality
+
+metric_agent_patterns:
+  metrics:
+    - sharpe
+    - win_rate
+    - pnl
+    - profit_factor
+    - drawdown
+    - performance
+
+  agent_verbs:
+    - improved
+    - increased
+    - decreased
+    - changed
+    - moved
+    - grew
+    - fell
+    - rose
+    - dropped
+
+  rule: "Any metric + agent verb combination → FAIL"
+  example_fail: "Sharpe improved after London open"
+  example_pass: "Sharpe when session=London: 1.6"
+
+# =============================================================================
+# TEMPORAL IMPLICATION RULES (OWL v0.2)
+# =============================================================================
+# 'after' and 'following' imply causality unless anchored
+
+temporal_patterns:
+  banned_words:
+    - after
+    - following
+    - since
+    - upon
+
+  rule: "Flag unless paired with explicit time_range or session anchor"
+  example_fail: "Result after news event"
+  example_pass: "Result when time_range=[08:30, 09:00] AND news_flag=true"
+
+  anchors_that_allow:
+    - time_range
+    - session
+    - kill_zone
+    - entry_hour
+    - exit_hour
+
+# =============================================================================
+# ALLOWED PHRASES
+# =============================================================================
+# These patterns are ALLOWED and should not trigger false positives
+
+allowed_phrases:
+  - when
+  - conditional on
+  - given that
+  - filtered by
+  - where
+  - during
+  - within
+
+allowed_structures:
+  - pattern: "\\w+\\s+when\\s+\\["
+    description: "Metric when [condition]"
+    example: "Sharpe when [session=London]"
+
+  - pattern: "conditional\\s+on\\s+\\w+"
+    description: "Conditional on X"
+    example: "conditional on regime"
+
+  - pattern: "where\\s+\\w+\\s*[=<>]"
+    description: "Where field = value"
+    example: "where session = London"
+
+# =============================================================================
+# FALSE POSITIVE PROTECTION
+# =============================================================================
+# Phrases that LOOK causal but are OK in context
+
+false_positive_exceptions:
+  - phrase: "conditional attribution"
+    reason: "Explicitly marked as conditional"
+
+  - phrase: "without attribution"
+    reason: "Negation of attribution"
+
+  - phrase: "no causal"
+    reason: "Explicitly negating causality"
