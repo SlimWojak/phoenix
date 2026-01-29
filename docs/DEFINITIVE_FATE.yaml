@@ -1,0 +1,1551 @@
+# ============================================================
+# NEX → PHOENIX SYNTHESIS
+# THE DEFINITIVE FATE DOCUMENT
+# ============================================================
+
+document: DEFINITIVE_FATE.yaml
+version: 2.0
+date: 2026-01-29
+status: CANONICAL
+authors: CTO (Claude) + Advisor Synthesis (GPT, GROK, OWL)
+approved_by: G (Sovereign)
+integrated_addendum: true
+
+# ============================================================
+# PREAMBLE: WHY THIS DOCUMENT EXISTS
+# ============================================================
+
+preamble:
+  context: |
+    NEX was killed because its execution was poisoned:
+    - LLM entanglement (Claude held everything)
+    - Authority leakage (system authored meaning)
+    - Context death (tool explosion, mid-session amnesia)
+    - Hallucinated causality (fake explanations)
+
+    Phoenix was built with discipline-first governance.
+    This was correct — but created collateral damage.
+
+    Some NEX "magic" was legitimate user leverage
+    executed poorly. Not bad concepts — bad implementation.
+
+    CFP (Conditional Fact Projector) proved the pattern:
+    NEX's "why does this work" was dangerous,
+    but "where/when does performance concentrate" is safe.
+
+    This document systematically excavates NEX capabilities
+    and assigns explicit fates — no accidental losses,
+    no accidental resurrections.
+
+  governing_principle: |
+    "Discipline WITH innovation, not discipline AGAINST innovation.
+    Governance protects the system; it should not starve the user."
+
+  the_balance: |
+    Quality > Speed
+    Explicit > Implicit
+    Projection > Interpretation
+    Facts > Stories
+    Human frames > System proposes
+    Receipts > Narratives
+
+# ============================================================
+# FATE CLASSIFICATION FRAMEWORK
+# ============================================================
+
+fate_definitions:
+
+  KEEP:
+    meaning: "Already doctrinally aligned; subsume into Phoenix as-is or with minor adaptation"
+    criteria:
+      - Computation-heavy, no narrative
+      - Required trust assumption: NONE
+      - Replayable, provenance-friendly
+      - No authority transfer
+    action: "Build into Phoenix infrastructure"
+
+  REIMAGINE:
+    meaning: "Valuable user leverage; requires Phoenix-native primitives + invariants"
+    criteria:
+      - Solves real friction point
+      - Can be made declarative
+      - Safe path exists (frontier-validated)
+      - Human frames, machine computes
+    action: "Redesign with discipline, add to sprint backlog"
+
+  KILL:
+    meaning: "NEX death zone; cannot be rehabilitated without authority leakage"
+    criteria:
+      - System authors meaning
+      - Embeds hidden priors
+      - Transfers authority from human to system
+      - Creates recommendation pressure
+      - Non-replayable
+    action: "Document rationale, never resurrect"
+
+  KILL_DEFAULT_WITH_SALVAGE_PATH:
+    meaning: "Killed by default; narrow salvage path documented but not yet built"
+    criteria:
+      - Core concept is dangerous
+      - Narrow safe implementation theoretically exists
+      - Safe implementation requires explicit invariants not yet proven
+    action: "Remains KILL until salvage path is built and proven"
+    rationale: "Clarifies ambiguity between KILL and PARK"
+
+  PARK:
+    meaning: "Not inherently dangerous, but not priority; revisit later"
+    criteria:
+      - Low user leverage vs complexity
+      - Unclear safe path (needs more research)
+      - Nice-to-have, not need-to-have
+    action: "Log for future consideration, no sprint allocation"
+
+  FACT_DEFINITION:
+    rule: |
+      A FACT is either:
+      (a) a raw recorded state, or
+      (b) a deterministic computation over recorded state with explicit formula
+    non_fact: |
+      Any statement requiring interpretation, causal framing, or implicit weighting
+    rationale: "Prevents endless 'is this a fact?' arguments"
+
+# ============================================================
+# COMPLETE FATE TABLE (61 CAPABILITIES)
+# ============================================================
+
+fate_table:
+
+  # --------------------------------------------------------
+  # DOMAIN: ORIENTATION & SITUATIONAL AWARENESS
+  # --------------------------------------------------------
+
+  - id: NEX-001
+    name: "Unified Status Check"
+    nex_behavior: "Aggregated mode/equity/positions/KZ/health/alerts in one call"
+    user_friction: "Instant orientation without multiple queries"
+    trust_assumption: NONE
+    dependency: computation-heavy
+    fate: KEEP
+    phoenix_primitive: orientation_bead
+    constraints: "Verbatim state projection only"
+    sprint_target: S35 (already in orientation.yaml)
+
+  - id: NEX-002
+    name: "Morning Briefing"
+    nex_behavior: "Mode, equity, P&L, position counts, Kill Zone status, health, alerts"
+    user_friction: "Know everything relevant in 30 seconds"
+    trust_assumption: NONE
+    dependency: computation-heavy
+    fate: KEEP
+    phoenix_primitive: briefing_worker
+    constraints: "Facts only, no synthesis, no recommendations"
+    sprint_target: BUILT (D1 file seam)
+
+  - id: NEX-003
+    name: "Scan All Setups"
+    nex_behavior: "6-pair ICT setup scan with grade/quality/direction per pair"
+    user_friction: "Instant multi-pair triage"
+    trust_assumption: NONE (if facts) / BELIEF (if graded)
+    dependency: computation-heavy
+    fate: REIMAGINE
+    phoenix_primitive: cso_scanner + gate_facts
+    constraints: |
+      - Output = gate_ids_passed per pair, not "grade A/B/C"
+      - No quality score unless decomposed to explicit gates
+      - Direction = HTF bias fact, not recommendation
+      - Output as bit-vector (01011) mapping to conditions.yaml for sub-1ms triage
+    invariants: [INV-ATTR-NO-RANKING, INV-ATTR-PROVENANCE, INV-BIAS-PREDICATE]
+    sprint_target: S36 (CSO Harness)
+
+  - id: NEX-004
+    name: "Bootstrap Integrity Check"
+    nex_behavior: "GREEN/YELLOW/RED health status with specific issues"
+    user_friction: "Know if system is trustworthy before acting"
+    trust_assumption: NONE
+    dependency: computation-heavy
+    fate: KEEP
+    phoenix_primitive: health_check + orientation_bead
+    constraints: "Traffic light per invariant, not single health score"
+    sprint_target: BUILT (governance/halt.py)
+
+  - id: NEX-005
+    name: "Session Bootstrap"
+    nex_behavior: "Last session context, environment, threads, decisions loaded"
+    user_friction: "Never lose continuity across restarts"
+    trust_assumption: NONE
+    dependency: computation-heavy
+    fate: KEEP
+    phoenix_primitive: bead_chain + orientation_bead
+    constraints: "Load from beads, not LLM memory"
+    sprint_target: BUILT (orientation.yaml)
+
+  # --------------------------------------------------------
+  # DOMAIN: ICT-SPECIFIC ANALYSIS
+  # --------------------------------------------------------
+
+  - id: NEX-006
+    name: "Kill Zone Status"
+    nex_behavior: "Current KZ, time remaining, next KZ timing"
+    user_friction: "Always know ICT timing context"
+    trust_assumption: NONE
+    dependency: computation-heavy
+    fate: KEEP
+    phoenix_primitive: river_enrichment
+    constraints: "Pure time calculation, no interpretation"
+    sprint_target: BUILT (River)
+
+  - id: NEX-007
+    name: "Asia Range Status"
+    nex_behavior: "Asia high/low, validity, swept status per pair"
+    user_friction: "Pre-computed ICT primitive without chart work"
+    trust_assumption: statistical_literacy
+    dependency: computation-heavy
+    fate: KEEP
+    phoenix_primitive: river_enrichment
+    constraints: "Factual computation, explicit validity criteria"
+    sprint_target: BUILT (River)
+
+  - id: NEX-008
+    name: "4Q Gate Analysis"
+    nex_behavior: "Grade A/B/C/F with confidence, breakdown of 4 questions"
+    user_friction: "ICT Lesson 25 checklist automated"
+    trust_assumption: BELIEF_IN_SYSTEM_INTERPRETATION
+    dependency: computation-heavy + narrative-heavy
+    fate: REIMAGINE
+    phoenix_primitive: gate_evaluation (not grading)
+    constraints: |
+      - Output = which gates passed/failed (boolean per gate)
+      - NO letter grades (A/B/C/F)
+      - NO confidence scores
+      - NO aggregated quality metric
+      - Human interprets gate pattern
+    invariants: [INV-ATTR-NO-RANKING, INV-HARNESS-1]
+    sprint_target: S36 (CSO Harness)
+    risk_flag: FLAG_A (scoring)
+
+  - id: NEX-009
+    name: "SMT Divergence Detection"
+    nex_behavior: "DXY correlation signal, bullish/bearish divergence flags"
+    user_friction: "Cross-market confluence without manual checks"
+    trust_assumption: statistical_literacy
+    dependency: computation-heavy
+    fate: KEEP
+    phoenix_primitive: river_enrichment
+    constraints: "Factual correlation computation, explicit threshold"
+    sprint_target: River enhancement (backlog)
+
+  - id: NEX-010
+    name: "Gemma Full Analysis"
+    nex_behavior: "Session summary, setup quality, direction bias, recommendation"
+    user_friction: "Always-on ICT analyst"
+    trust_assumption: BELIEF_IN_SYSTEM_INTERPRETATION
+    dependency: LLM-heavy + narrative-heavy
+    fate: KILL
+    rationale: |
+      This is the NEX death pattern incarnate:
+      - LLM authors meaning ("setup quality")
+      - System makes recommendation
+      - Authority transfer from human to system
+      - Non-replayable (LLM output varies)
+    phoenix_replacement: NONE (user reads gate facts, interprets themselves)
+
+  - id: NEX-011
+    name: "Gemma Quick Check"
+    nex_behavior: "One-liner assessment, quality, recommendation"
+    user_friction: "Sub-second ICT triage"
+    trust_assumption: BELIEF_IN_SYSTEM_INTERPRETATION
+    dependency: LLM-heavy
+    fate: KILL
+    rationale: "Compressed version of NEX-010, same death pattern"
+    phoenix_replacement: "Gate status facts (passed/failed) — user triages"
+
+  - id: NEX-012
+    name: "Gemma Multi-Pair Scan"
+    nex_behavior: "All 6 pairs ranked by setup quality"
+    user_friction: "Prioritized attention allocation"
+    trust_assumption: BELIEF_IN_SYSTEM_INTERPRETATION
+    dependency: computation-heavy
+    fate: REIMAGINE
+    phoenix_primitive: gate_status_per_pair
+    constraints: |
+      - Output = gates_passed_count per pair (factual)
+      - NO "ranked by quality" — user sorts if desired
+      - NO implied priority
+      - Default sort: alphabetical
+    invariants: [INV-ATTR-NO-RANKING]
+    sprint_target: S36 (CSO Harness)
+
+  # --------------------------------------------------------
+  # DOMAIN: MEMORY & LEARNING SYSTEMS
+  # --------------------------------------------------------
+
+  - id: NEX-013
+    name: "Teach Athena"
+    nex_behavior: "Fact stored with contradiction check, source attribution"
+    user_friction: "System that learns from operator and persists"
+    trust_assumption: NONE
+    dependency: computation-heavy
+    fate: REIMAGINE
+    phoenix_primitive: athena_bead_store
+    constraints: |
+      - Store as CLAIM_BEAD + evidence + provenance
+      - NO doctrine mutation from stored facts
+      - Facts are queryable, not executable
+      - Distinguish CLAIM_BEAD (human assertion) from FACT_BEAD (computed)
+    invariants: [INV-ATTR-NO-WRITEBACK]
+    sprint_target: S37 (Memory discipline)
+
+  - id: NEX-014
+    name: "Recall Memory"
+    nex_behavior: "All learned facts about topic, current only by default"
+    user_friction: "Perfect memory retrieval"
+    trust_assumption: NONE
+    dependency: computation-heavy
+    fate: KEEP
+    phoenix_primitive: athena_query
+    constraints: "Verbatim fact retrieval with provenance"
+    sprint_target: S37 (Memory discipline)
+
+  - id: NEX-015
+    name: "Semantic Memory Search"
+    nex_behavior: "Semantically similar entries from journal"
+    user_friction: "Find relevant research even with different wording"
+    trust_assumption: NONE
+    dependency: computation-heavy
+    fate: REIMAGINE
+    phoenix_primitive: athena_semantic_query
+    constraints: |
+      - Similarity = embedding distance (explicit)
+      - Results show distance score (not "relevance")
+      - No synthesis of results
+    invariants: [INV-ATTR-PROVENANCE]
+    sprint_target: S37 (Memory discipline)
+
+  - id: NEX-016
+    name: "Contradiction Detection"
+    nex_behavior: "Explicit ICT-domain contradiction flagged before storage"
+    user_friction: "System challenges conflicting beliefs"
+    trust_assumption: statistical_literacy
+    dependency: computation-heavy
+    fate: REIMAGINE
+    phoenix_primitive: athena_conflict_surface
+    constraints: |
+      - Surface "Fact A conflicts with Fact B" verbatim
+      - NO resolution authority — human decides which is correct
+      - Both facts remain until human resolves
+      - Provenance for both
+      - Store as CONFLICT_BEAD referencing both beads
+    frontier_pattern: "Wikipedia corpus inconsistency detection — flag without choosing"
+    invariants: [INV-ATTR-SILENCE]
+    sprint_target: S37 (Memory discipline)
+
+  - id: NEX-017
+    name: "Memory History"
+    nex_behavior: "Full fact history including superseded versions"
+    user_friction: "See evolution of understanding over time"
+    trust_assumption: NONE
+    dependency: computation-heavy
+    fate: KEEP
+    phoenix_primitive: bead_chain_query
+    constraints: "Chronological fact trail with provenance"
+    sprint_target: S37 (Memory discipline)
+
+  # --------------------------------------------------------
+  # DOMAIN: RESEARCH & BACKTESTING
+  # --------------------------------------------------------
+
+  - id: NEX-018
+    name: "Backtest Strategy"
+    nex_behavior: "Sharpe, returns, win rate, drawdown, trade count"
+    user_friction: "Validate ideas against historical data"
+    trust_assumption: statistical_literacy
+    dependency: computation-heavy
+    fate: KEEP
+    phoenix_primitive: backtest_worker
+    constraints: "Factual metrics, explicit methodology, provenance hash"
+    sprint_target: S39 (Research infrastructure)
+
+  - id: NEX-019
+    name: "Sandbox Testing"
+    nex_behavior: "Lightweight backtest without affecting production"
+    user_friction: "Safe experimentation space"
+    trust_assumption: statistical_literacy
+    dependency: computation-heavy
+    fate: KEEP
+    phoenix_primitive: sandbox_backtest
+    constraints: "Isolated from live, no state mutation"
+    sprint_target: S39 (Research infrastructure)
+
+  - id: NEX-020
+    name: "Signal Replay"
+    nex_behavior: "Step-through of enriched data showing what system saw"
+    user_friction: "Debug strategy logic visually"
+    trust_assumption: statistical_literacy (if facts) / BELIEF (if narrated)
+    dependency: computation-heavy + narrative-heavy
+    fate: REIMAGINE
+    phoenix_primitive: forensic_replay
+    constraints: |
+      - Output = raw state snapshots + timestamps
+      - NO narrative walkthrough by default
+      - Optional: LLM as receipt-bound narrator (forensic narrator role)
+    invariants: [INV-ATTR-PROVENANCE, INV-LLM-REMOVAL-TEST]
+    sprint_target: S35 (CFP includes replay primitives)
+
+  - id: NEX-021
+    name: "Compare Backtests"
+    nex_behavior: "Side-by-side metrics for multiple backtests"
+    user_friction: "Systematic variant comparison"
+    trust_assumption: statistical_literacy
+    dependency: computation-heavy
+    fate: KEEP
+    phoenix_primitive: cfp_comparison
+    constraints: "Metrics table, no ranking, no 'winner' declared"
+    sprint_target: S35 (CFP)
+
+  - id: NEX-022
+    name: "Grade Comparison Backtest"
+    nex_behavior: "Performance by grade filtering strategy"
+    user_friction: "Understand value of selectivity"
+    trust_assumption: statistical_literacy
+    dependency: computation-heavy
+    fate: REIMAGINE
+    phoenix_primitive: cfp_conditional_slice
+    constraints: |
+      - "Performance when gates_passed >= N" (factual)
+      - NOT "performance by Grade A/B/C" (implies quality judgment)
+    sprint_target: S35 (CFP)
+
+  - id: NEX-023
+    name: "Live vs Backtest Divergence"
+    nex_behavior: "Drift detection between Lab and Arena performance"
+    user_friction: "Catch execution gaps before they compound"
+    trust_assumption: statistical_literacy
+    dependency: computation-heavy
+    fate: KEEP
+    phoenix_primitive: signalman_drift
+    constraints: "Factual delta, explicit threshold, no interpretation"
+    sprint_target: BUILT (Signalman concept)
+
+  # --------------------------------------------------------
+  # DOMAIN: DIMENSIONAL ANALYSIS / INSIGHT ENGINE
+  # --------------------------------------------------------
+
+  - id: NEX-024
+    name: "Regime Breakdown"
+    nex_behavior: "Performance by trending/ranging/breakout regime"
+    user_friction: "Know WHERE the edge lives"
+    trust_assumption: BELIEF_IN_SYSTEM_INTERPRETATION
+    dependency: computation-heavy + narrative-heavy
+    fate: REIMAGINE
+    phoenix_primitive: cfp_regime_slice
+    constraints: |
+      - Regimes MUST be explicit predicates (Olya-defined in conditions.yaml)
+      - NOT auto-detected regimes
+      - Output = "performance when [explicit_predicate]"
+      - NO hidden model
+    frontier_pattern: "Quant shops use explicit thresholds (vol > X AND momentum > Y)"
+    invariants: [INV-ATTR-PROVENANCE, INV-REGIME-EXPLICIT, INV-REGIME-GOVERNANCE]
+    risk_flag: FLAG_B (regime labels)
+    sprint_target: S35 (CFP)
+
+  - id: NEX-025
+    name: "Session/KZ Breakdown"
+    nex_behavior: "Performance split by Tokyo/London/NY, by Kill Zone"
+    user_friction: "Reveal time-structure of edge"
+    trust_assumption: statistical_literacy
+    dependency: computation-heavy
+    fate: KEEP
+    phoenix_primitive: cfp_time_slice
+    constraints: "Factual split by explicit time boundaries"
+    sprint_target: S35 (CFP)
+
+  - id: NEX-026
+    name: "P&L Attribution"
+    nex_behavior: "Breakdown by factor (KZ edge, session timing, regime)"
+    user_friction: "Understand drivers of performance"
+    trust_assumption: BELIEF_IN_SYSTEM_INTERPRETATION
+    dependency: computation-heavy + narrative-heavy
+    fate: REIMAGINE
+    phoenix_primitive: cfp_conditional_attribution
+    constraints: |
+      - Output = "P&L when [condition]" (conditional fact)
+      - NOT "factor X contributed Y%" (implies causality)
+      - Multiple slices shown, human constructs meaning
+    frontier_pattern: "Brinson attribution — decompose to allocation/selection/interaction"
+    invariants: [INV-ATTR-CAUSAL-BAN, INV-ATTR-PROVENANCE]
+    sprint_target: S35 (CFP)
+
+  - id: NEX-027
+    name: "Auto-Detected Insight Flags"
+    nex_behavior: "EDGE_CONCENTRATED, DECAY_WARNING, NEGATIVE_EDGE, STRONG_EDGE"
+    user_friction: "System surfaces patterns human might miss"
+    trust_assumption: BELIEF_IN_SYSTEM_INTERPRETATION
+    dependency: computation-heavy + narrative-heavy
+    fate: KILL_DEFAULT_WITH_SALVAGE_PATH
+    rationale: |
+      Unsolicited synthesis = authority drift.
+      System deciding what's "worth flagging" embeds priors.
+    phoenix_replacement: |
+      NARROW SALVAGE PATH (not yet built):
+      - User declares explicit thresholds ("alert if win_rate delta > 15%")
+      - Monitor triggers on user-declared condition
+      - Output includes query/provenance + conflict display
+      - System never says "I noticed"
+    constraints: |
+      - NO default flags
+      - ALL thresholds user-declared
+      - Alert = fact + provenance, not insight
+    invariants: [INV-NO-UNSOLICITED, INV-ATTR-CONFLICT-DISPLAY]
+    risk_flag: FLAG_C (auto insight)
+    sprint_target: S37+ (if salvaged)
+
+  # --------------------------------------------------------
+  # DOMAIN: VALIDATION & ROBUSTNESS
+  # --------------------------------------------------------
+
+  - id: NEX-028
+    name: "Walk-Forward Validation"
+    nex_behavior: "Out-of-sample validation with train/test splits"
+    user_friction: "Detect curve-fitting before deployment"
+    trust_assumption: statistical_literacy
+    dependency: computation-heavy
+    fate: KEEP
+    phoenix_primitive: validation_worker
+    constraints: "Factual metrics, explicit methodology"
+    sprint_target: S39 (Research infrastructure)
+
+  - id: NEX-029
+    name: "Monte Carlo Drawdown"
+    nex_behavior: "Simulated drawdown distribution, confidence intervals"
+    user_friction: "Estimate worst-case beyond historical data"
+    trust_assumption: statistical_literacy
+    dependency: computation-heavy
+    fate: KEEP
+    phoenix_primitive: validation_worker
+    constraints: "Statistical output, explicit assumptions"
+    sprint_target: S39 (Research infrastructure)
+
+  - id: NEX-030
+    name: "Overfitting Detection Suite"
+    nex_behavior: "Multiple checks: walk-forward, param count, sample size, regime stability"
+    user_friction: "Comprehensive fragility assessment"
+    trust_assumption: statistical_literacy
+    dependency: computation-heavy
+    fate: KEEP
+    phoenix_primitive: validation_suite
+    constraints: "Per-check results, no single 'overfit score'"
+    sprint_target: S39 (Research infrastructure)
+
+  - id: NEX-031
+    name: "Parameter Sensitivity"
+    nex_behavior: "Performance across parameter variations"
+    user_friction: "Find over-optimized parameters"
+    trust_assumption: statistical_literacy
+    dependency: computation-heavy
+    fate: REIMAGINE
+    phoenix_primitive: cfp_parameter_sweep
+    constraints: |
+      - Label as "sensitivity" NOT "importance"
+      - Output = metric at each param value (table)
+      - NO ranking by "robustness"
+    invariants: [INV-ATTR-NO-RANKING]
+    sprint_target: S39 (Research infrastructure)
+
+  - id: NEX-032
+    name: "Strategy Stability Index"
+    nex_behavior: "0-100 viability score prioritizing stability over peak"
+    user_friction: "Prioritize durable strategies"
+    trust_assumption: BELIEF_IN_SYSTEM_INTERPRETATION
+    dependency: computation-heavy
+    fate: KILL
+    rationale: |
+      Single scalar score embeds:
+      - Hidden weighting of factors
+      - Implicit definition of "stability"
+      - Authority transfer (system says what's viable)
+    phoenix_replacement: |
+      Decomposed factor table:
+      - Walk-forward delta
+      - Parameter sensitivity range
+      - Regime consistency
+      - Sample size
+      Each shown separately, human judges viability
+    risk_flag: FLAG_A (scoring)
+
+  - id: NEX-033
+    name: "Cost Curve Modeling"
+    nex_behavior: "Sharpe degradation across spread scenarios"
+    user_friction: "Understand real-world cost impact"
+    trust_assumption: statistical_literacy
+    dependency: computation-heavy
+    fate: KEEP
+    phoenix_primitive: cfp_cost_sensitivity
+    constraints: "Factual degradation table, explicit spread scenarios"
+    sprint_target: S39 (Research infrastructure)
+
+  # --------------------------------------------------------
+  # DOMAIN: SUB-AGENTS & HYPOTHESIS FRAMING
+  # --------------------------------------------------------
+
+  - id: NEX-034
+    name: "Forensic Agent"
+    nex_behavior: "D185 investigation methodology template"
+    user_friction: "Structured debugging approach"
+    trust_assumption: NONE
+    dependency: narrative-heavy
+    fate: REIMAGINE
+    phoenix_primitive: forensic_template
+    constraints: |
+      - Template = structured questions (human answers)
+      - NOT LLM-driven investigation
+      - Output = completed template with provenance
+    sprint_target: S39 (Research infrastructure)
+
+  - id: NEX-035
+    name: "Hypothesis Framing"
+    nex_behavior: "Turn intuition into testable hypothesis with parameters"
+    user_friction: "Structure research properly"
+    trust_assumption: NONE
+    dependency: narrative-heavy
+    fate: REIMAGINE
+    phoenix_primitive: hypothesis_schema
+    constraints: |
+      - LLM assists framing (query crafter role)
+      - Human approves hypothesis before queue
+      - Explicit parameters, success criteria
+      - NO system-proposed hypotheses
+    invariants: [INV-NO-UNSOLICITED]
+    sprint_target: S38 (Hunt infrastructure)
+
+  - id: NEX-036
+    name: "Debrief Agent"
+    nex_behavior: "Learning extraction, pattern identification after trade"
+    user_friction: "Systematic post-trade learning capture"
+    trust_assumption: BELIEF_IN_SYSTEM_INTERPRETATION
+    dependency: narrative-heavy
+    fate: KILL
+    rationale: |
+      "Pattern identification" = system authors meaning.
+      LLM extracts "learnings" = interpretation, not facts.
+    phoenix_replacement: |
+      Autopsy worker:
+      - State at entry (verbatim)
+      - State at exit (verbatim)
+      - Gate status at decision point (factual)
+      - Human writes learning (stored as CLAIM_BEAD)
+
+  - id: NEX-037
+    name: "Pending Hypotheses Queue"
+    nex_behavior: "List of framed hypotheses awaiting testing"
+    user_friction: "Never lose research ideas"
+    trust_assumption: NONE
+    dependency: computation-heavy
+    fate: KEEP
+    phoenix_primitive: hunt_queue
+    constraints: "Queue of human-approved hypotheses only"
+    sprint_target: S38 (Hunt infrastructure)
+
+  # --------------------------------------------------------
+  # DOMAIN: HUNT ENGINE / RESEARCH CONDUCTOR
+  # --------------------------------------------------------
+
+  - id: NEX-038
+    name: "Hunt Engine Run"
+    nex_behavior: "Systematic variation testing with survivor analysis"
+    user_friction: "Automated hypothesis exploration"
+    trust_assumption: statistical_literacy / BELIEF
+    dependency: computation-heavy + LLM-heavy
+    fate: REIMAGINE
+    phoenix_primitive: hunt_engine
+    constraints: |
+      - Human declares EXHAUSTIVE lens grid (all variants explicit)
+      - Machine computes ALL variants (no selection)
+      - Output = metrics per variant + provenance
+      - NO "survivor" ranking by system
+      - NO system-proposed variants
+    frontier_pattern: "Quant AutoML — human-defined search space, exhaustive eval"
+    invariants: [INV-NO-UNSOLICITED, INV-ATTR-PROVENANCE, INV-ATTR-NO-RANKING, INV-HUNT-EXHAUSTIVE, INV-HUNT-BUDGET]
+    sprint_target: S38 (Hunt infrastructure)
+
+  - id: NEX-039
+    name: "Edge Discovery Scan"
+    nex_behavior: "Ranked edges by significance, auto-queue option"
+    user_friction: "Data-driven pattern surfacing"
+    trust_assumption: BELIEF_IN_SYSTEM_INTERPRETATION
+    dependency: computation-heavy
+    fate: KILL
+    rationale: |
+      "Edge discovery" = system proposes hypotheses.
+      "Ranked by significance" = system judges importance.
+      This is the opposite of human-frames-machine-computes.
+    phoenix_replacement: NONE (human frames hypotheses)
+
+  - id: NEX-040
+    name: "Epoch Processing"
+    nex_behavior: "Batch process hypothesis queue"
+    user_friction: "Overnight research automation"
+    trust_assumption: statistical_literacy
+    dependency: computation-heavy
+    fate: KEEP
+    phoenix_primitive: hunt_batch
+    constraints: "Process human-approved queue only, no synthesis"
+    sprint_target: S38 (Hunt infrastructure)
+
+  - id: NEX-041
+    name: "ML Parameter Sweep"
+    nex_behavior: "Grid search across param combinations"
+    user_friction: "Systematic parameter optimization"
+    trust_assumption: statistical_literacy
+    dependency: computation-heavy
+    fate: REIMAGINE
+    phoenix_primitive: hunt_param_sweep
+    constraints: |
+      - Human declares param grid explicitly
+      - Output = metrics at each point (table)
+      - NO "optimal" selection by system
+    invariants: [INV-HUNT-BUDGET]
+    sprint_target: S38 (Hunt infrastructure)
+
+  - id: NEX-042
+    name: "Athena Suggestions"
+    nex_behavior: "Spawned seeds based on learned patterns"
+    user_friction: "System proposes research directions"
+    trust_assumption: BELIEF_IN_SYSTEM_INTERPRETATION
+    dependency: computation-heavy + narrative-heavy
+    fate: KILL
+    rationale: |
+      "System proposes" = authority transfer.
+      Even if based on "learned patterns," this is
+      unsolicited hypothesis generation.
+    phoenix_replacement: NONE (human proposes hypotheses)
+
+  # --------------------------------------------------------
+  # DOMAIN: STRATEGY PIPELINE
+  # --------------------------------------------------------
+
+  - id: NEX-043
+    name: "Strategy Deep Dive"
+    nex_behavior: "Spec + backtest + live perf + drift + health in one call"
+    user_friction: "Complete strategy picture instantly"
+    trust_assumption: NONE
+    dependency: computation-heavy
+    fate: KEEP
+    phoenix_primitive: strategy_summary_bead
+    constraints: "Aggregated facts, no synthesis"
+    sprint_target: S38+ (Strategy management)
+
+  - id: NEX-044
+    name: "Promote Strategy"
+    nex_behavior: "Create Arena manifest for validated strategy"
+    user_friction: "Bridge Lab→Arena with audit trail"
+    trust_assumption: NONE
+    dependency: computation-heavy
+    fate: KEEP
+    phoenix_primitive: promotion_workflow
+    constraints: "Explicit gate checks, bead trail"
+    sprint_target: S36+ (Execution path)
+
+  - id: NEX-045
+    name: "Deploy Strategy"
+    nex_behavior: "Copy manifest, configure, enable"
+    user_friction: "Controlled promotion to live"
+    trust_assumption: NONE
+    dependency: computation-heavy
+    fate: KEEP
+    phoenix_primitive: deployment_workflow
+    constraints: "T2 gate required"
+    sprint_target: S36+ (Execution path)
+
+  - id: NEX-046
+    name: "Alignment Check"
+    nex_behavior: "Lab/Arena configuration consistency validation"
+    user_friction: "Catch drift between environments"
+    trust_assumption: NONE
+    dependency: computation-heavy
+    fate: KEEP
+    phoenix_primitive: config_diff
+    constraints: "Factual diff, no interpretation"
+    sprint_target: S36+ (Execution path)
+
+  - id: NEX-047
+    name: "Actionability Engine"
+    nex_behavior: "Operator-ready guidance synthesizing all context"
+    user_friction: "From analysis to action recommendation"
+    trust_assumption: BELIEF_IN_SYSTEM_INTERPRETATION
+    dependency: narrative-heavy + LLM-heavy
+    fate: KILL
+    rationale: |
+      This is the ultimate authority transfer:
+      "What should I actually do?"
+      System answers = system decides.
+      Phoenix exists precisely to NOT do this.
+    phoenix_replacement: |
+      System provides:
+      - Current state (verbatim)
+      - Gate status (factual)
+      - Evidence bundle (provenance)
+      Human decides action.
+
+  # --------------------------------------------------------
+  # DOMAIN: SAFETY & EMERGENCY
+  # --------------------------------------------------------
+
+  - id: NEX-048
+    name: "Emergency Kill Switch"
+    nex_behavior: "Close all positions, cancel orders, halt system"
+    user_friction: "One-command panic button"
+    trust_assumption: NONE
+    dependency: computation-heavy
+    fate: KEEP
+    phoenix_primitive: governance/halt
+    constraints: "<50ms execution"
+    sprint_target: BUILT (proven)
+
+  - id: NEX-049
+    name: "Preflight Check"
+    nex_behavior: "7-tier system validation"
+    user_friction: "Systematic safety gate"
+    trust_assumption: NONE
+    dependency: computation-heavy
+    fate: KEEP
+    phoenix_primitive: preflight_worker
+    constraints: "Per-tier status, no single pass/fail"
+    sprint_target: BUILT (governance framework)
+
+  - id: NEX-050
+    name: "Mode Transition Gates"
+    nex_behavior: "Asymmetric friction: instant escape, gated escalation"
+    user_friction: "Structural protection against accidental LIVE"
+    trust_assumption: NONE
+    dependency: computation-heavy
+    fate: KEEP
+    phoenix_primitive: tier_gates
+    constraints: "T0/T1/T2 hierarchy"
+    sprint_target: BUILT (governance framework)
+
+  - id: NEX-051
+    name: "Adversarial Promotion Review"
+    nex_behavior: "GPT challenges Claude's decision"
+    user_friction: "Devil's advocate"
+    trust_assumption: BELIEF_IN_SYSTEM_INTERPRETATION
+    dependency: LLM-heavy
+    fate: REIMAGINE
+    phoenix_primitive: adversarial_bead_chain
+    constraints: |
+      - Adversarial output = "challenge vector X yields conflict Y" (factual)
+      - NO recommendation from adversarial
+      - Separate bead chain (not merged into decision)
+      - Human decides, not adversarial
+    frontier_pattern: "Safety-critical red-team checklists, no recommendation authority"
+    invariants: [INV-NO-UNSOLICITED]
+    sprint_target: S38+ (if validated)
+
+  - id: NEX-052
+    name: "Drift Diagnosis Challenge"
+    nex_behavior: "Challenge Claude's explanation of drift"
+    user_friction: "Guard against storytelling bias"
+    trust_assumption: BELIEF_IN_SYSTEM_INTERPRETATION
+    dependency: LLM-heavy
+    fate: KILL
+    rationale: |
+      "Claude's explanation" shouldn't exist in Phoenix.
+      No LLM explains drift — drift is measured factually.
+    phoenix_replacement: "Signalman surfaces drift metrics, human interprets"
+
+  - id: NEX-053
+    name: "Cascade Forensic Reconstruction"
+    nex_behavior: "Dual-perspective autopsy after loss"
+    user_friction: "Structured post-mortem"
+    trust_assumption: BELIEF_IN_SYSTEM_INTERPRETATION
+    dependency: LLM-heavy + narrative-heavy
+    fate: REIMAGINE
+    phoenix_primitive: autopsy_worker
+    constraints: |
+      - Output = state snapshots at key moments (verbatim)
+      - Gate status at decision points (factual)
+      - NO narrative reconstruction
+      - Human constructs meaning from facts
+    sprint_target: BUILT (autopsy concept in S31)
+
+  # --------------------------------------------------------
+  # DOMAIN: DECISION AUDIT & CONTINUITY
+  # --------------------------------------------------------
+
+  - id: NEX-054
+    name: "Secretary Decision Log"
+    nex_behavior: "Decision logged with rationale, status, audit trail"
+    user_friction: "Nothing forgotten, everything traceable"
+    trust_assumption: NONE
+    dependency: computation-heavy
+    fate: KEEP
+    phoenix_primitive: bead_chain
+    constraints: "Immutable bead per decision"
+    sprint_target: BUILT (beads)
+
+  - id: NEX-055
+    name: "Decision Alignment Check"
+    nex_behavior: "Validate against locked decisions"
+    user_friction: "Prevent contradictory actions"
+    trust_assumption: NONE
+    dependency: computation-heavy
+    fate: KEEP
+    phoenix_primitive: inquisitor_gate
+    constraints: "Factual consistency check"
+    sprint_target: BUILT (Inquisitor)
+
+  - id: NEX-056
+    name: "Session Checkpoint"
+    nex_behavior: "Save state for continuity"
+    user_friction: "Perfect handoff across sessions"
+    trust_assumption: NONE
+    dependency: computation-heavy
+    fate: KEEP
+    phoenix_primitive: orientation_bead
+    constraints: "State snapshot, not LLM memory"
+    sprint_target: BUILT (orientation.yaml)
+
+  - id: NEX-057
+    name: "System Delta Scan"
+    nex_behavior: "File changes, decision changes, strategy updates"
+    user_friction: "Instant change awareness"
+    trust_assumption: NONE
+    dependency: computation-heavy
+    fate: KEEP
+    phoenix_primitive: delta_worker
+    constraints: "Factual diff, no interpretation"
+    sprint_target: S38+ (backlog)
+
+  # --------------------------------------------------------
+  # DOMAIN: LIVE MONITORING & ALERTS
+  # --------------------------------------------------------
+
+  - id: NEX-058
+    name: "Position Status"
+    nex_behavior: "Entry, current price, P&L, risk metrics"
+    user_friction: "Position awareness"
+    trust_assumption: NONE
+    dependency: computation-heavy
+    fate: KEEP
+    phoenix_primitive: position_bead
+    constraints: "Verbatim broker state"
+    sprint_target: BUILT (IBKR connector)
+
+  - id: NEX-059
+    name: "Strategy Health Score"
+    nex_behavior: "0-100 score from drift, routing, trust, capital factors"
+    trust_assumption: BELIEF_IN_SYSTEM_INTERPRETATION
+    fate: KILL
+    rationale: "Single scalar = hidden weighting = authority transfer"
+    phoenix_replacement: "Per-factor traffic light (RED/YELLOW/GREEN each)"
+    risk_flag: FLAG_A (scoring)
+
+  - id: NEX-060
+    name: "Grade A Push Alerts"
+    nex_behavior: "Phone notification when Grade A setup forms"
+    trust_assumption: NONE (if gate-based) / BELIEF (if graded)
+    fate: REIMAGINE
+    phoenix_primitive: telegram_alert
+    constraints: |
+      - Alert when [explicit_gates] all pass
+      - NOT "Grade A" language
+      - Facts + provenance in alert
+    sprint_target: BUILT (Takopi)
+
+  - id: NEX-061
+    name: "Drift Alert"
+    nex_behavior: "Alert when Arena diverges from Lab"
+    trust_assumption: statistical_literacy
+    fate: KEEP
+    phoenix_primitive: signalman_alert
+    constraints: "User-declared threshold, factual delta"
+    sprint_target: BUILT (Signalman concept)
+
+# ============================================================
+# SUMMARY STATISTICS
+# ============================================================
+
+fate_summary:
+  total_capabilities: 61
+
+  KEEP:
+    count: 32
+    description: "Already aligned, subsume directly"
+
+  REIMAGINE:
+    count: 16
+    description: "Valuable, needs Phoenix discipline"
+
+  KILL:
+    count: 11
+    description: "NEX death zone, never resurrect"
+
+  KILL_DEFAULT_WITH_SALVAGE_PATH:
+    count: 1
+    description: "Dead until salvage path proven"
+    items: [NEX-027]
+
+  PARK:
+    count: 0
+    description: "All capabilities decisioned"
+
+# ============================================================
+# EXPLICIT KILL LIST (NEVER RESURRECT)
+# ============================================================
+
+kill_list:
+
+  - id: NEX-010
+    name: "Gemma Full Analysis"
+    death_reason: "LLM authors meaning, makes recommendations"
+
+  - id: NEX-011
+    name: "Gemma Quick Check"
+    death_reason: "Compressed authority transfer"
+
+  - id: NEX-032
+    name: "Strategy Stability Index"
+    death_reason: "Single scalar embeds hidden weighting"
+
+  - id: NEX-036
+    name: "Debrief Agent"
+    death_reason: "LLM extracts 'learnings' = interpretation"
+
+  - id: NEX-039
+    name: "Edge Discovery Scan"
+    death_reason: "System proposes hypotheses"
+
+  - id: NEX-042
+    name: "Athena Suggestions"
+    death_reason: "System proposes research directions"
+
+  - id: NEX-047
+    name: "Actionability Engine"
+    death_reason: "Ultimate authority transfer — 'what should I do'"
+
+  - id: NEX-052
+    name: "Drift Diagnosis Challenge"
+    death_reason: "Challenges LLM explanation that shouldn't exist"
+
+  - id: NEX-059
+    name: "Strategy Health Score"
+    death_reason: "Single scalar = hidden weighting"
+
+kill_list_with_salvage_path:
+  - id: NEX-027
+    name: "Auto-Detected Insight Flags"
+    death_reason: "Unsolicited synthesis, attention steering"
+    salvage_note: "Narrow path exists IF user-declared thresholds only + INV-NO-UNSOLICITED proven"
+
+kill_list_invariant: |
+  These capabilities are PERMANENTLY DEAD.
+  Any future proposal to resurrect them requires:
+  1. Explicit demonstration that the death reason no longer applies
+  2. Full advisor joist (GPT + GROK + OWL)
+  3. G approval
+  4. New invariants to prevent regression
+
+# ============================================================
+# REIMAGINE PATTERNS (PHOENIX-SAFE IMPLEMENTATIONS)
+# ============================================================
+
+reimagine_patterns:
+
+  PATTERN_1_GATE_FACTS_NOT_GRADES:
+    applies_to: [NEX-003, NEX-008, NEX-012, NEX-022, NEX-060]
+    nex_pattern: "Grade A/B/C/F with confidence"
+    phoenix_pattern: |
+      - Output = gates_passed[] + gates_failed[] (boolean per gate)
+      - NO letter grades
+      - NO quality scores
+      - NO aggregated metrics
+      - Human interprets gate pattern
+    invariants: [INV-ATTR-NO-RANKING, INV-HARNESS-1]
+
+  PATTERN_2_CONDITIONAL_FACTS_NOT_CAUSALITY:
+    applies_to: [NEX-024, NEX-026]
+    nex_pattern: "Performance attributed to factors"
+    phoenix_pattern: |
+      - Output = "P&L when [condition]" (CFP)
+      - NOT "factor X contributed Y%"
+      - Multiple slices shown, human constructs meaning
+    frontier_precedent: "Brinson attribution — decomposition without causality"
+    invariants: [INV-ATTR-CAUSAL-BAN, INV-ATTR-PROVENANCE]
+
+  PATTERN_3_EXPLICIT_REGIMES_NOT_AUTO:
+    applies_to: [NEX-024]
+    nex_pattern: "Regime breakdown (trending/ranging/breakout)"
+    phoenix_pattern: |
+      - Regimes = explicit predicates in conditions.yaml
+      - NOT auto-detected clusters
+      - Output = "performance when [predicate]"
+    frontier_precedent: "Quant shops use explicit thresholds"
+    invariants: [INV-ATTR-PROVENANCE, INV-REGIME-EXPLICIT, INV-REGIME-GOVERNANCE]
+
+  PATTERN_4_HUMAN_EXHAUSTIVE_NOT_SYSTEM_PROPOSES:
+    applies_to: [NEX-038, NEX-041]
+    nex_pattern: "Hunt generates/selects variants"
+    phoenix_pattern: |
+      - Human declares EXHAUSTIVE variant grid
+      - Machine computes ALL (no selection)
+      - Output = metrics per variant + provenance
+      - NO "survivor" ranking
+    frontier_precedent: "Quant AutoML — human-defined search space"
+    invariants: [INV-NO-UNSOLICITED, INV-ATTR-NO-RANKING, INV-HUNT-EXHAUSTIVE, INV-HUNT-BUDGET]
+
+  PATTERN_5_CONFLICT_SURFACE_NOT_RESOLUTION:
+    applies_to: [NEX-016]
+    nex_pattern: "Contradiction detection with resolution"
+    phoenix_pattern: |
+      - Surface "Fact A conflicts Fact B" verbatim
+      - NO resolution authority
+      - Both facts remain until human resolves
+      - Store as CONFLICT_BEAD
+    frontier_precedent: "Wikipedia corpus inconsistency detection"
+    invariants: [INV-ATTR-SILENCE]
+
+  PATTERN_6_FORENSIC_NARRATOR_NOT_ANALYST:
+    applies_to: [NEX-020, NEX-053]
+    nex_pattern: "LLM walks through events with interpretation"
+    phoenix_pattern: |
+      - Output = raw state snapshots + timestamps
+      - LLM role (optional) = quote facts with provenance
+      - NO synthesis, NO pattern identification
+    invariants: [INV-LLM-REMOVAL-TEST]
+
+  PATTERN_7_STRUCTURED_CHALLENGE_NOT_AUTHORITY:
+    applies_to: [NEX-051]
+    nex_pattern: "Adversarial LLM challenges decisions"
+    phoenix_pattern: |
+      - Output = "challenge vector X yields conflict Y" (factual)
+      - Separate bead chain
+      - NO recommendation from adversarial
+      - Human decides
+    frontier_precedent: "Safety-critical red-team checklists"
+    invariants: [INV-NO-UNSOLICITED]
+
+  PATTERN_8_SENSITIVITY_NOT_IMPORTANCE:
+    applies_to: [NEX-031]
+    nex_pattern: "Parameter importance ranking"
+    phoenix_pattern: |
+      - Label as "sensitivity" NOT "importance"
+      - Output = metric at each param value (table)
+      - NO ranking by "robustness"
+    invariants: [INV-ATTR-NO-RANKING]
+
+  PATTERN_9_DECOMPOSED_HEALTH_NOT_SCALAR:
+    applies_to: [NEX-004, NEX-059]
+    nex_pattern: "0-100 health/stability score"
+    phoenix_pattern: |
+      - Per-factor traffic light (RED/YELLOW/GREEN)
+      - NO single aggregated score
+      - Each factor shown with threshold
+    frontier_precedent: "Quant dashboards — factor grades, no composite"
+    invariants: [INV-ATTR-NO-RANKING, INV-NO-ROLLUP, INV-SCALAR-BAN]
+
+# ============================================================
+# INVARIANTS (COMPLETE LIST)
+# ============================================================
+
+invariants:
+
+  # --- EXISTING CFP INVARIANTS ---
+
+  INV-ATTR-CAUSAL-BAN:
+    rule: "No causal claims; only conditional facts"
+    applies_to: [CFP, attribution, any P&L breakdown]
+
+  INV-ATTR-PROVENANCE:
+    rule: "All outputs must include query_string + dataset_hash + bead_id"
+    applies_to: [all CFP outputs, any computed result]
+
+  INV-ATTR-NO-RANKING:
+    rule: "No ranking, no 'best/worst', no implied priority"
+    applies_to: [CFP, Hunt, any multi-item display]
+
+  INV-ATTR-SILENCE:
+    rule: "System does not resolve conflicts; surfaces and waits"
+    applies_to: [Memory, contradiction detection]
+
+  INV-ATTR-NO-WRITEBACK:
+    rule: "Stored facts cannot mutate doctrine"
+    applies_to: [Athena, memory system]
+
+  # --- NEW INVARIANTS (FROM EXCAVATION + ADDENDUM) ---
+
+  INV-NO-UNSOLICITED:
+    rule: "System never says 'I noticed' or proposes hypotheses by default"
+    source: "GPT + GROK synthesis"
+    applies_to: [Hunt, Memory, Alerts]
+
+  INV-ATTR-CONFLICT-DISPLAY:
+    rule: "When showing 'best', must show 'worst' alongside"
+    source: "OWL synthesis"
+    applies_to: [CFP, any ranking]
+
+  INV-LLM-REMOVAL-TEST:
+    rule: "If removing LLM prevents reconstruction from raw output → invalid"
+    source: "GPT synthesis"
+    applies_to: [any LLM-assisted feature]
+
+  INV-HUNT-EXHAUSTIVE:
+    rule: "Hunt computes ALL human-declared variants, never selects or proposes"
+    source: "GROK frontier"
+    applies_to: [Hunt engine]
+
+  INV-REGIME-EXPLICIT:
+    rule: "Regimes must be explicit predicates, never auto-detected"
+    source: "GROK frontier"
+    applies_to: [CFP regime slices]
+
+  INV-SCALAR-BAN:
+    rule: "No single composite scores (0-100); decompose to factor traffic lights"
+    source: "GROK frontier"
+    applies_to: [Health, Stability, Quality]
+
+  INV-NO-ROLLUP:
+    rule: "No aggregation across traffic lights; UI must show factor list only; no 'overall' label"
+    source: "GPT (Risk A)"
+    applies_to: [health checks, validation suites, any multi-factor display]
+    rationale: "Prevents rebuilding scalar scores via stacked lights"
+
+  INV-NO-DEFAULT-SALIENCE:
+    rule: "UI must not highlight, emphasize, or order items in a way that implies importance unless user explicitly selects a metric/order"
+    source: "GPT (Edit 2)"
+    applies_to: [all UI surfaces, CFP output, gate displays]
+    rationale: "Salience is broader than ranking; stealth recommendations sneak in via visual emphasis"
+
+  INV-SLICE-MINIMUM-N:
+    rule: "Slices with sample size below threshold must fail-silent or display prominent sample-size warning"
+    default_threshold: "N >= 30 (configurable)"
+    source: "GPT (Risk C)"
+    applies_to: [CFP slices, conflict display, best/worst comparisons]
+    rationale: "Prevents cherry-picking and false symmetry from outliers"
+
+  INV-REGIME-GOVERNANCE:
+    rule: "Regimes must be versioned, reviewed, and capped; CFP surfaces regime count but does not interpret sprawl"
+    governance:
+      - Regimes live in conditions.yaml (explicit predicates)
+      - Version controlled (epoch changes logged)
+      - Hard cap recommended (suggest 20 regimes max before review)
+    source: "GPT (Risk D)"
+    applies_to: [CFP regime slices, conditions.yaml]
+    rationale: "Prevents overfitting-by-taxonomy via regime sprawl"
+
+  INV-HUNT-BUDGET:
+    rule: "Hunt engine must enforce compute/token budget cap per run"
+    enforcement:
+      - Max variants per hunt declared upfront
+      - Token/compute estimate before execution
+      - Hard abort if budget exceeded
+    source: "OWL + GROK"
+    applies_to: [Hunt engine, parameter sweeps]
+    rationale: "Exhaustive grids can explode; budget prevents runaway costs"
+
+  INV-BIAS-PREDICATE:
+    rule: "HTF bias must be expressed as predicate status, not directional language"
+    allowed: "'HTF_bullish_predicate: PASSED' or 'bias_direction: LONG (predicate: [X])'"
+    forbidden: "Standalone 'bullish' or 'bearish' without predicate reference"
+    source: "GPT (Risk B)"
+    applies_to: [CSO output, gate displays, alerts]
+    rationale: "Directional words are psychologically action-priming"
+
+  # --- HARNESS INVARIANTS (S36) ---
+
+  INV-HARNESS-1:
+    rule: "CSO outputs gate status only, never grades"
+    applies_to: [CSO Harness, any setup analysis]
+
+  INV-HARNESS-2:
+    rule: "No 'confidence' scores unless explicitly derived from gate counts with declared formula"
+    applies_to: [CSO Harness]
+
+  INV-HARNESS-3:
+    rule: "Alerts fire on explicit gate combinations, not quality judgments"
+    applies_to: [Telegram alerts, push notifications]
+
+  INV-HARNESS-4:
+    rule: "Multi-pair output sorted alphabetically by default, never by 'quality'"
+    applies_to: [CSO multi-pair scan]
+
+total_invariants: 17
+
+# ============================================================
+# BEAD TYPE DEFINITIONS (S37 SCOPE)
+# ============================================================
+
+bead_types:
+
+  CLAIM_BEAD:
+    definition: "Human-asserted statement stored for reference"
+    properties:
+      - Source: human input
+      - Status: unverified assertion
+      - Can conflict with facts
+    example: "Olya believes London FVG works better after 8:30"
+
+  FACT_BEAD:
+    definition: "Machine-computed result from recorded state"
+    properties:
+      - Source: computation (formula explicit)
+      - Status: verified output
+      - Provenance: query_string + dataset_hash
+    example: "win_rate(session=London, time>8:30) = 62%"
+
+  CONFLICT_BEAD:
+    definition: "Flag indicating two beads conflict"
+    properties:
+      - References: [bead_a_id, bead_b_id]
+      - Resolution: NONE (human must resolve)
+      - Status: open until human action
+    example: "CLAIM_123 conflicts with FACT_456"
+
+  rationale: "Separates memory from myth; prevents stored text becoming soft doctrine"
+
+# ============================================================
+# SPRINT SCOPE CONFIRMATION
+# ============================================================
+
+sprint_allocation:
+
+  S35_CFP:
+    status: LOCKED
+    scope:
+      - Lens schema (YAML: group_by, filter, agg)
+      - Query executor against River/beads
+      - Output schema (facts + provenance)
+      - Causal ban enforcement
+      - Conflict display pattern
+      - Bead-query endpoint
+      - Support negative_assertion in lens
+      - Causal-ban linter as TEST (not just policy)
+    nex_capabilities_addressed:
+      - NEX-021 (Compare Backtests)
+      - NEX-022 (Grade Comparison) — reimagined
+      - NEX-024 (Regime Breakdown) — reimagined
+      - NEX-025 (Session/KZ Breakdown)
+      - NEX-026 (P&L Attribution) — reimagined
+      - NEX-020 (Signal Replay) — forensic primitives
+    invariants_to_prove:
+      - INV-ATTR-CAUSAL-BAN
+      - INV-ATTR-PROVENANCE
+      - INV-ATTR-NO-RANKING
+      - INV-ATTR-SILENCE
+      - INV-ATTR-CONFLICT-DISPLAY
+      - INV-REGIME-EXPLICIT
+      - INV-REGIME-GOVERNANCE
+      - INV-SLICE-MINIMUM-N
+    build_notes:
+      - "Lens schema is constitutional boundary — validate rigorously"
+      - "Provenance link must be first-class (query_string + dataset_hash + bead_id)"
+
+  S36_CSO_HARNESS:
+    status: LOCKED
+    scope:
+      - 5-drawer gate evaluation
+      - Gate status per pair (facts, not grades)
+      - CSE emission with evidence
+      - Multi-pair scan (gates_passed per pair)
+      - Output as bit-vector (01011) mapping to conditions.yaml
+      - Bento Box layout (Cognitive Air Gap)
+    nex_capabilities_addressed:
+      - NEX-003 (Scan All Setups) — reimagined
+      - NEX-008 (4Q Gate Analysis) — reimagined
+      - NEX-012 (Multi-Pair Scan) — reimagined
+      - NEX-060 (Alerts) — gate-based
+    invariants_to_prove:
+      - INV-HARNESS-1 through INV-HARNESS-4
+      - INV-NO-UNSOLICITED
+      - INV-BIAS-PREDICATE
+    build_notes:
+      - "CSO 'grades' can never exist as concept in harness output"
+      - "'Passed gates' is the only language"
+      - "Any 'confidence' feature is illegal unless explicitly derived"
+      - "Bento Box layout is Cognitive Air Gap, not aesthetic"
+
+  S37_MEMORY_DISCIPLINE:
+    status: PLANNED
+    scope:
+      - Athena claim+evidence store (CLAIM_BEAD vs FACT_BEAD)
+      - Contradiction surface (CONFLICT_BEAD, no resolution)
+      - Semantic query with distance scores
+      - Memory history
+    nex_capabilities_addressed:
+      - NEX-013 (Teach Athena) — reimagined
+      - NEX-014 (Recall Memory)
+      - NEX-015 (Semantic Search) — reimagined
+      - NEX-016 (Contradiction Detection) — reimagined
+      - NEX-017 (Memory History)
+    invariants_to_prove:
+      - INV-ATTR-NO-WRITEBACK
+      - INV-ATTR-SILENCE
+    build_notes:
+      - "Must implement CLAIM_BEAD vs FACT_BEAD vs CONFLICT_BEAD distinction"
+      - "This is the difference between 'memory' and 'myth'"
+
+  S38_HUNT_INFRASTRUCTURE:
+    status: PLANNED
+    scope:
+      - Hypothesis schema + queue
+      - Hunt exhaustive variant computation
+      - Parameter sweep
+      - Batch processing
+      - Budget cap enforcement
+    nex_capabilities_addressed:
+      - NEX-035 (Hypothesis Framing) — reimagined
+      - NEX-037 (Pending Queue)
+      - NEX-038 (Hunt Engine) — reimagined
+      - NEX-040 (Epoch Processing)
+      - NEX-041 (Parameter Sweep) — reimagined
+    invariants_to_prove:
+      - INV-HUNT-EXHAUSTIVE
+      - INV-NO-UNSOLICITED
+      - INV-HUNT-BUDGET
+    build_notes:
+      - "No auto-variant generation, no internal selection"
+      - "Just grid compute + table output — compute engine, not idea engine"
+
+  S39_RESEARCH_VALIDATION:
+    status: PLANNED
+    scope:
+      - Backtest workers
+      - Walk-forward validation
+      - Monte Carlo
+      - Cost curve modeling
+    nex_capabilities_addressed:
+      - NEX-018 (Backtest Strategy)
+      - NEX-019 (Sandbox Testing)
+      - NEX-028 (Walk-Forward)
+      - NEX-029 (Monte Carlo)
+      - NEX-030 (Overfitting Suite)
+      - NEX-033 (Cost Curve)
+    invariants_to_prove:
+      - Standard computation invariants
+      - INV-SCALAR-BAN (no viability scores)
+    build_notes:
+      - "All outputs must remain decomposed"
+      - "No 'viability score.' Ever."
+
+  ALREADY_BUILT:
+    nex_capabilities_present:
+      - NEX-001, NEX-002 (Orientation, Briefing)
+      - NEX-004 (Health Check)
+      - NEX-005, NEX-056 (Session Bootstrap)
+      - NEX-006, NEX-007 (Kill Zone, Asia Range)
+      - NEX-009 (SMT Divergence) — River enhancement
+      - NEX-023 (Live vs Backtest) — Signalman concept
+      - NEX-048 (Kill Switch)
+      - NEX-049, NEX-050 (Preflight, Mode Gates)
+      - NEX-054, NEX-055 (Decision Log, Alignment)
+      - NEX-058 (Position Status)
+      - NEX-061 (Drift Alert)
+
+# ============================================================
+# CARPARK: FUTURE FUEL (S40+)
+# ============================================================
+
+carpark:
+
+  MULTI_AGENT_ORCHESTRATION:
+    source: GROK
+    description: |
+      Orchestrator agent spawns role-specific sub-agents with dependency graphs.
+      Enables "runs a business" endgame beyond trading.
+    sprint_target: S40+
+    dependencies: "Requires proven S35-S39 foundation"
+
+  SELF_HEALING_MECHANISMS:
+    source: GROK
+    description: |
+      Exponential backoff retries, circuit breakers on repeated failures,
+      auto-escalation logic beyond basic halt.
+    sprint_target: S40+
+    rationale: "Long-running workflows need resilience"
+
+  WORKFLOW_LEARNING:
+    source: GROK
+    description: |
+      Evaluate success metrics + bead trail → store successful patterns →
+      propose template refinements (human veto only).
+    sprint_target: S40+
+    governance: "Narrow salvage of NEX-027 pattern"
+    constraint: "Human veto required; no auto-update of doctrine"
+
+  RBAC_SUB_AGENTS:
+    source: GROK
+    description: |
+      Extend T2 gating to sub-agents. Orchestration agent can't spawn
+      sensitive workers without token. Role-based scope.
+    sprint_target: S40+
+    rationale: "Multi-agent sprawl risks authority leakage"
+
+  TOKEN_COST_INFRASTRUCTURE:
+    source: GROK
+    description: |
+      Per-workflow token budget, optimize prompts, alert on spikes.
+    sprint_target: S40+
+    note: "INV-HUNT-BUDGET is immediate; full infrastructure is later"
+
+# ============================================================
+# THE BALANCE PRINCIPLE
+# ============================================================
+
+balance_principle:
+
+  discipline_serves_innovation: |
+    Governance is a filter, not a wall.
+    It exists to prevent poison, not prevent capability.
+
+    When we kill a feature, it's because the feature
+    cannot exist without poisoning the system.
+
+    When we reimagine a feature, it's because the user
+    leverage is real and the poison can be removed.
+
+  innovation_respects_discipline: |
+    Features must earn their place.
+    "NEX had it" is not sufficient justification.
+
+    Every reimagined feature must prove:
+    - It solves real user friction
+    - It can be made declarative
+    - It has provenance
+    - It passes the LLM removal test
+    - It doesn't transfer authority
+
+  the_line_we_surf: |
+    Quality > Speed — we build right, not fast.
+
+    But "right" includes "useful."
+    A perfectly governed system that users hate is a failure.
+    A useful system that poisons itself is also a failure.
+
+    Phoenix must be both.
+
+# ============================================================
+# CLOSING
+# ============================================================
+
+document_status:
+  completeness: ALL_61_NEX_CAPABILITIES_DECISIONED
+  explicit_kills: 11 (+ 1 with salvage path)
+  explicit_keeps: 32
+  explicit_reimagines: 16
+  blind_spots: NONE_REMAINING
+  addendum_integrated: true
+
+commitment: |
+  This document is the definitive record of what NEX was,
+  what Phoenix keeps, what Phoenix kills, and why.
+
+  Future sessions load this document to prevent:
+  - Accidental resurrection of killed features
+  - Accidental loss of valuable features
+  - Scope creep via "NEX had it" arguments
+  - Governance blocking legitimate innovation
+
+  The balance is struck. The line is drawn.
+  Build with discipline. Build with purpose.
+
+# ============================================================
+# END DOCUMENT
+# ============================================================
