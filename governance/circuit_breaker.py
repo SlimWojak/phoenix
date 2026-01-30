@@ -20,7 +20,6 @@ from __future__ import annotations
 import threading
 import time
 from dataclasses import dataclass, field
-from datetime import UTC, datetime
 from enum import Enum
 from typing import Callable, Generic, TypeVar
 
@@ -165,7 +164,7 @@ class CircuitBreaker(Generic[T]):
             result = fn()
             self._record_success()
             return result
-        except Exception as e:
+        except Exception:
             self._record_failure()
             raise
 

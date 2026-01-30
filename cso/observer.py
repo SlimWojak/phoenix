@@ -39,6 +39,7 @@ from governance import (
     ErrorClassification,
     FailureMode,
     GovernanceInterface,
+    InitResult,
     ModuleTier,
     StateInput,
     StateTransition,

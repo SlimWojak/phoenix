@@ -241,7 +241,7 @@ class PreCommitLinter:
                 lines.append(f"    {v.message}")
                 lines.append(f"    Matched: '{v.matched_text}'")
                 if v.context:
-                    lines.append(f"    Context:")
+                    lines.append("    Context:")
                     for ctx_line in v.context.split("\n"):
                         lines.append(f"      {ctx_line}")
                 lines.append("")

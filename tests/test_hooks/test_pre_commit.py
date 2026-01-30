@@ -13,18 +13,11 @@ import pytest
 
 from tools.hooks.pre_commit_linter import (
     PreCommitLinter,
-    LintRule,
-    Violation,
-    ViolationSeverity,
     has_blocking_violations,
 )
 from tools.hooks.scalar_ban_hook import (
     ScalarBanHook,
     get_constitutional_rules,
-    SCALAR_PATTERNS,
-    AVG_PATTERNS,
-    CAUSAL_PATTERNS,
-    GRADE_PATTERNS,
 )
 
 

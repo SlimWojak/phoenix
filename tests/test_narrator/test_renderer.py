@@ -7,14 +7,11 @@ Proves INV-NARRATOR-2 and INV-NARRATOR-3.
 
 from __future__ import annotations
 
-import tempfile
-from datetime import UTC, datetime
 from pathlib import Path
 import pytest
 
 from narrator.renderer import (
     NarratorRenderer,
-    TemplateRenderError,
     UndefinedVariableError,
     TemplateValidationError,
     create_renderer,

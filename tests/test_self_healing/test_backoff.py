@@ -8,7 +8,6 @@ Proves INV-BACKOFF-1 and INV-BACKOFF-2.
 from __future__ import annotations
 
 import pytest
-import time
 
 from governance.backoff import (
     ExponentialBackoff,

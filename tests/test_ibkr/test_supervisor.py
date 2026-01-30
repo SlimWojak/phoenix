@@ -18,8 +18,6 @@ from brokers.ibkr.supervisor import (
     SupervisorWatchdog,
     create_ibkr_supervisor,
 )
-from brokers.ibkr.heartbeat import HeartbeatState
-from brokers.ibkr.degradation import DegradationLevel
 
 
 # =============================================================================

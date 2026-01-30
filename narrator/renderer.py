@@ -10,8 +10,6 @@ INVARIANT: INV-NARRATOR-3: Undefined → error, not empty
 
 from __future__ import annotations
 
-from dataclasses import dataclass
-from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
@@ -26,7 +24,6 @@ from jinja2 import (
 
 from .data_sources import DataSources, AlertData
 from .templates import (
-    TemplateRegistry,
     get_template_registry,
     validate_template_content,
 )

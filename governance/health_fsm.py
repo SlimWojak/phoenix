@@ -23,7 +23,6 @@ import threading
 import time
 from collections import deque
 from dataclasses import dataclass, field
-from datetime import UTC, datetime
 from enum import Enum
 from typing import Callable
 
@@ -224,7 +223,7 @@ class HealthStateMachine:
         self, new_state: HealthState, component: str, reason: str
     ) -> None:
         """Execute state transition with side effects."""
-        old_state = self._state
+        _old_state = self._state  # Reserved for future transition logging
         self._state = new_state
         self._state_entered_at = time.monotonic()
 

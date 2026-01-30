@@ -15,9 +15,7 @@ from governance.circuit_breaker import (
     CircuitBreaker,
     CircuitState,
     CircuitOpenError,
-    CircuitHalfOpenError,
     CircuitBreakerRegistry,
-    get_circuit_breaker,
 )
 
 

@@ -26,6 +26,11 @@ from athena.bead_types import (
     BeadValidator,
     ClaimBead,
     ConflictBead,
+    ConflictDetails,
+    ConflictReferences,
+    ConflictResolution,
+    ConflictStatus,
+    ConflictType,
     FactBead,
     FORBIDDEN_FIELDS,
 )
@@ -51,6 +56,11 @@ __all__ = [
     "ClaimBead",
     "FactBead",
     "ConflictBead",
+    "ConflictDetails",
+    "ConflictReferences",
+    "ConflictResolution",
+    "ConflictStatus",
+    "ConflictType",
     "BeadValidator",
     "FORBIDDEN_FIELDS",
     # Store

@@ -14,15 +14,13 @@ INVARIANTS:
 
 from __future__ import annotations
 
-import atexit
-import signal
 import threading
 import time
 from dataclasses import dataclass, field
 from enum import Enum
 from typing import Callable, Protocol
 
-from governance.circuit_breaker import CircuitBreaker, CircuitState
+from governance.circuit_breaker import CircuitBreaker
 from governance.health_fsm import HealthStateMachine, HealthState
 
 from .heartbeat import HeartbeatMonitor, HeartbeatState

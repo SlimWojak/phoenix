@@ -15,11 +15,10 @@ from __future__ import annotations
 import threading
 import time
 from dataclasses import dataclass, field
-from datetime import UTC, datetime
 from enum import Enum
 from typing import Callable
 
-from governance.health_fsm import HealthStateMachine, HealthState
+from governance.health_fsm import HealthStateMachine
 
 
 # =============================================================================

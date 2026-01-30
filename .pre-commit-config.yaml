@@ -69,16 +69,7 @@ repos:
 
       - id: constitutional-provenance
         name: Constitutional Provenance Check
-        entry: python -c "
-import sys
-import re
-for f in sys.argv[1:]:
-    content = open(f).read()
-    if 'CFPResult' in content or 'cfp_result' in content:
-        if not ('query_string' in content or 'provenance' in content):
-            print(f'{f}: CFP result may be missing provenance')
-            sys.exit(1)
-"
+        entry: python -c "import sys; [sys.exit(1) if ('CFPResult' in open(f).read() or 'cfp_result' in open(f).read()) and 'provenance' not in open(f).read() else None for f in sys.argv[1:]]"
         language: system
         files: \.py$
         exclude: ^tests/

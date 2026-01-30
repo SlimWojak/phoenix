@@ -9,14 +9,13 @@ from __future__ import annotations
 
 import time
 import pytest
-from unittest.mock import MagicMock, call
+from unittest.mock import MagicMock
 
 from governance.health_fsm import (
     HealthStateMachine,
     HealthState,
     HealthConfig,
     HealthRegistry,
-    get_health_fsm,
 )
 
 
@@ -356,7 +355,7 @@ class TestHealthRegistry:
         """any_critical detects CRITICAL/HALTED."""
         registry = HealthRegistry()
 
-        h1 = registry.get_or_create("healthy")
+        _h1 = registry.get_or_create("healthy")  # Creates FSM, verifies creation
         h2 = registry.get_or_create("sick")
 
         # Initially none critical

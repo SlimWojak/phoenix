@@ -187,7 +187,7 @@ class BitVectorGenerator:
 
         # Extract base gate IDs (remove delta info if present)
         passed_set = set(gates_passed)
-        failed_base = {g.split(" [")[0] for g in gates_failed}
+        _failed_base = {g.split(" [")[0] for g in gates_failed}  # Reserved for future use
 
         for gate_id in gate_order:
             if gate_id in passed_set:

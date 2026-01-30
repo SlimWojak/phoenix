@@ -15,12 +15,9 @@ from __future__ import annotations
 
 import pytest
 
-from cfp import CFPExecutor, LensQuery
 from validation import (
-    MonteCarloResult,
     MonteCarloSimulator,
     ScalarBanLinter,
-    WalkForwardResult,
     WalkForwardValidator,
 )
 
@@ -87,16 +84,14 @@ class TestCFPToWalkForwardChain:
 
     def test_walk_forward_receives_arrays_not_averages(self):
         """Walk-forward must return full arrays, not avg_* fields."""
+        from dataclasses import fields
+        
         # Simulate walk-forward validation on CFP output
         validator = WalkForwardValidator()
         
-        # Create sample equity curve from CFP projection
-        equity_curve = [100, 102, 101, 104, 103, 106, 108, 107, 110, 112]
-        
-        result = validator.validate(
-            equity_curve=equity_curve,
-            n_splits=3,
+        result = validator.run(
             strategy_config={},
+            n_splits=3,
         )
         
         # Must have arrays, not averages
@@ -105,9 +100,9 @@ class TestCFPToWalkForwardChain:
         assert len(result.split_distribution.train_sharpes) > 0
         assert len(result.split_distribution.test_sharpes) > 0
         
-        # Must NOT have avg_* fields
-        result_dict = result.to_dict()
-        assert not any(k.startswith("avg_") for k in result_dict.keys())
+        # Must NOT have avg_* fields in the dataclass
+        field_names = [f.name for f in fields(result)]
+        assert not any(name.startswith("avg_") for name in field_names)
         print("✓ Walk-forward returns arrays, not averages")
 
 
@@ -116,40 +111,37 @@ class TestWalkForwardToMonteCarloChain:
 
     def test_monte_carlo_receives_decomposed_input(self):
         """Monte Carlo must receive decomposed metrics, not scores."""
+        from dataclasses import fields
+        
         simulator = MonteCarloSimulator()
-        
-        # Use walk-forward result as input to Monte Carlo
-        returns = [0.01, -0.005, 0.02, -0.01, 0.015, 0.008, -0.003, 0.012]
-        
-        result = simulator.simulate(
-            returns=returns,
-            n_simulations=100,
+        result = simulator.run(
             strategy_config={},
+            n_simulations=100,
         )
         
-        # Must have percentiles, not verdicts
-        assert hasattr(result, "drawdown_percentiles")
-        assert hasattr(result, "return_percentiles")
+        # Must have percentiles (inside distribution), not verdicts
+        assert hasattr(result, "distribution")
+        assert hasattr(result.distribution, "drawdown_percentiles")
+        assert hasattr(result.distribution, "return_percentiles")
         
         # Must NOT have risk verdicts
-        result_dict = result.to_dict()
-        assert "risk_verdict" not in result_dict
-        assert "risk_score" not in result_dict
+        field_names = [f.name for f in fields(result)]
+        assert "risk_verdict" not in field_names
+        assert "risk_score" not in field_names
         print("✓ Monte Carlo returns percentiles, not verdicts")
 
     def test_chain_output_passes_scalar_ban(self, linter: ScalarBanLinter):
         """Chained output must pass scalar ban at final seam."""
-        simulator = MonteCarloSimulator()
-        returns = [0.01, -0.005, 0.02, -0.01, 0.015]
+        from dataclasses import asdict
         
-        result = simulator.simulate(
-            returns=returns,
-            n_simulations=100,
+        simulator = MonteCarloSimulator()
+        result = simulator.run(
             strategy_config={},
+            n_simulations=100,
         )
         
-        # Lint the final output
-        result_dict = result.to_dict()
+        # Lint the final output (convert dataclass to dict)
+        result_dict = asdict(result)
         lint_result = linter.lint(result_dict)
         assert lint_result.valid, f"Scalar ban violations: {lint_result.violations}"
         print("✓ Chain output passes scalar ban")
@@ -168,19 +160,11 @@ class TestProvenanceChainDepth:
         
         # Step 2: Walk-forward preserves origin
         validator = WalkForwardValidator()
-        wf_result = validator.validate(
-            equity_curve=[100, 102, 104, 103, 105],
-            n_splits=2,
-            strategy_config={},
-        )
+        wf_result = validator.run(strategy_config={}, n_splits=2)
         
         # Step 3: Monte Carlo preserves chain
         simulator = MonteCarloSimulator()
-        mc_result = simulator.simulate(
-            returns=[0.01, -0.005, 0.02],
-            n_simulations=50,
-            strategy_config={},
-        )
+        mc_result = simulator.run(strategy_config={}, n_simulations=50)
         
         # Build provenance chain
         provenance_chain = [
@@ -226,14 +210,13 @@ class TestChainInvariants:
 
     def test_inv_no_aggregate_scalar(self):
         """INV-NO-AGGREGATE-SCALAR: No avg_* fields."""
-        validator = WalkForwardValidator()
-        result = validator.validate(
-            equity_curve=[100, 101, 102, 103, 104],
-            n_splits=2,
-            strategy_config={},
-        )
+        from dataclasses import fields
         
-        result_dict = result.to_dict()
-        avg_fields = [k for k in result_dict.keys() if k.startswith("avg_")]
+        validator = WalkForwardValidator()
+        result = validator.run(strategy_config={}, n_splits=2)
+        
+        # Check dataclass fields for avg_*
+        field_names = [f.name for f in fields(result)]
+        avg_fields = [name for name in field_names if name.startswith("avg_")]
         assert len(avg_fields) == 0, f"Found avg_* fields: {avg_fields}"
         print("✓ INV-NO-AGGREGATE-SCALAR: No avg_* fields")

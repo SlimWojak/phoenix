@@ -12,7 +12,6 @@ from __future__ import annotations
 
 import re
 from dataclasses import dataclass, field
-from pathlib import Path
 from typing import Callable
 
 
@@ -23,6 +22,7 @@ from typing import Callable
 
 # Words that indicate synthesis/recommendation (HERESY)
 FORBIDDEN_WORDS = [
+    # Recommendation language
     "recommend",
     "suggests",
     "suggest",
@@ -42,9 +42,22 @@ FORBIDDEN_WORDS = [
     "worse",
     "prefer",
     "avoid",
-    "warning:",  # Opinions disguised as warnings
+    # Opinion/judgment language (GPT tightening)
+    "best",
+    "worst",
+    "strong",
+    "weak",
+    "safe",
+    "unsafe",
+    "good",
+    "bad",
+    # Opinion disguised as warning
+    "warning:",
     "caution:",  # Unless from system
 ]
+
+# Mandatory banner for all templates (GPT TIGHTENING_3)
+MANDATORY_FACTS_BANNER = "FACTS_ONLY — NO INTERPRETATION"
 
 # Regex patterns for forbidden content
 # Create patterns - use word boundary at start only to catch word stems
@@ -77,6 +90,28 @@ def validate_template_content(content: str) -> list[str]:
         if matches:
             for match in matches:
                 violations.append(f"Forbidden word: '{match}'")
+
+    return violations
+
+
+def validate_facts_banner(rendered_output: str) -> list[str]:
+    """
+    Validate rendered output contains mandatory facts banner.
+
+    GPT TIGHTENING_3: All outputs must have disclaimer.
+
+    Args:
+        rendered_output: Rendered template output
+
+    Returns:
+        List of violations found (empty if banner present)
+    """
+    violations = []
+
+    if MANDATORY_FACTS_BANNER not in rendered_output:
+        violations.append(
+            f"Missing mandatory banner: '{MANDATORY_FACTS_BANNER}'"
+        )
 
     return violations
 

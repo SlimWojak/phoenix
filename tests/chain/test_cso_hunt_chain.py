@@ -15,8 +15,7 @@ from __future__ import annotations
 
 import pytest
 
-from cso import CSOScanner, StrategyCore
-from hunt import HuntExecutor, Hypothesis
+from hunt import Hypothesis, HypothesisFraming, HypothesisGrid
 from validation import ScalarBanLinter
 
 
@@ -99,12 +98,15 @@ class TestHuntReceivesCleanGates:
 
     def test_hunt_hypothesis_no_grade_filter(self):
         """Hunt hypothesis must not filter by grade."""
-        hypothesis = HypothesisSpec(
+        hypothesis = Hypothesis(
             hypothesis_id="hyp_cso_001",
-            name="test_gate_filter",
-            description="Test with CSO gates",
-            param_space={"delay": [1, 2, 3]},
-            created_by="operator",
+            framing=HypothesisFraming(
+                question="Test with CSO gates?",
+                source="operator",
+                domain="test",
+            ),
+            grid=HypothesisGrid(dimensions=[{"name": "delay", "values": [1, 2, 3]}]),
+            metrics=["sharpe", "win_rate"],
         )
         
         # Hypothesis should not have grade-based filtering

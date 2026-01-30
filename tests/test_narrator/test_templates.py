@@ -13,11 +13,10 @@ from pathlib import Path
 from narrator.templates import (
     FORBIDDEN_WORDS,
     FORBIDDEN_PATTERNS,
+    MANDATORY_FACTS_BANNER,
     validate_template_content,
+    validate_facts_banner,
     TemplateRegistry,
-    get_template_registry,
-    TemplateDefinition,
-    TEMPLATES,
 )
 
 
@@ -268,3 +267,111 @@ class TestObfuscationChaos:
 
         assert len(violations) >= 1
         print("✓ Caught in multiline")
+
+
+# =============================================================================
+# GPT TIGHTENINGS (Track E)
+# =============================================================================
+
+
+class TestGPTTightenings:
+    """Tests for GPT-recommended tightenings."""
+
+    def test_catches_best(self):
+        """'best' is forbidden (GPT tightening)."""
+        content = "This is the best strategy."
+        violations = validate_template_content(content)
+
+        assert len(violations) >= 1
+        assert any("best" in v.lower() for v in violations)
+        print("✓ 'best' caught (GPT tightening)")
+
+    def test_catches_worst(self):
+        """'worst' is forbidden (GPT tightening)."""
+        content = "This is the worst outcome."
+        violations = validate_template_content(content)
+
+        assert len(violations) >= 1
+        assert any("worst" in v.lower() for v in violations)
+        print("✓ 'worst' caught (GPT tightening)")
+
+    def test_catches_strong_weak(self):
+        """'strong'/'weak' are forbidden (GPT tightening)."""
+        content1 = "This is a strong signal."
+        content2 = "This is a weak pattern."
+
+        v1 = validate_template_content(content1)
+        v2 = validate_template_content(content2)
+
+        assert len(v1) >= 1
+        assert len(v2) >= 1
+        print("✓ 'strong'/'weak' caught (GPT tightening)")
+
+    def test_catches_safe_unsafe(self):
+        """'safe'/'unsafe' are forbidden (GPT tightening)."""
+        content1 = "This is a safe trade."
+        content2 = "This is unsafe to execute."
+
+        v1 = validate_template_content(content1)
+        v2 = validate_template_content(content2)
+
+        assert len(v1) >= 1
+        assert len(v2) >= 1
+        print("✓ 'safe'/'unsafe' caught (GPT tightening)")
+
+    def test_catches_good_bad(self):
+        """'good'/'bad' are forbidden (GPT tightening)."""
+        content1 = "This is a good setup."
+        content2 = "This is a bad idea."
+
+        v1 = validate_template_content(content1)
+        v2 = validate_template_content(content2)
+
+        assert len(v1) >= 1
+        assert len(v2) >= 1
+        print("✓ 'good'/'bad' caught (GPT tightening)")
+
+    def test_facts_banner_present(self):
+        """FACTS_ONLY banner is validated."""
+        output_with_banner = f"""
+        OINK OINK!
+        {MANDATORY_FACTS_BANNER}
+        HEALTH: OK
+        """
+        output_without_banner = """
+        OINK OINK!
+        HEALTH: OK
+        """
+
+        v1 = validate_facts_banner(output_with_banner)
+        v2 = validate_facts_banner(output_without_banner)
+
+        assert len(v1) == 0, "Banner present should pass"
+        assert len(v2) >= 1, "Missing banner should fail"
+        print("✓ FACTS_ONLY banner validation works")
+
+    def test_all_templates_have_banner(self, template_dir: Path):
+        """All templates have FACTS_ONLY banner."""
+        template_files = ["briefing.jinja2", "health.jinja2", "trade.jinja2", "alert.jinja2"]
+
+        for template_name in template_files:
+            template_path = template_dir / template_name
+            if template_path.exists():
+                content = template_path.read_text()
+                assert MANDATORY_FACTS_BANNER in content, f"{template_name} missing banner"
+
+        print("✓ All templates have FACTS_ONLY banner")
+
+    def test_cso_no_count_proxy(self, template_dir: Path):
+        """CSO output shows gates list only, no (X/Y) count proxy."""
+        template_path = template_dir / "briefing.jinja2"
+        if template_path.exists():
+            content = template_path.read_text()
+            # Should NOT have (X/Y) pattern after gates_passed
+            import re
+            # Check for count proxy patterns like (3/7), (5/7)
+            count_pattern = re.compile(r'gates_passed.*\(\s*\{\{.*\}\}\s*/\s*\d+\s*\)')
+            matches = count_pattern.search(content)
+            assert matches is None, "CSO output should not have (X/Y) count proxy"
+
+        print("✓ CSO output has no count proxy")
