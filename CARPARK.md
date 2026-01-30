@@ -3,59 +3,94 @@
 
 ```yaml
 document: CARPARK.md
-version: 2.0
-date: 2026-01-29
+version: 3.0
+date: 2026-01-30
 status: CANONICAL
 source: DEFINITIVE_FATE.yaml carpark section + advisor synthesis
 ```
 
 ---
 
-## IMMEDIATE BACKLOG (S35-S39 Adjacent)
+## S41 PROMOTED (WARBOAR_AWAKENS)
 
-### IBKR_FLAKEY
-```yaml
-path: docs/explorations/IBKR_FLAKEY.md
-pattern: Heartbeat + supervisor (@banteg zero deps)
-status: DOCUMENTED
-priority: P2 (revisit if IBKR instability emerges)
-```
-
-### CLAUDE_CODE_HOOKS
+### UNSLOTH_DISTILLATION
 ```yaml
 description: |
-  Async hooks for constitution enforcement:
-  - verify_invariants.py on file_save
-  - check_schema_hash.py on contract change
-  - halt_regression test on pre_commit
-  - notify_owl.py on git_push
-status: LOGGED
-priority: P3 (optimization, not foundation)
-revisit: When Opus/HIVE friction emerges
+  Distill Claude reasoning to local SLM using Unsloth.
+  WarBoar LLM as "state projector" — barks facts in boar dialect.
+  Zero hallucination (locked templates + verifiable data pulls).
+status: PROMOTED_TO_S41
+priority: P0
+reference: docs/build_docs/WARBOAR_RESILIENCE_FINAL_FORM.md
+```
+
+### LIVE_VALIDATION
+```yaml
+description: |
+  Paper → Live progression with explicit gates.
+  Requires sovereignty membrane operational.
+status: PROMOTED_TO_S41
+priority: P1
+dependencies: S40 IBKR resilience proven
+```
+
+### DMG_PACKAGING
+```yaml
+description: |
+  macOS app distribution via .dmg
+  Self-contained Python runtime
+status: PROMOTED_TO_S41
+priority: P2
 ```
 
 ---
 
-## S40+ DORMANT (GROK Frontier Synthesis)
+## COMPLETED (S40) ✓
+
+### IBKR_FLAKEY — DONE
+```yaml
+path: brokers/ibkr/supervisor.py, heartbeat.py, degradation.py
+pattern: Heartbeat + supervisor (@banteg zero deps)
+status: S40_COMPLETE ✓
+tests: 56
+invariants: INV-IBKR-FLAKEY-1/2/3, INV-IBKR-DEGRADE-1/2, INV-SUPERVISOR-1
+```
+
+### CLAUDE_CODE_HOOKS — DONE
+```yaml
+description: |
+  Pre-commit + runtime constitutional enforcement:
+  - ScalarBanLinter on commit
+  - Runtime assertions at boundaries
+path: tools/hooks/, governance/runtime_assertions.py
+status: S40_COMPLETE ✓
+tests: 52
+invariants: INV-HOOK-1/2/3/4
+```
+
+### SELF_HEALING_MECHANISMS — DONE
+```yaml
+description: |
+  - Exponential backoff retries
+  - Circuit breakers on repeated failures
+  - Health state machine
+path: governance/circuit_breaker.py, backoff.py, health_fsm.py
+status: S40_COMPLETE ✓
+tests: 57
+invariants: INV-CIRCUIT-1/2, INV-BACKOFF-1/2, INV-HEALTH-1/2, INV-HEAL-REENTRANCY
+```
+
+---
+
+## S42+ DORMANT (GROK Frontier Synthesis)
 
 ### MULTI_AGENT_ORCHESTRATION
 ```yaml
 description: |
   Orchestrator agent spawns role-specific sub-agents with dependency graphs.
   Enables "runs a business" endgame beyond trading.
-dependencies: S35-S39 foundation proven
+dependencies: S35-S40 foundation proven
 governance: Requires T2 extension to sub-agent spawning
-status: DORMANT
-```
-
-### SELF_HEALING_MECHANISMS
-```yaml
-description: |
-  - Exponential backoff retries
-  - Circuit breakers on repeated failures
-  - Auto-escalation logic beyond basic halt
-rationale: Long-running workflows need resilience
-dependencies: S35-S39 foundation proven
 status: DORMANT
 ```
 
@@ -88,8 +123,17 @@ description: |
   - Per-workflow token budget
   - Prompt optimization
   - Alert on cost spikes
-relation: INV-HUNT-BUDGET is immediate (S38); full infrastructure is S40+
+relation: INV-HUNT-BUDGET is immediate (S38); full infrastructure is S42+
 status: DORMANT
+```
+
+### ALERT_TAXONOMY
+```yaml
+description: |
+  - Notification hierarchy (critical → warning → info)
+  - Deduplication rules
+  - Telegram/Discord routing
+status: DORMANT (partial in S40 HealthFSM)
 ```
 
 ---

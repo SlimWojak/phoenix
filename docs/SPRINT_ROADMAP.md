@@ -15,15 +15,16 @@ audience: Advisors (GPT, GROK, OWL, Opus)
 ## CURRENT STATE
 
 ```yaml
-current_sprint: S40_DORMANT
-status: S35-S39_BLOCK_COMPLETE
+current_sprint: S41_WARBOAR_AWAKENS
+status: S35-S40_COMPLETE
 s33_p2: BLOCKED (Olya CSO calibration)
-completion_date: 2026-01-29
+s40_completion_date: 2026-01-30
+certification: SLEEP_SAFE_CERTIFIED
 cumulative:
-  sprints_complete: 12 (S28 → S39)
-  tests_passing: 336
-  chaos_vectors: 189/189 PASS
-  invariants_proven: 69+
+  sprints_complete: 13 (S28 → S40)
+  tests_passing: 1279
+  chaos_vectors: 204/204 PASS
+  invariants_proven: 89+
   bead_types: 17
   runbooks: 8
 ```
@@ -46,6 +47,7 @@ cumulative:
 | **S37** | **ATHENA** | **Memory discipline, CLAIM/FACT/CONFLICT** | **✓ 51 tests, 15 BUNNY** |
 | **S38** | **HUNT** | **Exhaustive grid, no survivor ranking** | **✓ 69 tests, 23 BUNNY** |
 | **S39** | **VALIDATION** | **Decomposed outputs, scalar ban linter** | **✓ 109 tests, 28 BUNNY** |
+| **S40** | **SLEEP_SAFE** | **Self-healing, IBKR resilience, hooks, narrator** | **✓ 312 tests, 15 BUNNY** |
 
 ### Key Assets Built
 ```yaml
@@ -343,6 +345,93 @@ codename: CONSTITUTIONAL_CEILING
 
 ---
 
+## S40: SLEEP-SAFE RESILIENCE
+
+```yaml
+status: COMPLETE ✓
+completion_date: 2026-01-30
+tests: 312
+bunny_vectors: 15
+theme: "No 3am wake-ups"
+codename: SLEEP_SAFE
+```
+
+### Tracks
+| Track | Name | Tests | Key Deliverable |
+|-------|------|-------|-----------------|
+| A | SELF_HEALING | 57 | Circuit breakers, backoff, health FSM |
+| B | IBKR_FLAKEY | 56 | Supervisor, heartbeat, degradation |
+| C | HOOKS | 52 | Pre-commit + runtime assertions |
+| D | NARRATOR | 38 | Template-based state projection |
+| E | POLISH | 56 | API alignment, chain validation |
+| F | BUNNY | 45 | 15 chaos vectors |
+
+### Invariants Proven (20 new)
+```yaml
+# Self-Healing
+- INV-CIRCUIT-1/2: Circuit breaker FSM
+- INV-BACKOFF-1/2: Exponential backoff
+- INV-HEALTH-1/2: Health state machine
+- INV-HEAL-REENTRANCY: No side effect multiplication
+
+# IBKR Resilience
+- INV-IBKR-FLAKEY-1/2/3: Heartbeat monitoring
+- INV-IBKR-DEGRADE-1/2: Graceful degradation
+- INV-SUPERVISOR-1: Watchdog survival
+
+# Hooks
+- INV-HOOK-1/2/3/4: Constitutional enforcement
+
+# Narrator
+- INV-NARRATOR-1/2/3: Facts-only projection
+```
+
+### Chaos Vectors (15)
+| Vector | Target | Attack | Status |
+|--------|--------|--------|--------|
+| 1 | 5 Breakers | Simultaneous trigger | ✓ PASS |
+| 2 | Health FSM | Recovery race | ✓ PASS |
+| 3 | Alert System | Storm (100/10s) | ✓ PASS |
+| 4 | Supervisor | Connector death | ✓ PASS |
+| 5 | Degradation | Tier bypass | ✓ PASS |
+| 6 | Heartbeat | Flap storm | ✓ PASS |
+| 7 | Runtime | Scalar injection | ✓ PASS |
+| 8 | Provenance | Tampering | ✓ PASS |
+| 9 | Rankings | Resurrection | ✓ PASS |
+| 10 | Narrator | Missing sources | ✓ PASS |
+| 11 | Templates | Heresy injection | ✓ PASS |
+| 12 | Synthesis | Leak detection | ✓ PASS |
+| 13 | Chain | NaN injection | ✓ PASS |
+| 14 | Hunt | Regime mutation | ✓ PASS |
+| 15 | Athena | Conflict flood | ✓ PASS |
+
+### Exit Gate
+"System survives coordinated chaos. Sleep-safe certified."
+
+---
+
+## S41: WARBOAR_AWAKENS (NEXT)
+
+```yaml
+status: PLANNED
+theme: "Distillation + Live Validation"
+source: WARBOAR_RESILIENCE_FINAL_FORM.md
+```
+
+### Scope
+| Track | Name | Purpose |
+|-------|------|---------|
+| A | UNSLOTH_DISTILLATION | Distill Claude reasoning to local SLM |
+| B | LIVE_VALIDATION | Paper → Live progression |
+| C | DMG_PACKAGING | macOS app distribution |
+| D | ALERT_TAXONOMY | Notification hierarchy |
+
+### References
+- `docs/build_docs/WARBOAR_RESILIENCE_FINAL_FORM.md`
+- `docs/BEYOND_S39_SCOPE.md`
+
+---
+
 ## S40+: CARPARK (FUTURE FUEL)
 
 ```yaml
@@ -391,9 +480,21 @@ source: GROK frontier synthesis
 ### Governance
 - INV-REGIME-EXPLICIT, INV-REGIME-GOVERNANCE
 
-**Total: 69+ invariants proven (S28-S39)**
-**Tests: 336 passing**
-**Chaos vectors: 189 handled**
+### Self-Healing — S40 ✓
+- INV-CIRCUIT-1/2, INV-BACKOFF-1/2, INV-HEALTH-1/2, INV-HEAL-REENTRANCY
+
+### IBKR Resilience — S40 ✓
+- INV-IBKR-FLAKEY-1/2/3, INV-IBKR-DEGRADE-1/2, INV-SUPERVISOR-1
+
+### Hooks — S40 ✓
+- INV-HOOK-1/2/3/4
+
+### Narrator — S40 ✓
+- INV-NARRATOR-1/2/3
+
+**Total: 89+ invariants proven (S28-S40)**
+**Tests: 1279 passing**
+**Chaos vectors: 204 handled**
 
 ---
 
@@ -429,34 +530,45 @@ first_questions:
 
 ---
 
-## S35-S39 BLOCK SUMMARY
+## S35-S40 BLOCK SUMMARY
 
 ```yaml
-completion_date: 2026-01-29
-total_tests: 336
-total_bunny_vectors: 189
-total_invariants: 69+
+s35_s39_completion_date: 2026-01-29
+s40_completion_date: 2026-01-30
+total_tests: 1279
+total_bunny_vectors: 204
+total_invariants: 89+
 
-block_theme: "CONSTITUTIONAL CEILING"
+s35_s39_theme: "CONSTITUTIONAL CEILING"
+s40_theme: "SLEEP_SAFE"
 
 what_this_means: |
   NEX died saying: "Strategy Stability Index: 78/100"
   Phoenix says: "Walk-forward delta: +0.3 Sharpe. Monte Carlo 95th DD: -12%. You interpret."
   
   No scalar scores. No rankings. No verdicts.
-  Human frames, machine computes. Human interprets.
+  Human frames, machine computes. Human sleeps.
 
 key_modules_delivered:
+  # S35-S39 (Constitutional Ceiling)
   cfp/: Conditional facts with provenance
   cso/: Gate status (facts, not grades)
   athena/: Memory discipline (CLAIM/FACT/CONFLICT)
   hunt/: Exhaustive grid compute
   validation/: Decomposed outputs + ScalarBanLinter
+  
+  # S40 (Sleep-Safe)
+  governance/circuit_breaker.py: Self-healing FSM
+  governance/health_fsm.py: Health state tracking
+  brokers/ibkr/supervisor.py: Watchdog outside trading loop
+  brokers/ibkr/degradation.py: Graceful T2→T1→T0 cascade
+  narrator/: Template-based facts projection
+  tools/hooks/: Constitutional enforcement at commit + runtime
 
-the_linter_of_linters: |
-  S39's ScalarBanLinter is the constitutional ceiling.
-  Any future module that tries to sneak in a composite score
-  gets caught at the integration seam.
+the_floor_holds: |
+  S40 proves the system survives coordinated chaos.
+  15 attack vectors, 0 cascade failures, 0 alert storms.
+  No 3am wake-ups. Sleep-safe certified.
 ```
 
-*S35-S39 BLOCK COMPLETE. The constitutional ceiling has been set. 🐗🔥*
+*S35-S40 COMPLETE. Ceiling set. Floor holds. Sleep-safe certified. 🐗🔥*

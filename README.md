@@ -1,8 +1,10 @@
-# Phoenix
+# Phoenix / WarBoar
 
-**Status:** S39 COMPLETE | S33 Phase 2 BLOCKED (Olya-dependent)
+**Status:** S40 COMPLETE | S33 Phase 2 BLOCKED (Olya-dependent)
 **Founded:** 2026-01-24
 **S35-S39 Block:** CONSTITUTIONAL CEILING COMPLETE (2026-01-29)
+**S40:** SLEEP-SAFE CERTIFIED (2026-01-30)
+**Tests:** 1279 passing | **Invariants:** 89+ proven | **Chaos Vectors:** 204 handled
 
 ---
 
@@ -26,7 +28,7 @@ Phoenix (App)    = The Trading System — River, CSO, Execution
 
 ---
 
-## S35-S39 Constitutional Block Complete
+## S35-S40 Complete — Sleep-Safe Certified
 
 | Sprint | Codename | Tests | Key Invariant |
 |--------|----------|-------|---------------|
@@ -35,7 +37,8 @@ Phoenix (App)    = The Trading System — River, CSO, Execution
 | S37 | ATHENA | 51 | INV-ATTR-PROVENANCE |
 | S38 | HUNT | 69 | INV-HUNT-NO-SURVIVOR-RANKING |
 | S39 | VALIDATION | 109 | INV-SCALAR-BAN |
-| **TOTAL** | | **336** | |
+| **S40** | **SLEEP_SAFE** | **312** | **20 invariants, 15 chaos vectors** |
+| **TOTAL** | | **1279** | **89+ proven, 204 chaos vectors** |
 
 **What This Means:**
 - **NEX died saying:** "Strategy Stability Index: 78/100"
@@ -59,16 +62,26 @@ See: `docs/DEFINITIVE_FATE.yaml` for complete capability mapping.
 | S37 | Memory Discipline | ✓ **Complete** (51 tests) |
 | S38 | Hunt Infrastructure | ✓ **Complete** (69 tests) |
 | S39 | Research Validation | ✓ **Complete** (109 tests) |
-| S40+ | Multi-agent orchestration | DORMANT |
+| **S40** | **Sleep-Safe Resilience** | ✓ **Complete** (312 tests) |
+| S41 | WARBOAR_AWAKENS | NEXT |
 
-### Key Invariants Proven (S35-S39)
+### Key Invariants Proven (S35-S40)
 
+**S35-S39 (Constitutional Ceiling):**
 - **INV-ATTR-NO-CAUSAL:** No "causes", no "leads to" — conditional facts only
 - **INV-NO-GRADE-RECONSTRUCTION:** No A/B/C/D/F grades — gate status only
 - **INV-ATTR-PROVENANCE:** Full provenance on all outputs
 - **INV-HUNT-NO-SURVIVOR-RANKING:** No "best performer" rankings
 - **INV-SCALAR-BAN:** No composite scores (0-100) — decomposed factors only
 - **INV-NO-AGGREGATE-SCALAR:** No avg_* fields — return full arrays
+
+**S40 (Sleep-Safe):**
+- **INV-CIRCUIT-1/2:** Circuit breaker FSM (CLOSED→OPEN→HALF_OPEN)
+- **INV-HEALTH-1/2:** Health state machine (HEALTHY→DEGRADED→CRITICAL→HALTED)
+- **INV-IBKR-FLAKEY-1/2/3:** Heartbeat monitoring, supervisor survival
+- **INV-IBKR-DEGRADE-1/2:** Graceful degradation cascade (T2→T1→T0)
+- **INV-HOOK-1/2/3/4:** Constitutional enforcement at commit + runtime
+- **INV-NARRATOR-1/2/3:** Facts-only projection (no synthesis)
 
 See: `docs/SPRINT_ROADMAP.md` for full detail.
 
@@ -154,7 +167,8 @@ Full list: `docs/DEFINITIVE_FATE.yaml` → invariants section
 | S37 | 15 | ✓ PASS |
 | S38 | 23 | ✓ PASS |
 | S39 | 28 | ✓ PASS |
-| **Total** | **189** | |
+| **S40** | **15** | **✓ PASS** |
+| **Total** | **204** | |
 
 ---
 
@@ -213,6 +227,6 @@ phoenix/
 
 ---
 
-*S35-S39 BLOCK COMPLETE. Human frames, machine computes. Human interprets.*
+*S35-S40 COMPLETE. Human frames, machine computes. Human sleeps.*
 *No scalar scores. No rankings. No verdicts. Ever.*
-*Phoenix rises. 🐗🔥*
+*Ceiling set. Floor holds. Sleep-safe certified. 🐗🔥*
