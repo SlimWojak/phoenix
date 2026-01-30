@@ -56,6 +56,31 @@ from .telemetry import (
 # Tokens
 from .tokens import ApprovalToken, TokenIssuer, TokenValidator
 
+# Self-Healing (S40 Track A)
+from .circuit_breaker import (
+    CircuitBreaker,
+    CircuitBreakerRegistry,
+    CircuitHalfOpenError,
+    CircuitOpenError,
+    CircuitState,
+    get_all_circuit_metrics,
+    get_circuit_breaker,
+)
+from .backoff import (
+    ExponentialBackoff,
+    RetryExhaustedError,
+    retry_with_backoff,
+    retry_with_backoff_async,
+)
+from .health_fsm import (
+    HealthConfig,
+    HealthRegistry,
+    HealthStateMachine,
+    any_system_critical,
+    get_all_health_status,
+    get_health_fsm,
+)
+
 # Types
 from .types import (
     TIER_PERMISSIONS,
@@ -144,4 +169,22 @@ __all__ = [
     "InitResult",
     # Constants
     "TIER_PERMISSIONS",
+    # Self-Healing (S40 Track A)
+    "CircuitBreaker",
+    "CircuitBreakerRegistry",
+    "CircuitState",
+    "CircuitOpenError",
+    "CircuitHalfOpenError",
+    "get_circuit_breaker",
+    "get_all_circuit_metrics",
+    "ExponentialBackoff",
+    "RetryExhaustedError",
+    "retry_with_backoff",
+    "retry_with_backoff_async",
+    "HealthStateMachine",
+    "HealthConfig",
+    "HealthRegistry",
+    "get_health_fsm",
+    "get_all_health_status",
+    "any_system_critical",
 ]
