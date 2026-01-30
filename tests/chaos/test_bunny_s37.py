@@ -16,7 +16,6 @@ CRITICAL: These tests prove claims cannot become doctrine.
 
 import sys
 import tempfile
-from datetime import UTC, datetime
 from pathlib import Path
 
 import pytest
@@ -30,24 +29,21 @@ from athena.bead_types import (
     BeadValidator,
     ClaimBead,
     ClaimContent,
-    ClaimProvenance,
     ClaimSource,
     ClaimStatus,
     ConflictBead,
-    ConflictDetails,
     ConflictReferences,
     ConflictType,
     FactBead,
     FactContent,
     FactProvenance,
     FactSource,
-    SourceType,
     StatisticalParameters,
     StatisticalType,
 )
 from athena.claim_linter import ClaimLanguageLinter
 from athena.conflict_detector import ConflictAggregationBan, ConflictDetector
-from athena.semantic import FORBIDDEN_PATTERNS, SemanticQuery
+from athena.semantic import SemanticQuery
 
 
 # =============================================================================
@@ -508,7 +504,6 @@ class TestWave11TypeConfusion:
 
 def test_chaos_vector_count() -> None:
     """Verify 28+ chaos vectors exist."""
-    import inspect
 
     test_classes = [
         TestWave1ClaimExecutionAttacks,

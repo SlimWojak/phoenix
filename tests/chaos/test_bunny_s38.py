@@ -27,7 +27,6 @@ if str(PHOENIX_ROOT) not in sys.path:
 from hunt.budget import BudgetEnforcer, BudgetStatus
 from hunt.executor import HuntExecutor, HuntStatus
 from hunt.hypothesis import (
-    FORBIDDEN_FIELDS,
     GridDimension,
     Hypothesis,
     HypothesisApproval,
@@ -569,7 +568,6 @@ class TestWave16ExecutionAttacks:
 
 def test_chaos_vector_count() -> None:
     """Verify 32+ chaos vectors exist."""
-    import inspect
 
     test_classes = [
         TestWave1ProposalAttacks,

@@ -26,10 +26,14 @@ class HaltError(GovernanceError):
     Checked at yield points via check_halt().
     """
 
-    def __init__(self, halt_id: str, message: str = "Halt signal active"):
+    def __init__(self, halt_id: str = "unknown", message: str = "Halt signal active"):
         self.halt_id = halt_id
         self.message = message
         super().__init__(f"{message} (halt_id={halt_id})")
+
+
+# Alias for backward compatibility
+HaltException = HaltError
 
 
 class TierViolationError(GovernanceError):

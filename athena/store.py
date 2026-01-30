@@ -16,8 +16,7 @@ from __future__ import annotations
 import json
 import secrets
 import sqlite3
-from dataclasses import asdict
-from datetime import UTC, datetime
+from datetime import datetime
 from pathlib import Path
 from typing import Any
 
@@ -44,10 +43,9 @@ from athena.bead_types import (
     SourceType,
     StatisticalParameters,
     StatisticalType,
-    ValidationResult,
 )
 from athena.claim_linter import ClaimLanguageLinter
-from athena.rate_limiter import AthenaRateLimiter, RateLimitResult
+from athena.rate_limiter import AthenaRateLimiter
 
 
 # =============================================================================

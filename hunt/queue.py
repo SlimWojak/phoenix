@@ -15,10 +15,9 @@ from __future__ import annotations
 import secrets
 import uuid
 from collections import deque
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from datetime import UTC, datetime
 from enum import Enum
-from typing import Any
 
 from hunt.hypothesis import (
     Hypothesis,

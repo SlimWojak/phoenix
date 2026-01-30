@@ -13,7 +13,6 @@ EXIT GATE A:
 """
 
 import sys
-from datetime import UTC, datetime
 from pathlib import Path
 
 import pytest
@@ -34,20 +33,15 @@ from athena.bead_types import (
     ConflictBead,
     ConflictDetails,
     ConflictReferences,
-    ConflictResolution,
     ConflictStatus,
     ConflictType,
     FactBead,
     FactContent,
     FactProvenance,
     FactSource,
-    FactStatus,
-    FORBIDDEN_FIELDS,
-    ResolutionAction,
     SourceType,
     StatisticalParameters,
     StatisticalType,
-    ValidationResult,
 )
 
 

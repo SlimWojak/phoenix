@@ -23,8 +23,6 @@ if str(PHOENIX_ROOT) not in sys.path:
 
 from athena.claim_linter import (
     ClaimLanguageLinter,
-    LintResult,
-    Violation,
     ViolationType,
 )
 

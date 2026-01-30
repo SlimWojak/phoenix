@@ -11,10 +11,10 @@ INVARIANT: INV-HUNT-EXHAUSTIVE (compute ALL)
 from __future__ import annotations
 
 import itertools
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import Any
 
-from hunt.hypothesis import Hypothesis, HypothesisGrid
+from hunt.hypothesis import Hypothesis
 
 
 # =============================================================================

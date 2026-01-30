@@ -13,7 +13,6 @@ EXIT GATE B:
 
 import sys
 import tempfile
-from datetime import UTC, datetime
 from pathlib import Path
 
 import pytest
