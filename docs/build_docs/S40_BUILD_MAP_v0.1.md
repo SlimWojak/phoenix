@@ -131,9 +131,19 @@ TRACK_B: IBKR_FLAKEY (Supervisor, degradation, reconnect)
 TRACK_C: HOOKS (Pre-commit + runtime enforcement)
   days: 4-5
   owner: OPUS
-  
-TRACK_D: INTEGRATION + BUNNY
+
+TRACK_D: WARBOAR_FOUNDATION (Narrator templates, data pulls)
   days: 5-6
+  owner: OPUS
+  note: "Simple narrator barks state in boar tone. No LLM yet."
+
+TRACK_E: PROFESSIONAL_POLISH (Zero jank before anointing)
+  days: 6-7
+  owner: OPUS
+  note: "No stubs. No import errors. Every seam oiled."
+  
+TRACK_F: INTEGRATION + BUNNY
+  days: 7
   owner: OPUS + BUNNY
 ```
 
@@ -471,7 +481,90 @@ EXIT_GATE_C:
 
 ---
 
-## TRACK_D: INTEGRATION + BUNNY
+## TRACK_D: WARBOAR_FOUNDATION
+
+```yaml
+PURPOSE: |
+  Prepare for WarBoar LLM distillation without shipping distillation itself.
+  Prove the template + data-pull pattern works without LLM complexity.
+  Simple narrator barks state in boar tone via string formatting.
+  Foundation for S41 Unsloth distillation.
+
+DELIVERABLES:
+  - warboar/narrator/templates.py (locked Jinja templates)
+  - warboar/narrator/data_pulls.py (canonical source readers)
+  - warboar/narrator/simple_narrator.py (string-template version, no LLM)
+  - tests/test_narrator/
+
+TEMPLATE_EXAMPLE:
+  normal_cycle: |
+    OINK OINK MOTHERFUCKER!
+    WarBoar cycle {{timestamp}} — refinery breathing
+    River: {{river_status}}, last tick {{tick_age}} ago, hash {{hash}}
+    CSO: {{gates_passed_count}} passed, {{gates_failed_count}} failed
+    Athena: {{open_conflicts}} open conflicts (shuffled)
+    Tests: {{passed}} pass, {{failed}} fail — chain {{chain_status}}
+    All receipts signed. Supremacy compounds.
+    OINK.
+    
+  heresy_bark: |
+    OINK OINK MOTHERFUCKER!
+    HERESY DETECTED — {{anomaly_type}}
+    {{action_taken}}
+    WAKE UP G — WARBOAR BARKING LOUD
+
+DATA_SOURCES:
+  - orientation.yaml (hash-verified)
+  - Athena beads (immutable)
+  - River health (deterministic)
+  - pytest summary (machine-verifiable)
+  - CSO gate status (boolean)
+
+INVARIANTS:
+  - INV-NARRATOR-1: "Output matches template exactly"
+  - INV-NARRATOR-2: "Stale data → heresy bark"
+  - INV-NARRATOR-3: "No free-form generation"
+  - INV-NARRATOR-4: "Every bark starts OINK OINK MOTHERFUCKER"
+
+EXIT_GATE_D:
+  criterion: "Simple narrator barks 100x → 100/100 facts in boar tone, heresy on stale"
+  test: tests/test_narrator/
+```
+
+---
+
+## TRACK_E: PROFESSIONAL_POLISH
+
+```yaml
+PURPOSE: |
+  "S40 = WD40 of WarBoar.
+   Smooth as fucking silk or sprint no closey.
+   No stubs masquerading as finished artifacts.
+   No hidden library jank.
+   Every seam oiled, every edge hardened."
+
+DELIVERABLES:
+  - Clean pytest collection (archive broken tests)
+  - ruff --fix across codebase
+  - Fix all import errors
+  - Remove dead code / stubs
+  - Consistent error messages
+  - No terminal spam
+
+CHECKLIST:
+  - [ ] pytest tests/ --collect-only → zero errors
+  - [ ] ruff check . → zero errors
+  - [ ] No import errors in any module
+  - [ ] No stub functions without implementation
+  - [ ] Error messages include invariant reference
+
+EXIT_GATE_E:
+  criterion: "pytest collection clean, ruff clean, no import errors"
+```
+
+---
+
+## TRACK_F: INTEGRATION + BUNNY
 
 ```yaml
 PURPOSE: |
@@ -586,8 +679,14 @@ HOOKS:
   - INV-HOOK-3: Runtime halts on violation
   - INV-HOOK-4: Runtime logs violation
 
-TOTAL_NEW: 16 invariants
-TOTAL_CUMULATIVE: 85+ (69 from S35-S39 + 16 new)
+NARRATOR:
+  - INV-NARRATOR-1: Output matches template exactly
+  - INV-NARRATOR-2: Stale data → heresy bark
+  - INV-NARRATOR-3: No free-form generation
+  - INV-NARRATOR-4: Every bark starts OINK OINK MOTHERFUCKER
+
+TOTAL_NEW: 20 invariants
+TOTAL_CUMULATIVE: 89+ (69 from S35-S39 + 20 new)
 ```
 
 ---
@@ -600,9 +699,11 @@ TOTAL_CUMULATIVE: 85+ (69 from S35-S39 + 16 new)
 | A | SELF_HEALING | Circuit breakers on 5 components, health FSM operational |
 | B | IBKR_FLAKEY | Disconnect 10x → no crash, correct degrade, correct alerts |
 | C | HOOKS | Block at commit AND runtime |
-| D | BUNNY | 16+ chaos vectors pass, checklist complete |
+| D | NARRATOR | Simple narrator barks 100x → 100/100 facts in boar tone |
+| E | POLISH | pytest collection clean, ruff clean, no import errors |
+| F | BUNNY | 20+ chaos vectors pass, checklist complete |
 
-**Sprint Exit:** ALL tracks GREEN → S40 COMPLETE → SLEEP_SAFE ACHIEVED
+**Sprint Exit:** ALL tracks GREEN → S40 COMPLETE → SLEEP_SAFE + WARBOAR_FOUNDATION ACHIEVED
 
 ---
 
