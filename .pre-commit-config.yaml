@@ -56,6 +56,33 @@ repos:
         files: \.py$
         exclude: ^tests/|^scripts/
 
+  # Constitutional Hooks (S40 Track C)
+  - repo: local
+    hooks:
+      - id: constitutional-scalar-ban
+        name: Constitutional Scalar Ban
+        entry: python -m tools.hooks.scalar_ban_hook
+        language: system
+        files: \.py$
+        exclude: ^tests/test_hooks/
+        description: "Blocks scalar scores, rankings, grades, causal language"
+
+      - id: constitutional-provenance
+        name: Constitutional Provenance Check
+        entry: python -c "
+import sys
+import re
+for f in sys.argv[1:]:
+    content = open(f).read()
+    if 'CFPResult' in content or 'cfp_result' in content:
+        if not ('query_string' in content or 'provenance' in content):
+            print(f'{f}: CFP result may be missing provenance')
+            sys.exit(1)
+"
+        language: system
+        files: \.py$
+        exclude: ^tests/
+
 # CI Configuration
 ci:
   autofix_commit_msg: "style: auto-fix from pre-commit hooks"

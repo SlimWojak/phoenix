@@ -81,6 +81,25 @@ from .health_fsm import (
     get_health_fsm,
 )
 
+# Runtime Assertions (S40 Track C)
+from .runtime_assertions import (
+    ConstitutionalViolation,
+    GradeViolation,
+    ProvenanceMissing,
+    RankingViolation,
+    RuntimeConstitutionalChecker,
+    ScalarScoreViolation,
+    assert_no_grade,
+    assert_no_ranking,
+    assert_no_scalar_score,
+    assert_provenance,
+    cfp_output,
+    constitutional_boundary,
+    enforce_constitution,
+    hunt_output,
+    validate_output,
+)
+
 # Types
 from .types import (
     TIER_PERMISSIONS,
@@ -187,4 +206,20 @@ __all__ = [
     "get_health_fsm",
     "get_all_health_status",
     "any_system_critical",
+    # Runtime Assertions (S40 Track C)
+    "ConstitutionalViolation",
+    "ScalarScoreViolation",
+    "ProvenanceMissing",
+    "RankingViolation",
+    "GradeViolation",
+    "assert_no_scalar_score",
+    "assert_provenance",
+    "assert_no_ranking",
+    "assert_no_grade",
+    "constitutional_boundary",
+    "enforce_constitution",
+    "validate_output",
+    "cfp_output",
+    "hunt_output",
+    "RuntimeConstitutionalChecker",
 ]
