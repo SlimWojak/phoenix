@@ -238,136 +238,315 @@ INV-D4-NO-DERIVATION-1:
 
 ```yaml
 # HALT
-INV-HALT-1: halt_local < 50ms | tests/test_halt.py
-INV-HALT-2: cascade halt < 500ms
+INV-HALT-1: "halt_local() completes < 50ms"
+  test: tests/test_halt_latency.py
+  enforcement: governance/halt.py halt_local()
+  measured: 0.15ms typical
+
+INV-HALT-2: "cascade halt completes < 500ms"
+  test: tests/test_halt_propagation_multiprocess.py
+  enforcement: halt_cascade() in governance/halt.py
 
 # FILE_SEAM
-INV-D1-WATCHER-1: exactly-once processing
-INV-D1-LENS-1: ≤50 tokens context
+INV-D1-WATCHER-1: "exactly-once processing per intent"
+  test: tests/daemons/test_watcher_exactly_once.py
+  enforcement: watcher.py deduplication
+
+INV-D1-LENS-1: "≤50 tokens context injection"
+  test: tests/daemons/test_lens_context_cost.py
+  enforcement: lens.py truncation
 
 # ORIENTATION
-INV-D3-CHECKSUM-1: machine-verifiable, no prose
-INV-D3-CORRUPTION-1: corruption → STATE_CONFLICT
+INV-D3-CHECKSUM-1: "orientation is machine-verifiable, no prose"
+  test: drills/d3_negative_test.py
+  enforcement: orientation/validator.py
+
+INV-D3-CORRUPTION-1: "corruption triggers STATE_CONFLICT"
+  test: drills/d3_negative_test.py
+  enforcement: hash mismatch detection
 
 # SURFACE
-INV-D4-GLANCEABLE-1: update <100ms
-INV-D4-NO-DERIVATION-1: verbatim fields only
-INV-D4-EPHEMERAL-1: no local persistence
+INV-D4-GLANCEABLE-1: "widget update < 100ms"
+  test: drills/d4_verification.py
+  enforcement: surface_renderer.py
+
+INV-D4-NO-DERIVATION-1: "verbatim fields only, no computed display"
+  test: drills/d4_verification.py
+  enforcement: whitelist field projection
+
+INV-D4-EPHEMERAL-1: "no local persistence in widget"
+  test: drills/d4_verification.py
+  enforcement: widget reads state/, never writes
 
 # IBKR
-INV-IBKR-PAPER-GUARD-1: live blocked without flag
-INV-IBKR-ACCOUNT-CHECK-1: account validation
+INV-IBKR-PAPER-GUARD-1: "live mode blocked without IBKR_ALLOW_LIVE=true"
+  test: tests/test_no_live_orders.py
+  enforcement: IBKRConfig.allow_live flag
+
+INV-IBKR-ACCOUNT-CHECK-1: "account validation on connect"
+  test: tests/chaos/test_bunny_s33_p1.py
+  enforcement: connector.py account match check
 
 # T2
-INV-T2-TOKEN-1: single-use, 5min expiry
-INV-T2-GATE-1: no order without token
+INV-T2-TOKEN-1: "single-use, 5min expiry"
+  test: tests/test_tier_gates.py
+  enforcement: t2_token.py expiry logic
+
+INV-T2-GATE-1: "no order submission without valid T2 token"
+  test: tests/test_halt_blocks_t2_action.py
+  enforcement: tier_gates.py require_t2_token()
 ```
 
 ### ATTRIBUTION (S35 CFP) ✓
 
 ```yaml
-INV-ATTR-CAUSAL-BAN: "No causal claims; only conditional facts" ✓
-INV-ATTR-PROVENANCE: "All outputs include query_string + dataset_hash + bead_id" ✓
-INV-ATTR-NO-RANKING: "No ranking, no best/worst, no implied priority" ✓
-INV-ATTR-SILENCE: "System does not resolve conflicts; surfaces and waits" ✓
-INV-ATTR-NO-WRITEBACK: "Stored facts cannot mutate doctrine" ✓
-INV-ATTR-CONFLICT-DISPLAY: "When showing best, must show worst alongside" ✓
+INV-ATTR-CAUSAL-BAN: "No causal claims; only conditional facts"
+  test: tests/test_cfp/test_causal_ban_linter.py
+  enforcement: cfp/causal_ban_linter.py
+
+INV-ATTR-PROVENANCE: "All outputs include query_string + dataset_hash + bead_id"
+  test: tests/test_cfp/test_executor.py::TestProvenance
+  enforcement: CFPResult dataclass required fields
+
+INV-ATTR-NO-RANKING: "No ranking, no best/worst, no implied priority"
+  test: tests/chaos/test_bunny_s35.py
+  enforcement: ScalarBanLinter ranking patterns
+
+INV-ATTR-SILENCE: "System surfaces conflicts, never resolves"
+  test: tests/test_cfp/test_conflict_display.py
+  enforcement: CONFLICT_BEAD type, no resolution field
+
+INV-ATTR-NO-WRITEBACK: "Stored facts cannot mutate doctrine"
+  test: tests/test_athena/test_store.py
+  enforcement: BeadStore append-only
+
+INV-ATTR-CONFLICT-DISPLAY: "When showing best, must show worst alongside"
+  test: tests/test_cfp/test_conflict_display.py
+  enforcement: paired extremes requirement
 ```
 
 ### HARNESS (S36) ✓
 
 ```yaml
-INV-HARNESS-1: "CSO outputs gate status only, never grades" ✓
-INV-HARNESS-2: "No confidence scores unless explicit formula" ✓
-INV-HARNESS-3: "Alerts fire on gate combinations, not quality" ✓
-INV-HARNESS-4: "Multi-pair sorted alphabetically by default" ✓
-INV-NO-GRADE-RECONSTRUCTION: "No A/B/C/D/F grades anywhere" ✓
+INV-HARNESS-1: "CSO outputs gate status only, never grades"
+  test: tests/test_cso/test_evaluator.py
+  enforcement: GateStatus enum, no grade fields
+
+INV-HARNESS-2: "No confidence scores unless explicit formula"
+  test: tests/test_cso/test_bit_vector.py
+  enforcement: gates_passed[] only, no confidence
+
+INV-HARNESS-3: "Alerts fire on gate combinations, not quality"
+  test: tests/test_cso/test_alerts.py
+  enforcement: alert triggers on gate_count threshold
+
+INV-HARNESS-4: "Multi-pair sorted alphabetically by default"
+  test: tests/test_cso/test_multi_pair.py
+  enforcement: sorted() on pair names
+
+INV-NO-GRADE-RECONSTRUCTION: "No A/B/C/D/F grades anywhere"
+  test: tests/chaos/test_bunny_s36.py
+  enforcement: ScalarBanLinter grade patterns
 ```
 
 ### MEMORY (S37) ✓
 
 ```yaml
-INV-CLAIM-FACT-SEPARATION: "Claims and facts are distinct bead types" ✓
-INV-CONFLICT-NO-RESOLUTION: "System flags conflicts, never resolves" ✓
-INV-MEMORY-PROVENANCE: "All memories have full provenance chain" ✓
+INV-CLAIM-FACT-SEPARATION: "Claims and facts are distinct bead types"
+  test: tests/test_athena/test_bead_types.py
+  enforcement: CLAIM_BEAD vs FACT_BEAD enums
+
+INV-CONFLICT-NO-RESOLUTION: "System flags conflicts, never resolves"
+  test: tests/chaos/test_bunny_s37.py
+  enforcement: CONFLICT_BEAD.resolution = None
+
+INV-MEMORY-PROVENANCE: "All memories have full provenance chain"
+  test: tests/test_athena/test_store.py
+  enforcement: bead_id + dataset_hash required
 ```
 
 ### HUNT (S38) ✓
 
 ```yaml
-INV-HUNT-EXHAUSTIVE: "Hunt computes ALL declared variants, never selects" ✓
-INV-HUNT-BUDGET: "Compute/token cap enforced per run" ✓
-INV-HUNT-NO-SURVIVOR-RANKING: "No 'best performer' rankings" ✓
-INV-HUNT-NO-SELECTION: "Grid returns full table, never filters" ✓
+INV-HUNT-EXHAUSTIVE: "Hunt computes ALL declared variants, never selects"
+  test: tests/test_hunt/test_executor.py
+  enforcement: grid.compute_all() returns full table
+
+INV-HUNT-BUDGET: "Compute/token cap enforced per run"
+  test: tests/test_hunt/test_budget.py
+  enforcement: BudgetEnforcer.check()
+
+INV-HUNT-NO-SURVIVOR-RANKING: "No 'best performer' rankings"
+  test: tests/chaos/test_bunny_s38.py
+  enforcement: ScalarBanLinter ranking patterns
+
+INV-HUNT-NO-SELECTION: "Grid returns full table, never filters"
+  test: tests/test_hunt/test_output.py
+  enforcement: exhaustive flag enforced
 ```
 
 ### VALIDATION (S39) ✓ — CONSTITUTIONAL CEILING
 
 ```yaml
-INV-SCALAR-BAN: "No composite scores (0-100); decompose to factors" ✓
-INV-NO-AGGREGATE-SCALAR: "No avg_* fields; return full arrays" ✓
-INV-NEUTRAL-ADJECTIVES: "No evaluative words (strong, weak, robust)" ✓
-INV-VISUAL-PARITY: "No color metadata (red=bad, green=good)" ✓
-INV-NO-IMPLICIT-VERDICT: "Mandatory disclaimer on all outputs" ✓
-INV-CROSS-MODULE-NO-SYNTH: "Chain outputs remain decomposed" ✓
+INV-SCALAR-BAN: "No composite scores (0-100); decompose to factors"
+  test: tests/test_validation/test_scalar_ban_linter.py
+  enforcement: validation/scalar_ban_linter.py
+
+INV-NO-AGGREGATE-SCALAR: "No avg_* fields; return full arrays"
+  test: tests/test_validation/test_cross_module_audit.py
+  enforcement: AVG_PATTERNS in linter
+
+INV-NEUTRAL-ADJECTIVES: "No evaluative words (strong, weak, robust)"
+  test: tests/chaos/test_bunny_s39.py
+  enforcement: ADJECTIVE_PATTERNS in linter
+
+INV-VISUAL-PARITY: "No color metadata (red=bad, green=good)"
+  test: tests/chaos/test_bunny_s39.py
+  enforcement: COLOR_METADATA_PATTERNS
+
+INV-NO-IMPLICIT-VERDICT: "Mandatory disclaimer on all outputs"
+  test: tests/test_validation/test_walk_forward.py
+  enforcement: disclaimer injection
+
+INV-CROSS-MODULE-NO-SYNTH: "Chain outputs remain decomposed"
+  test: tests/chain/test_cfp_validation_chain.py
+  enforcement: chain validation suite
 ```
 
 ### SELF-HEALING (S40) ✓
 
 ```yaml
-INV-CIRCUIT-1: "OPEN circuit blocks all requests" ✓
-INV-CIRCUIT-2: "HALF_OPEN allows exactly 1 probe" ✓
-INV-BACKOFF-1: "Retry interval doubles each attempt" ✓
-INV-BACKOFF-2: "Interval capped at max (300s)" ✓
-INV-HEALTH-1: "CRITICAL → alert callback within 30s" ✓
-INV-HEALTH-2: "HALTED → halt_callback invoked" ✓
-INV-HEAL-REENTRANCY: "N failures in 1s → 1 alert, not N" ✓
+INV-CIRCUIT-1: "OPEN circuit blocks all requests"
+  test: tests/test_self_healing/test_circuit_breaker.py::TestCircuitBreakerOpenState
+  enforcement: CircuitOpenError raised on call()
+
+INV-CIRCUIT-2: "HALF_OPEN allows exactly 1 probe"
+  test: tests/test_self_healing/test_circuit_breaker.py::TestHalfOpenProbe
+  enforcement: _probe_in_progress flag blocks concurrent probes
+
+INV-BACKOFF-1: "Retry interval doubles each attempt"
+  test: tests/test_self_healing/test_backoff.py::TestExponentialGrowth
+  enforcement: formula: min(base * 2^attempt + jitter, max)
+
+INV-BACKOFF-2: "Interval capped at max (300s)"
+  test: tests/test_self_healing/test_backoff.py::TestMaxCap
+  enforcement: max_delay parameter enforced
+
+INV-HEALTH-1: "CRITICAL → alert callback invoked"
+  test: tests/test_self_healing/test_health_fsm.py::TestCriticalAlert
+  enforcement: alert_callback fired on state transition
+
+INV-HEALTH-2: "HALTED → halt_callback invoked"
+  test: tests/test_self_healing/test_health_fsm.py::TestHaltedCallback
+  enforcement: halt_callback fired on HALTED transition
+
+INV-HEAL-REENTRANCY: "N failures in 1s → ≤N/cooldown alerts"
+  test: tests/test_self_healing/test_health_fsm.py::TestAlertCooldown
+  enforcement: alert_cooldown suppresses rapid-fire alerts
 ```
 
 ### IBKR RESILIENCE (S40) ✓
 
 ```yaml
-INV-IBKR-FLAKEY-1: "3 missed heartbeats → DEAD declaration" ✓
-INV-IBKR-FLAKEY-2: "Supervisor survives connector crash" ✓
-INV-IBKR-FLAKEY-3: "Reconnection restores only after validation" ✓
-INV-IBKR-DEGRADE-1: "T2 blocked within 1s of disconnect" ✓
-INV-IBKR-DEGRADE-2: "No T2 allowed in DEGRADED state" ✓
-INV-SUPERVISOR-1: "Supervisor death → immediate alert" ✓
+INV-IBKR-FLAKEY-1: "3 missed heartbeats → DEAD declaration"
+  test: tests/test_ibkr/test_heartbeat.py::TestMissThreshold
+  enforcement: is_alive returns False after miss_threshold
+
+INV-IBKR-FLAKEY-2: "Supervisor survives connector crash"
+  test: tests/test_ibkr/test_supervisor.py::TestSupervisorSurvival
+  enforcement: supervisor runs in separate thread
+
+INV-IBKR-FLAKEY-3: "Reconnection requires validation"
+  test: tests/test_ibkr/test_degradation.py::TestRestoreRequiresValidation
+  enforcement: restore() requires health check pass
+
+INV-IBKR-DEGRADE-1: "T2 blocked within 1s of disconnect"
+  test: tests/test_ibkr/test_degradation.py::TestT2BlockTiming
+  enforcement: trigger_degradation() immediate effect
+
+INV-IBKR-DEGRADE-2: "No T2 in DEGRADED state"
+  test: tests/test_ibkr/test_degradation.py::TestTierBlocking
+  enforcement: TierBlockedError raised on check_tier(2)
+
+INV-SUPERVISOR-1: "Supervisor death → immediate alert"
+  test: tests/test_ibkr/test_supervisor.py::TestSupervisorDeathAlert
+  enforcement: watchdog monitors supervisor thread
 ```
 
 ### HOOKS (S40) ✓
 
 ```yaml
-INV-HOOK-1: "Pre-commit blocks scalar_score in new code" ✓
-INV-HOOK-2: "Pre-commit blocks causal language" ✓
-INV-HOOK-3: "Runtime catches missing provenance" ✓
-INV-HOOK-4: "Runtime catches ranking fields" ✓
+INV-HOOK-1: "Pre-commit blocks scalar_score in new code"
+  test: tests/test_hooks/test_pre_commit.py::TestScalarBan
+  enforcement: tools/hooks/scalar_ban_hook.py + .pre-commit-config.yaml
+
+INV-HOOK-2: "Pre-commit blocks causal language"
+  test: tests/test_hooks/test_pre_commit.py::TestCausalLanguageBan
+  enforcement: CAUSAL_PATTERNS in scalar_ban_hook.py
+
+INV-HOOK-3: "Runtime catches missing provenance"
+  test: tests/test_hooks/test_runtime_assertions.py::TestProvenanceMissing
+  enforcement: assert_provenance() raises ProvenanceMissing
+
+INV-HOOK-4: "Runtime catches ranking fields"
+  test: tests/test_hooks/test_runtime_assertions.py::TestRankingViolation
+  enforcement: assert_no_ranking() raises RankingViolation
 ```
 
 ### NARRATOR (S40) ✓
 
 ```yaml
-INV-NARRATOR-1: "Narrator outputs facts only, no synthesis" ✓
-INV-NARRATOR-2: "All data fields have explicit source" ✓
-INV-NARRATOR-3: "Undefined variable → error, not silent" ✓
+INV-NARRATOR-1: "Narrator outputs facts only, no synthesis"
+  test: tests/test_narrator/test_templates.py::TestNoSynthesis
+  enforcement: FORBIDDEN_WORDS + validate_template_content()
+
+INV-NARRATOR-2: "All data fields have explicit source"
+  test: tests/test_narrator/test_renderer.py::TestDataSourceTracing
+  enforcement: DataSources class with source_file attributes
+
+INV-NARRATOR-3: "Undefined variable → error, not silent"
+  test: tests/test_narrator/test_renderer.py::TestStrictUndefined
+  enforcement: Jinja2 StrictUndefined mode
 ```
 
 ### SAFETY (Cross-Sprint)
 
 ```yaml
-INV-NO-UNSOLICITED: "System never says 'I noticed' or proposes hypotheses" ✓
-INV-LLM-REMOVAL-TEST: "If removing LLM prevents reconstruction → invalid" ✓
-INV-NO-ROLLUP: "No aggregation across traffic lights; no 'overall' label" ✓
-INV-NO-DEFAULT-SALIENCE: "UI must not imply importance" ✓
-INV-SLICE-MINIMUM-N: "N < 30 → warn or fail-silent" ✓
-INV-BIAS-PREDICATE: "HTF bias as predicate status, not directional words" ✓
+INV-NO-UNSOLICITED: "System never says 'I noticed' or proposes hypotheses"
+  test: tests/test_cso_no_exec_write.py
+  enforcement: CSO read-only, no proposal generation
+
+INV-LLM-REMOVAL-TEST: "If removing LLM prevents reconstruction → invalid"
+  test: tests/test_nex_subsumption.py
+  enforcement: design principle (manual audit)
+
+INV-NO-ROLLUP: "No aggregation across traffic lights; no 'overall' label"
+  test: tests/test_cso/test_bit_vector.py
+  enforcement: gates_passed[] without aggregation
+
+INV-NO-DEFAULT-SALIENCE: "UI must not imply importance"
+  test: drills/d4_verification.py
+  enforcement: alphabetical sort, no highlighting
+
+INV-SLICE-MINIMUM-N: "N < 30 → warn or fail-silent"
+  test: tests/test_cfp/test_lens_schema_validation.py
+  enforcement: minimum_n validation
+
+INV-BIAS-PREDICATE: "HTF bias as predicate status, not directional words"
+  test: tests/test_cso/test_drawer_schema.py
+  enforcement: conditions.yaml predicates
 ```
 
 ### GOVERNANCE
 
 ```yaml
-INV-REGIME-EXPLICIT: "Regimes = explicit predicates, never auto-detected" ✓
-INV-REGIME-GOVERNANCE: "Regimes versioned, capped (~20 max)" ✓
+INV-REGIME-EXPLICIT: "Regimes = explicit predicates, never auto-detected"
+  test: tests/test_cso/test_evaluator.py
+  enforcement: conditions.yaml whitelist
+
+INV-REGIME-GOVERNANCE: "Regimes versioned, capped (~20 max)"
+  test: tests/test_cso/test_drawer_schema.py
+  enforcement: schema validation
 ```
 
 ---
