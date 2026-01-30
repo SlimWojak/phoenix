@@ -1,0 +1,45 @@
+# Phoenix Health State
+# CSO read-only - system health snapshot
+# Updated: 2026-01-30T13:46:09Z
+
+version: "1.0"
+timestamp: 2026-01-30T13:46:09Z
+
+overall: DEGRADED
+
+components:
+  river:
+    status: STALE
+    last_update: 76.0h ago
+    detail: Data stale >76.0h
+
+  ibkr:
+    status: UNKNOWN
+    mode: UNKNOWN
+    detail: "Config error: cannot import name 'get_ibkr_c"
+
+  halt:
+    status: UNKNOWN
+    latency: unknown
+    detail: Halt module unavailable
+
+  watcher:
+    status: RUNNING
+    detail: File seam operational
+
+  cso:
+    status: HEALTHY
+    detail: Knowledge files loaded
+
+  health_fsm:
+    status: HEALTHY
+    detail: 0 components tracked
+
+message: "DEGRADED: river"
+
+# For CSO context - natural language OK here
+operator_summary: |
+  River data is stale (76.0h ago).
+  Market scans won't work until refresh.
+  IBKR connection unavailable.
+  Live trading blocked..

@@ -1,0 +1,409 @@
+# GATE GLOSSARY
+# Maps Phoenix gate outputs to drawer concepts
+# PURPOSE: CSO reference for interpreting Phoenix gate responses
+# VERSION: 1.0
+# DATE: 2026-01-30
+
+version: "1.0"
+purpose: "CSO reference for interpreting Phoenix gate responses"
+usage: |
+  When Phoenix outputs: gates_passed: [HTF_BIAS, FVG_FORMED]
+  CSO looks up each gate here to understand:
+    - Which drawer defines it
+    - What it actually means
+    - When it passes
+
+# =============================================================================
+# COMPOSITE GATES (from conditions.yaml)
+# =============================================================================
+# These are multi-condition gates that combine several checks
+
+composite_gates:
+  GRADE_A_LONG:
+    id: "GATE-COND-001"
+    drawer: conditions.yaml
+    section: composite_gates.high_quality_long
+    meaning: "Highest quality long setup — all conditions optimal"
+    passes_when: "Discount zone + fresh (≥6) + few touches (≤2) + HTF aligned + no conflicts"
+    requires:
+      - in_structural_discount
+      - freshness_score >= 6
+      - touch_count <= 2
+      - entry_matches_htf_long
+      - NOT conflicting_signals
+    ref: "conditions.yaml:GATE-COND-001"
+
+  GRADE_A_SHORT:
+    id: "GATE-COND-002"
+    drawer: conditions.yaml
+    section: composite_gates.high_quality_short
+    meaning: "Highest quality short setup — all conditions optimal"
+    passes_when: "Premium zone + fresh (≥6) + few touches (≤2) + HTF aligned + no conflicts"
+    requires:
+      - in_structural_premium
+      - freshness_score >= 6
+      - touch_count <= 2
+      - entry_matches_htf_short
+      - NOT conflicting_signals
+    ref: "conditions.yaml:GATE-COND-002"
+
+  ALIGNED:
+    id: "GATE-COND-003"
+    drawer: conditions.yaml
+    section: composite_gates.alignment_gate
+    meaning: "Higher timeframes agree on direction"
+    passes_when: "HTF count ≥ 2 AND layers ≥ 3"
+    requires:
+      - htf_count >= 2
+      - layers >= 3
+    ref: "conditions.yaml:GATE-COND-003"
+
+  FRESH:
+    id: "GATE-COND-004"
+    drawer: conditions.yaml
+    section: composite_gates.freshness_gate
+    meaning: "Setup is recent and untested"
+    passes_when: "PDA age ≤ 10 bars AND structure break ≤ 30 bars"
+    requires:
+      - age <= 10
+      - break <= 30
+    ref: "conditions.yaml:GATE-COND-004"
+
+# =============================================================================
+# BIAS GATES (from context.yaml via conditions.yaml)
+# =============================================================================
+
+bias_gates:
+  HTF_BIAS:
+    drawer: context.yaml
+    section: bias_framework.bias_synthesis
+    meaning: "Higher timeframe directional alignment confirmed"
+    passes_when: "3Q framework resolves to long_only, short_only, or both"
+    values: [long_only, short_only, both, none]
+    blocks_when: "trade_bias == none (no clear HTF direction)"
+    consumes: conditions.yaml:SIG-COND-BIAS-INPUT
+    ref: "context.yaml:SIG-CTX-BIAS-SYNTHESIS"
+
+  Q1_LOCATION:
+    drawer: context.yaml
+    section: bias_framework.Q1_location
+    meaning: "Price position in dealing range determined"
+    passes_when: "Zone is premium or discount (NOT equilibrium)"
+    outputs: [position_pct, zone, nearest_pda, in_pda]
+    ref: "context.yaml:SIG-CTX-Q1"
+
+  Q2_OBJECTIVE:
+    drawer: context.yaml
+    section: bias_framework.Q2_objective
+    meaning: "Clear external draw on liquidity identified"
+    passes_when: "dol_primary exists with status == LIQUIDITY_UNDELIVERED"
+    blocks_when: "No valid target found"
+    ref: "context.yaml:SIG-CTX-Q2"
+
+  Q3_RESPECT:
+    drawer: context.yaml
+    section: bias_framework.Q3_respect
+    meaning: "HTF directional intent confirmed from structure/PDA behavior"
+    passes_when: "htf_direction is bullish or bearish with medium+ confidence"
+    blocks_when: "htf_direction == neutral"
+    ref: "context.yaml:SIG-CTX-Q3"
+
+# =============================================================================
+# PREMIUM/DISCOUNT GATES (from context.yaml via conditions.yaml)
+# =============================================================================
+
+pd_gates:
+  P_D_VALID:
+    drawer: context.yaml
+    section: structural_pd_state
+    meaning: "Price is in tradeable zone (not at equilibrium)"
+    passes_when: "pd_state is premium or discount"
+    blocks_when: "pd_state == equilibrium"
+    consumes: conditions.yaml:SIG-COND-010
+    ref: "context.yaml:SIG-CTX-PD-STATE"
+
+  IN_DISCOUNT:
+    drawer: context.yaml
+    section: structural_pd_state
+    meaning: "Price is below dealing range equilibrium — long bias"
+    passes_when: "pd_state == discount"
+    ref: "context.yaml:SIG-CTX-PD-STATE, foundation.yaml:premium_discount"
+
+  IN_PREMIUM:
+    drawer: context.yaml
+    section: structural_pd_state
+    meaning: "Price is above dealing range equilibrium — short bias"
+    passes_when: "pd_state == premium"
+    ref: "context.yaml:SIG-CTX-PD-STATE, foundation.yaml:premium_discount"
+
+# =============================================================================
+# ALIGNMENT GATES (from conditions.yaml)
+# =============================================================================
+
+alignment_gates:
+  WEEKLY_DAILY_ALIGNED:
+    id: "SIG-COND-020"
+    drawer: conditions.yaml
+    section: signals.weekly_daily_alignment
+    meaning: "Weekly and Daily structure agree on direction"
+    passes_when: "Weekly direction matches Daily direction"
+    values: [strong_alignment, defer_to_weekly, both_allowed]
+    ref: "conditions.yaml:SIG-COND-020"
+
+  HTF_UNANIMOUS:
+    id: "SIG-COND-021"
+    drawer: conditions.yaml
+    section: signals.htf_alignment
+    meaning: "All 3 HTF timeframes (W/D/H4) agree"
+    passes_when: "htf_count == 3 for one direction"
+    ref: "conditions.yaml:SIG-COND-021"
+
+  ENTRY_MATCHES_HTF:
+    id: "SIG-COND-022"
+    drawer: conditions.yaml
+    section: signals.entry_htf_match
+    meaning: "Entry direction aligns with HTF consensus"
+    passes_when: "HTF supports entry direction AND layers >= 2"
+    ref: "conditions.yaml:SIG-COND-022"
+
+  LAYERS_CONFLUENT:
+    id: "SIG-COND-023"
+    drawer: conditions.yaml
+    section: signals.layer_confluence
+    meaning: "Multiple enrichment layers support same direction"
+    passes_when: "layers >= 4 AND opposing == 0"
+    blocks_when: "conflicting_signals == True (long > 0 AND short > 0)"
+    ref: "conditions.yaml:SIG-COND-023"
+
+# =============================================================================
+# PDA STATUS GATES (from conditions.yaml)
+# =============================================================================
+
+pda_gates:
+  PDA_VALID:
+    id: "SIG-COND-030"
+    drawer: conditions.yaml
+    section: signals.pda_status_tracking
+    meaning: "Target PDA is still tradeable (not violated)"
+    passes_when: "pda_status IN [untouched, tapped, respected]"
+    blocks_when: "pda_status == violated"
+    values: [untouched, tapped, respected, violated]
+    quality_ranking: "untouched > respected > tapped"
+    ref: "conditions.yaml:SIG-COND-030"
+
+  FVG_VALID:
+    id: "SIG-COND-031"
+    drawer: conditions.yaml
+    section: signals.fvg_status
+    meaning: "FVG has not been fully broken"
+    passes_when: "fvg_fill_pct < 100%"
+    blocks_when: "fvg_fully_broken == True"
+    definition_ref: "foundation.yaml:FVG"
+    ref: "conditions.yaml:SIG-COND-031"
+
+  OB_VALID:
+    id: "SIG-COND-032"
+    drawer: conditions.yaml
+    section: signals.ob_status
+    meaning: "Order Block has not been fully broken"
+    passes_when: "ob_fully_broken == False (close not accepted through body)"
+    blocks_when: "ob_fully_broken == True"
+    note: "BODY only, NOT wicks"
+    definition_ref: "foundation.yaml:OB"
+    ref: "conditions.yaml:SIG-COND-032"
+
+  FVG_FORMED:
+    drawer: foundation.yaml
+    section: definitions.FVG
+    meaning: "Valid Fair Value Gap exists"
+    passes_when: "3-candle imbalance detected (bullish: A.high < C.low, bearish: A.low > C.high)"
+    detection_ref: "context.yaml:pda_detection.fvg_detection"
+    ref: "foundation.yaml:FVG"
+
+  OB_FORMED:
+    drawer: foundation.yaml
+    section: definitions.OB
+    meaning: "Valid Order Block identified"
+    passes_when: "Last opposing candle before displacement detected"
+    detection_ref: "context.yaml:pda_detection.ob_detection"
+    ref: "foundation.yaml:OB"
+
+# =============================================================================
+# FRESHNESS GATES (from conditions.yaml)
+# =============================================================================
+
+freshness_gates:
+  ENTRY_FRESH:
+    id: "SIG-COND-040"
+    drawer: conditions.yaml
+    section: signals.freshness_score
+    meaning: "Entry opportunity is recent and high quality"
+    passes_when: "entry_freshness_score >= 6"
+    components: [fvg_age, ob_age, touch_count, bars_since_structure_break]
+    note: "First touch beats fifth confluence"
+    ref: "conditions.yaml:SIG-COND-040"
+
+  ZONE_FRESH:
+    id: "SIG-COND-041"
+    drawer: conditions.yaml
+    section: signals.zone_freshness
+    meaning: "PDA zone is recent and untested"
+    passes_when: "fvg_age <= 5 AND touch_count == 1 AND structure_break <= 20"
+    ref: "conditions.yaml:SIG-COND-041"
+
+# =============================================================================
+# STRUCTURE GATES (from context.yaml)
+# =============================================================================
+
+structure_gates:
+  MSS_EXISTS:
+    drawer: context.yaml
+    section: signals.daily_mss
+    meaning: "Market Structure Shift has occurred — structure is defined"
+    passes_when: "daily_mss_exists == True"
+    blocks_when: "No MSS → no structure, no range, no trade"
+    definition_ref: "foundation.yaml:MSS"
+    ref: "context.yaml:SIG-CTX-004"
+
+  RANGE_DEFINED:
+    drawer: context.yaml
+    section: signals.daily_dealing_range
+    meaning: "Operating boundaries are established"
+    passes_when: "dealing_range_high, dealing_range_low, equilibrium all defined"
+    requires: "MSS_EXISTS"
+    ref: "context.yaml:SIG-CTX-007"
+
+  OBJECTIVE_VALID:
+    drawer: context.yaml
+    section: signals.daily_objective
+    meaning: "Clear external target identified with valid status"
+    passes_when: "objective exists AND status == LIQUIDITY_UNDELIVERED"
+    blocks_when: "No objective OR status IN [LIQUIDITY_SWEEP, REJECTED, BREAK]"
+    status_ref: "foundation.yaml:liquidity_status"
+    ref: "context.yaml:SIG-CTX-010"
+
+  POST_EXPANSION:
+    drawer: context.yaml
+    section: signals.structure_state
+    meaning: "Daily objective reached — now in rebalance mode"
+    passes_when: "structure_state == POST_EXPANSION"
+    implies: "Shift to H4/H1 for execution"
+    ref: "context.yaml:SIG-CTX-016"
+
+  IMPULSIVE_DELIVERY:
+    drawer: context.yaml
+    section: signals.post_expansion_trigger
+    meaning: "Objective reached via impulsive move (not grind)"
+    passes_when: "Displacement candle + ≤3 bars + ≤1 opposing + FVG present"
+    blocks_when: "Grind delivery detected (slow, >3 bars, multiple touches)"
+    ref: "context.yaml:SIG-CTX-017"
+
+# =============================================================================
+# TIMING GATES (from entry.yaml)
+# =============================================================================
+
+timing_gates:
+  KILL_ZONE_ACTIVE:
+    drawer: entry.yaml
+    section: kill_zones
+    meaning: "Current time within high-conviction Kill Zone"
+    passes_when: "Time falls within KZ window (Asia 20:00-21:00, LOKZ 03:00-04:00, NYKZ 08:00-09:00)"
+    values: [asia_kz, lokz, nykz]
+    note: "KZ = 1 hour into session (after manipulation hour)"
+    ref: "entry.yaml:SIG-ENTRY-010/011/012"
+
+  SESSION_ACTIVE:
+    drawer: entry.yaml
+    section: sessions
+    meaning: "Market is in an active trading session"
+    passes_when: "Time within Asia (19:00-00:00), London (02:00-05:00), or NY (07:00-10:00)"
+    blocks_when: "Off-session (low resistance liquidity time)"
+    ref: "entry.yaml:SIG-ENTRY-001/002/003"
+
+  NOT_MANIPULATION_HOUR:
+    drawer: entry.yaml
+    section: kill_zones.manipulation_hour
+    meaning: "Past the first hour of session (stop hunts complete)"
+    passes_when: "NOT in 19:00-20:00 (Asia) OR 02:00-03:00 (London) OR 07:00-08:00 (NY)"
+    note: "First hour = manipulation, fake moves"
+    ref: "entry.yaml:kill_zones.manipulation_hour"
+
+# =============================================================================
+# ENTRY TRIGGER GATES (from entry.yaml)
+# =============================================================================
+
+trigger_gates:
+  SWEEP_DETECTED:
+    id: "SIG-ENTRY-030"
+    drawer: entry.yaml
+    section: triggers.sweep_entry
+    meaning: "Liquidity sweep into PDA with reversal confirmation"
+    passes_when: "Liquidity taken + swept INTO PDA + MSS/displacement confirmation"
+    components: [liquidity_pool, extension, pda_destination, confirmation]
+    ref: "entry.yaml:SIG-ENTRY-030"
+
+  DISPLACEMENT_CONFIRMED:
+    id: "SIG-ENTRY-031"
+    drawer: entry.yaml
+    section: triggers.displacement_entry
+    meaning: "Valid displacement has occurred"
+    passes_when: "10+ pips in 3-5 bars, bodies >70%, FVG created"
+    definition_ref: "foundation.yaml:displacement"
+    ref: "entry.yaml:SIG-ENTRY-031"
+
+  LTF_MSS_CONFIRMED:
+    id: "SIG-ENTRY-032"
+    drawer: entry.yaml
+    section: triggers.ltf_mss_entry
+    meaning: "Lower timeframe MSS confirms HTF direction"
+    passes_when: "5m/15m MSS with displacement + FVG"
+    ref: "entry.yaml:SIG-ENTRY-032"
+
+  OTE_ZONE_ACTIVE:
+    id: "SIG-ENTRY-050"
+    drawer: entry.yaml
+    section: ote_trigger
+    meaning: "Price is in Optimal Trade Entry zone"
+    passes_when: "Price in 0.62-0.79 Fibonacci retracement zone"
+    definition_ref: "conditions.yaml:SIG-COND-050"
+    ref: "entry.yaml:SIG-ENTRY-050"
+
+# =============================================================================
+# FULL CONTEXT GATE (warmup state machine)
+# =============================================================================
+
+system_gates:
+  FULL_CONTEXT:
+    drawer: context.yaml
+    section: warmup_states
+    meaning: "All HTF components valid — system ready to trade"
+    passes_when: "State machine in FULL_CONTEXT state"
+    requires_all:
+      - MSS_EXISTS
+      - RANGE_DEFINED
+      - OBJECTIVE_VALID
+      - P_D_VALID (not equilibrium)
+    state_machine: [NO_STRUCTURE, WEEKLY_ONLY, NO_RANGE, NO_OBJECTIVE, EQUILIBRIUM, FULL_CONTEXT]
+    only_tradeable_state: "FULL_CONTEXT"
+    ref: "context.yaml:warmup_states"
+
+# =============================================================================
+# QUICK REFERENCE TABLE
+# =============================================================================
+
+quick_reference:
+  description: "Common gates and their one-line meanings"
+  table:
+    - {gate: HTF_BIAS, meaning: "3Q framework confirms direction", drawer: context}
+    - {gate: P_D_VALID, meaning: "Not at equilibrium", drawer: context}
+    - {gate: MSS_EXISTS, meaning: "Structure is defined", drawer: context}
+    - {gate: OBJECTIVE_VALID, meaning: "Target is UNDELIVERED", drawer: context}
+    - {gate: FVG_VALID, meaning: "Gap not fully filled", drawer: conditions}
+    - {gate: OB_VALID, meaning: "OB body not broken", drawer: conditions}
+    - {gate: ALIGNED, meaning: "HTF + layers agree", drawer: conditions}
+    - {gate: FRESH, meaning: "Recent and untested", drawer: conditions}
+    - {gate: KILL_ZONE_ACTIVE, meaning: "In high-conviction window", drawer: entry}
+    - {gate: SWEEP_DETECTED, meaning: "Liquidity taken + reversal", drawer: entry}
+    - {gate: GRADE_A_LONG, meaning: "All conditions optimal for long", drawer: conditions}
+    - {gate: GRADE_A_SHORT, meaning: "All conditions optimal for short", drawer: conditions}
+    - {gate: FULL_CONTEXT, meaning: "System ready to trade", drawer: context}

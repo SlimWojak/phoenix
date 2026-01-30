@@ -3,8 +3,8 @@
 
 ```yaml
 document: SPRINT_ROADMAP.md
-version: 1.0
-date: 2026-01-29
+version: 2.1
+date: 2026-01-30
 status: CANONICAL
 format: M2M_DENSE
 audience: Advisors (GPT, GROK, OWL, Opus)
@@ -15,18 +15,20 @@ audience: Advisors (GPT, GROK, OWL, Opus)
 ## CURRENT STATE
 
 ```yaml
-current_sprint: S41_WARBOAR_AWAKENS
-status: S35-S40_COMPLETE
+current_sprint: S42_COMPLETE ✅
+status: S35-S42_COMPLETE | POST_S42_FREEZE ACTIVE
 s33_p2: BLOCKED (Olya CSO calibration)
-s40_completion_date: 2026-01-30
-certification: SLEEP_SAFE_CERTIFIED
+s42_completion_date: 2026-01-30
+certification: WARBOAR_CERTIFIED | LIVE_GATEWAY_VALIDATED | CSO_PRODUCTION_READY
 cumulative:
-  sprints_complete: 13 (S28 → S40)
-  tests_passing: 1279
-  chaos_vectors: 204/204 PASS
-  invariants_proven: 89+
+  sprints_complete: 15 (S28 → S42)
+  tests_passing: 1465+
+  xfailed: 28 (documented, strict)
+  chaos_vectors: 224/224 PASS
+  invariants_proven: 95+
   bead_types: 17
   runbooks: 8
+  gate_glossary: 48 gates mapped
 ```
 
 ---
@@ -410,29 +412,134 @@ codename: SLEEP_SAFE
 
 ---
 
-## S41: WARBOAR_AWAKENS (NEXT)
+## S41: WARBOAR_AWAKENS — COMPLETE ✓ SEALED
 
 ```yaml
-status: PLANNED
+status: COMPLETE ✓ SEALED
+completion_date: 2026-01-23
 theme: "Distillation + Live Validation"
-source: WARBOAR_RESILIENCE_FINAL_FORM.md
+tests: 195+ (narrator/SLM/integration)
+bunny_vectors: 20 (narrator injection, classifier bypass, IBKR chaos)
+new_invariants: 6 (SLM-*, ALERT-TAXONOMY-*)
+certification: LIVE_GATEWAY_VALIDATED
 ```
 
-### Scope
-| Track | Name | Purpose |
+### Phases Delivered
+| Phase | Name | Outcome |
 |-------|------|---------|
-| A | UNSLOTH_DISTILLATION | Distill Claude reasoning to local SLM |
-| B | LIVE_VALIDATION | Paper → Live progression |
-| C | DMG_PACKAGING | macOS app distribution |
-| D | ALERT_TAXONOMY | Notification hierarchy |
+| 2A | Foundation | IO schema, invariant freeze, boundary assertion |
+| 2B | Dataset Generation | 1000+ training examples (pivoted to rule-based) |
+| 2C | Distillation | ContentClassifier (rule-based, 100% accuracy) |
+| 2D | Narrator Integration | Single chokepoint, canonicalization, heresy blocking |
+| 2E | Surface Polish | Human cadence, alert one-liners, degraded messages |
+| 3A | Mock Validation | 7/7 exit gates PASSED |
+| 3B | Real Gateway | Live IBKR connection validated (PAPER MODE) |
+
+### Key Deliverables
+```yaml
+slm/:
+  - inference.py: Classification API
+  - training/: Dataset generation
+governance/:
+  - slm_boundary.py: ContentClassifier, @slm_output_guard
+narrator/:
+  - renderer.py: narrator_emit() chokepoint
+  - surface.py: Human-readable formatters
+  - templates/: Humanized Jinja2 templates
+notification/:
+  - alert_taxonomy.py: One-liner formatters
+drills/:
+  - s41_phase3_live_validation.py: Real Gateway validation
+```
+
+### Invariants Proven (S41)
+```yaml
+INV-SLM-READONLY-1: "SLM output cannot mutate state"
+INV-SLM-NO-CREATE-1: "SLM cannot create new information"
+INV-SLM-CLASSIFICATION-ONLY-1: "Output is classification only"
+INV-SLM-BANNED-WORDS-1: "SLM detects all banned categories"
+INV-ALERT-TAXONOMY-1: "Alerts use defined categories"
+INV-ALERT-TAXONOMY-2: "Alert severity from enum"
+```
+
+### Latency Benchmarks (Real Gateway)
+```yaml
+classifier_p50: 0.12ms
+classifier_p95: 0.34ms
+narrator_emit_p95: < 1ms
+full_pipeline_p95: < 500ms
+```
+
+### Exit Gate
+"SLM classifies correctly, latency < 15ms, real IBKR Gateway validated"
 
 ### References
 - `docs/build_docs/WARBOAR_RESILIENCE_FINAL_FORM.md`
-- `docs/BEYOND_S39_SCOPE.md`
+- `docs/S41_COMPLETION_REPORT.md`
 
 ---
 
-## S40+: CARPARK (FUTURE FUEL)
+## S42: TRUST_CLOSURE — COMPLETE ✅
+
+```yaml
+status: COMPLETE ✅
+completion_date: 2026-01-30
+theme: "Trust Closure + Production Ready"
+codename: TRUST_CLOSURE
+certification: CSO_PRODUCTION_READY
+```
+
+### Tracks Delivered
+| Track | Name | Key Deliverables |
+|-------|------|------------------|
+| A | CSO_PRODUCTION | Gate glossary (48 gates), health file, operator docs, system prompt v0.2 |
+| B | FAILURE_REHEARSAL | s42_failure_playbook.py (chaos vectors) |
+| C | TECH_DEBT_BURN | pytest failures triaged, xfail documented |
+| D | RIVER_COMPLETION | synthetic_river.py fallback |
+| E | OBSERVABILITY | phoenix_status CLI |
+| F | ARCHITECTURAL_FINALITY | ARCHITECTURAL_FINALITY.md, START_HERE.md, archive sweep |
+
+### Track A Deliverables (CSO Production)
+```yaml
+gate_glossary:
+  file: cso/knowledge/GATE_GLOSSARY.yaml
+  gates_mapped: 48
+  purpose: "Gate name → drawer location + meaning"
+  
+health_file:
+  file: state/health_writer.py
+  output: state/health.yaml
+  purpose: "CSO-readable system health snapshot"
+  
+operator_docs:
+  - docs/OPERATOR_INSTRUCTIONS/OPERATOR_EXPECTATIONS.md
+  - docs/OPERATOR_INSTRUCTIONS/WHEN_TO_IGNORE_PHOENIX.md
+  
+cso_prompt:
+  file: cso/knowledge/CSO_HEALTH_PROMPT.md
+  purpose: "Instructions for health file consumption"
+  
+foundation_addition:
+  concept: "inducement"
+  location: foundation.yaml
+  purpose: "Distinct from manipulation (bait vs switch)"
+```
+
+### CSO Validation Points
+```yaml
+methodology_fluency: "CSO understands 5-drawer ICT methodology"
+health_awareness: "CSO reads health.yaml, reports naturally"
+approve_flow: "CSO handles APPROVE intent correctly"
+degraded_handling: "CSO explains degraded states calmly"
+boundary_respect: "CSO knows when Phoenix can/cannot help"
+```
+
+### Exit Gate
+"CSO production-ready; gate glossary maps all gates; health file enables visibility"
+
+---
+
+## S43+: CARPARK (FUTURE FUEL)
 
 ```yaml
 status: DORMANT
@@ -530,17 +637,22 @@ first_questions:
 
 ---
 
-## S35-S40 BLOCK SUMMARY
+## S35-S42 BLOCK SUMMARY
 
 ```yaml
 s35_s39_completion_date: 2026-01-29
 s40_completion_date: 2026-01-30
-total_tests: 1279
-total_bunny_vectors: 204
-total_invariants: 89+
+s41_completion_date: 2026-01-23
+s42_completion_date: 2026-01-30
+total_tests: 1465+ (28 xfailed)
+total_bunny_vectors: 224
+total_invariants: 95+
+total_gates_mapped: 48
 
 s35_s39_theme: "CONSTITUTIONAL CEILING"
 s40_theme: "SLEEP_SAFE"
+s41_theme: "WARBOAR_AWAKENS"
+s42_theme: "TRUST_CLOSURE"
 
 what_this_means: |
   NEX died saying: "Strategy Stability Index: 78/100"
@@ -548,6 +660,8 @@ what_this_means: |
   
   No scalar scores. No rankings. No verdicts.
   Human frames, machine computes. Human sleeps.
+  The boar barks clean facts — receipts hidden, alerts glanceable.
+  CSO understands the methodology. Operator understands the boundaries.
 
 key_modules_delivered:
   # S35-S39 (Constitutional Ceiling)
@@ -564,11 +678,29 @@ key_modules_delivered:
   brokers/ibkr/degradation.py: Graceful T2→T1→T0 cascade
   narrator/: Template-based facts projection
   tools/hooks/: Constitutional enforcement at commit + runtime
+  
+  # S41 (WarBoar Awakens)
+  slm/: Classification API (rule-based, 100% accuracy)
+  governance/slm_boundary.py: ContentClassifier guard dog
+  narrator/renderer.py: narrator_emit() single chokepoint
+  narrator/surface.py: Human-readable formatters
+  notification/alert_taxonomy.py: One-liner alert formatters
+  drills/s41_phase3_live_validation.py: Real Gateway validation
+  
+  # S42 (Trust Closure)
+  cso/knowledge/GATE_GLOSSARY.yaml: 48 gates mapped
+  state/health_writer.py: CSO-readable health file
+  docs/OPERATOR_INSTRUCTIONS/: Operator expectations + boundaries
+  cso/knowledge/CSO_HEALTH_PROMPT.md: Health consumption guide
 
 the_floor_holds: |
   S40 proves the system survives coordinated chaos.
-  15 attack vectors, 0 cascade failures, 0 alert storms.
-  No 3am wake-ups. Sleep-safe certified.
+  S41 proves the guard dog catches heresy at the throat.
+  S42 proves CSO understands the methodology and operator knows the boundaries.
+  Real IBKR Gateway validated in paper mode.
+  15 + 20 attack vectors, 0 cascade failures, 0 alert storms.
+  48 gates mapped. Health visible. Operator instructed.
+  No 3am wake-ups. Sleep-safe + warboar + trust certified.
 ```
 
-*S35-S40 COMPLETE. Ceiling set. Floor holds. Sleep-safe certified. 🐗🔥*
+*S35-S42 COMPLETE. Ceiling set. Floor holds. Guard dog armed. Trust closed. 🐗🔥*

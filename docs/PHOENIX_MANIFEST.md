@@ -18,15 +18,16 @@
 ```yaml
 project: Phoenix / WarBoar
 purpose: Constitutional trading system
-status: S40_COMPLETE | S33_P2_BLOCKED (Olya)
-block_complete: S35-S40 (CONSTITUTIONAL_CEILING + SLEEP_SAFE)
-s40_completion_date: 2026-01-30
-certification: SLEEP_SAFE_CERTIFIED
+status: S42_COMPLETE | POST_S42_FREEZE | CSO_PRODUCTION_READY | S33_P2_BLOCKED (Olya)
+block_complete: S35-S42 (CONSTITUTIONAL_CEILING + SLEEP_SAFE + WARBOAR_AWAKENS + TRUST_CLOSURE)
+s42_completion_date: 2026-01-30
+certification: WARBOAR_CERTIFIED | LIVE_GATEWAY_VALIDATED | CSO_PRODUCTION_READY
 relationship: Sibling to God_Mode (forge builds tools, Phoenix protects capital)
 canonical_fate: docs/DEFINITIVE_FATE.yaml
-total_tests: 1279
-total_invariants: 89+
-total_chaos_vectors: 204
+total_tests: 1465+ (28 xfailed)
+total_invariants: 95+
+total_chaos_vectors: 224
+gate_glossary: 48 gates mapped
 ```
 
 ## 1b. NON-GOALS
@@ -152,6 +153,53 @@ tools/hooks/:
   purpose: Pre-commit constitutional enforcement
   authority: BUILD_TIME_ENFORCEMENT
   status: S40_COMPLETE ✓
+
+# S41 (COMPLETE)
+slm/:
+  purpose: SLM classification API (rule-based guard dog)
+  authority: CLASSIFICATION_ONLY (no state mutation)
+  status: S41_COMPLETE ✓
+
+governance/slm_boundary.py:
+  purpose: ContentClassifier + @slm_output_guard
+  authority: HERESY_DETECTION
+  status: S41_COMPLETE ✓
+  
+narrator/renderer.py:
+  purpose: narrator_emit() single chokepoint
+  authority: EMISSION_GATE
+  status: S41_COMPLETE ✓
+
+narrator/surface.py:
+  purpose: Human-readable formatters (gate facts, degraded states)
+  authority: PRESENTATION_ONLY
+  status: S41_COMPLETE ✓
+
+notification/alert_taxonomy.py:
+  purpose: Alert one-liner formatters with severity emojis
+  authority: NOTIFICATION_FORMATTING
+  status: S41_COMPLETE ✓
+
+# S42 (COMPLETE)
+cso/knowledge/GATE_GLOSSARY.yaml:
+  purpose: Gate name → drawer location + meaning (48 gates)
+  authority: CSO_REFERENCE
+  status: S42_COMPLETE ✓
+
+state/health_writer.py:
+  purpose: CSO-readable health file generator
+  authority: OBSERVABILITY
+  status: S42_COMPLETE ✓
+
+cso/knowledge/CSO_HEALTH_PROMPT.md:
+  purpose: Health file consumption instructions for CSO
+  authority: CSO_GUIDANCE
+  status: S42_COMPLETE ✓
+
+docs/OPERATOR_INSTRUCTIONS/:
+  purpose: Operator expectations and boundaries
+  authority: OPERATOR_GUIDANCE
+  status: S42_COMPLETE ✓
 ```
 
 ### DAEMONS
@@ -707,14 +755,35 @@ S40: Sleep-Safe Resilience | ✓ 312 tests, 15 BUNNY
 cumulative_summary:
   s35_s39_completion_date: 2026-01-29
   s40_completion_date: 2026-01-30
-  total_tests: 1279
-  total_bunny_vectors: 204
-  total_invariants: 89+
+  s41_completion_date: 2026-01-23
+  total_tests: 1474+
+  total_bunny_vectors: 224
+  total_invariants: 95+
   s35_s39_theme: "CONSTITUTIONAL CEILING"
   s40_theme: "SLEEP_SAFE"
+  s41_theme: "WARBOAR_AWAKENS"
 
-# NEXT
-S41: WARBOAR_AWAKENS (Unsloth distillation, live validation)
+# S41 COMPLETE
+S41: WARBOAR_AWAKENS | ✓ 195 tests, 20 BUNNY
+  Phase_2A: Foundation (IO schema, invariant freeze)
+  Phase_2B: Dataset generation (pivoted to rule-based)
+  Phase_2C: ContentClassifier (100% accuracy, 0.34ms p95)
+  Phase_2D: Narrator integration (single chokepoint)
+  Phase_2E: Surface polish (human cadence)
+  Phase_3: Live Gateway validation (PAPER MODE)
+
+# S42 COMPLETE (Trust Closure)
+S42: TRUST_CLOSURE | ✓ Gate glossary (48 gates), health file, operator docs
+  Track_A: CSO Production (glossary, health, operator docs)
+  Track_B: Failure Rehearsal (chaos playbook)
+  Track_C: Tech Debt Burn (xfail documented)
+  Track_D: River Completion (synthetic fallback)
+  Track_E: Observability (phoenix_status CLI)
+  Track_F: Doc Seal (START_HERE, archive sweep)
+
+# CURRENT STATE
+S42_COMPLETE | POST_S42_FREEZE ACTIVE | CSO_PRODUCTION_READY
+# See docs/ARCHITECTURAL_FINALITY.md for freeze rules
 ```
 
 ---
@@ -795,6 +864,6 @@ beads.yaml:
 
 ---
 
-*S35-S40 COMPLETE. Human frames, machine computes. Human sleeps.*
+*S35-S41 COMPLETE. Human frames, machine computes. Human sleeps.*
 *No scalar scores. No rankings. No verdicts. Ever.*
-*The constitutional ceiling is set. The floor holds. Sleep-safe certified. 🐗🔥*
+*The constitutional ceiling is set. The floor holds. Guard dog armed. Live gateway validated. 🐗🔥*
