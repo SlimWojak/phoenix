@@ -377,15 +377,11 @@ pda_detection:
       - {col: ob_direction, values: [bullish, bearish]}
       - {col: ob_timeframe, values: [5m, 15m, 1h, 4h, daily]}
       - {col: ob_timestamp, type: datetime}
-      - {col: ob_body_pct, type: float, desc: "Body % of total range"}
-      - {col: ob_quality, values: [beefy, acceptable, weak], desc: "Based on body_pct"}
+      - {col: ob_body_pct, type: float, desc: "Body percentage for quality determination"}
     
-    quality_grading:
-      beefy: "body_pct > 70%"
-      acceptable: "body_pct > 50%"
-      weak: "body_pct <= 50%"
+    note: "Quality grading (beefy/acceptable/weak) defined in Foundation, referenced here"
     
-    note: "Immutable - stored at detection, BODY ONLY (not wicks)"
+    note_immutable: "Immutable - stored at detection, BODY ONLY (not wicks)"
     ref: "foundation.OB, NEX:L9"
   
   ifvg_detection:
@@ -578,7 +574,7 @@ validation_checklist:
     - {check: daily_mss_confirmed, desc: "Daily MSS detected and confirmed"}
     - {check: daily_range_defined, desc: "Daily range defined (structure-based)"}
     - {check: objective_identified, desc: "Daily objective identified and aligned"}
-    - {check: objective_status_valid, desc: "Objective status = NOT_DELIVERED or LIQUIDITY_RUN"}
+    - {check: objective_undelivered, desc: "Objective status = LIQUIDITY_UNDELIVERED"}
     - {check: not_equilibrium, desc: "Premium/Discount zone determined (NOT equilibrium)"}
     - {check: bias_synthesized, desc: "Trade bias synthesized from 3 questions"}
     - {check: pdas_tracked, desc: "All PDAs tracked (respected/broken/untested)"}
@@ -597,7 +593,7 @@ key_principles:
     - {num: 3, rule: "Without MSS → no structure."}
     - {num: 4, rule: "Without MSS → no range."}
     - {num: 5, rule: "Without objective → no trade."}
-    - {num: 6, rule: "Objective must be valid: NOT_DELIVERED or LIQUIDITY_RUN status."}
+    - {num: 6, rule: "Objective must be LIQUIDITY_UNDELIVERED (untaken liquidity)."}
     - {num: 7, rule: "Post-expansion = impulsive delivery. Grind rejected."}
     - {num: 8, rule: "Structure > Time: Ranges from MSS, NOT PDH/PDL."}
     - {num: 9, rule: "Bias = 3 Questions: Location + Objective + Respect."}

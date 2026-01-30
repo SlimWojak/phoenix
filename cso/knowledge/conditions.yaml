@@ -3,95 +3,70 @@
 # PURPOSE: Range selection, alignment, location, confluence scoring
 # RULE: Answers "Should I be looking for a trade here?"
 
-schema_version: "1.0.0"
+schema_version: "1.1.0"
 created: "2026-01-23"
-label: "DRAFT v0 — 5-drawer extraction, pending Olya validation"
+updated: "2026-01-30"
+label: "v1.0 — Updated with blur fixes (3Q reference, P/D reference, PDA status tracking)"
 
 # =============================================================================
-# 3 QUESTIONS FRAMEWORK (Daily Bias)
+# BIAS INPUT (from Context — BLUR-001)
 # =============================================================================
+# ✅ BLUR-001: 3Q framework CALCULATED in Context, CONSUMED here
 
-bias_framework:
-  execution: "00:00 NY daily, frozen until next day"
-
-  Q1_location:
-    id: "SIG-COND-001"
-    question: "Where is price RIGHT NOW?"
-    outputs:
-      - {col: position_pct, type: float, formula: "(close - range_low) / (range_high - range_low) * 100"}
-      - {col: zone, type: str, values: [premium, discount, equilibrium]}
-      - {col: nearest_pda, type: dict}
-      - {col: in_pda, type: bool}
-    zones:
-      deep_discount: "<25%"
-      discount: "25-50%"
-      equilibrium: "~50%"
-      premium: "50-75%"
-      deep_premium: ">75%"
-    ref: "L0:1130-1170"
-
-  Q2_objective:
-    id: "SIG-COND-002"
-    question: "Where is price LIKELY TO GO?"
-    outputs: [dol_primary, dol_secondary, expected_path]
-    requires: "daily_mss.exists"
-    ref: "L0:1172-1210"
-
-  Q3_respect:
-    id: "SIG-COND-003"
-    question: "Where is price COMING FROM?"
-    outputs:
-      - {col: htf_direction, values: [bullish, bearish, neutral]}
-      - {col: confidence, values: [high, medium, low]}
-      - {col: structure_bias, type: str}
-      - {col: pda_bias, type: str}
-    logic: "structure_bias + pda_bias alignment"
-    ref: "L0:1212-1265"
-
-  bias_synthesis:
-    id: "SIG-COND-004"
-    inputs: [q1_location, q2_objective, q3_respect]
-    outputs: [trade_bias, bias_note]
-    logic:
-      - {condition: "htf_direction == neutral", output: none}
-      - {condition: "zone == equilibrium", output: none}
-      - {condition: "dol_primary == None", output: none}
-      - {condition: "htf_direction == bullish", output: long_only}
-      - {condition: "htf_direction == bearish", output: short_only}
-    ref: "L0:1267-1300"
+bias_input:
+  id: "SIG-COND-BIAS-INPUT"
+  name: "Trade Bias Input"
+  source: "context.bias_framework"
+  note: "Bias calculated in Context (Drawer 2), consumed here for permission logic"
+  
+  inputs:
+    - {col: trade_bias, source: "context.bias_synthesis.trade_bias", values: [long_only, short_only, both, none]}
+    - {col: bias_note, source: "context.bias_synthesis.bias_note"}
+    - {col: htf_direction, source: "context.Q3_respect.htf_direction"}
+    - {col: zone, source: "context.Q1_location.zone"}
+    - {col: position_pct, source: "context.Q1_location.position_pct"}
+    - {col: dol_primary, source: "context.Q2_objective.dol_primary"}
+    - {col: dol_secondary, source: "context.Q2_objective.dol_secondary"}
+  
+  validation:
+    - {check: "trade_bias IN [long_only, short_only, both, none]"}
+    - {check: "IF trade_bias == none THEN permission = NO_TRADE"}
+  
+  ref: "CSO:filing_blurs_fixes_v1.yaml:BLUR-001"
 
 # =============================================================================
-# PREMIUM / DISCOUNT (Location)
+# PREMIUM / DISCOUNT CHECK (from Context — BLUR-002)
 # =============================================================================
+# ✅ BLUR-002: P/D CALCULATED in Context, read-only reference here
 
 signals:
-  structural_premium_discount:
+  pd_state_check:
     id: "SIG-COND-010"
-    name: "Structural P/D State"
-    formula: "compare(close, structural_equilibrium)"
-    states:
-      premium: {condition: "close > eq", trading_bias: SELL}
-      discount: {condition: "close < eq", trading_bias: BUY}
-      equilibrium: {condition: "close == eq", trading_bias: NO_TRADE}
-    note: "Structure-based range, NOT time-based (PDH/PDL)"
-    ref: "L0:694-720, NEX:L8"
+    name: "Premium/Discount Gate"
+    source: "context.structural_pd_state"
+    note: "Read-only reference — NO calculation here (BLUR-002)"
+    
+    inputs:
+      - {col: pd_state, source: "context.structural_pd_state.pd_state", values: [premium, discount, equilibrium]}
+      - {col: position_pct, source: "context.structural_pd_state.position_pct"}
+    
+    validation:
+      - {check: "pd_state IN [premium, discount, equilibrium]"}
+      - {check: "IF pd_state == equilibrium THEN permission = NO_TRADE"}
+    
+    alignment_logic:
+      long_valid: "pd_state == discount"
+      short_valid: "pd_state == premium"
+      no_trade: "pd_state == equilibrium"
+    
+    ref: "CSO:filing_blurs_fixes_v1.yaml:BLUR-002"
 
   structural_position:
     id: "SIG-COND-011"
     name: "Structural Position %"
-    col: "structural_position_pct"
-    formula: "(close - structural_low) / (structural_high - structural_low) * 100"
-    weight: 0.9
-    ref: "NEX:L8:132-138"
-
-  daily_position:
-    id: "SIG-COND-012"
-    name: "Daily Position %"
-    col: "daily_position_pct"
-    formula: "(close - pdl) / (pdh - pdl) * 100"
-    weight: 0.4
-    note: "SECONDARY — structural is primary"
-    ref: "NEX:L8:150-156"
+    source: "context.structural_pd_state.position_pct"
+    note: "Read from context — NO calculation here"
+    ref: "NEX:L8:132-138, CSO:filing_blurs_fixes_v1.yaml:BLUR-002"
 
 # =============================================================================
 # ALIGNMENT
@@ -137,48 +112,64 @@ signals:
     ref: "NEX:L11:98-163"
 
 # =============================================================================
-# PDA TRACKING (Confluence Zones)
+# PDA STATUS TRACKING (from Context Registry — BLUR-003)
 # =============================================================================
+# ✅ BLUR-003: Context DETECTS PDAs, Conditions TRACKS STATUS
 
-  fvg_tracking:
+  pda_status_tracking:
     id: "SIG-COND-030"
-    name: "FVG Tracking"
-    timeframes: [5m, 15m, 1h, 4h, daily]
-    per_fvg:
-      - fvg_high
-      - fvg_low
-      - fvg_ce
-      - fvg_direction
-      - fvg_size_pips
-      - fvg_age_bars
-      - fvg_fill_pct
-      - fvg_formed_during_displacement
-      - fvg_fully_broken
-      - in_fvg
+    name: "PDA Status Evaluation"
+    source: "context.pda_detection (immutable registry)"
+    note: "Evaluates current status, gates trades (BLUR-003)"
+    
+    inputs: [pda_id, pda_type, price_levels, timeframe, timestamp]  # From context registry
+    
+    status_evaluation:
+      untouched:
+        condition: "No price interaction yet"
+        trade_permission: "Highest quality"
+      tapped:
+        condition: "Price touched but did not accept"
+        trade_permission: "Valid, lower quality"
+      respected:
+        condition: "Price returned shallowly, rejected, continued"
+        trade_permission: "Valid, confirms level"
+      violated:
+        condition: "Price accepted through level (broke structure)"
+        trade_permission: "INVALID - do not use"
+    
+    tracking_columns:
+      - {col: pda_age_bars, type: int, desc: "Bars since detection"}
+      - {col: pda_touch_count, type: int, desc: "Number of touches"}
+      - {col: pda_fill_pct, type: float, desc: "How much filled (for FVGs)"}
+      - {col: pda_status, values: [untouched, tapped, respected, violated]}
+      - {col: pda_freshness_score, type: float, range: [0, 10]}
+    
+    trade_gate:
+      rule: "IF pda_status == violated THEN permission = NO_TRADE"
+    
+    ref: "CSO:filing_blurs_fixes_v1.yaml:BLUR-003"
+
+  fvg_status:
+    id: "SIG-COND-031"
+    name: "FVG Status (inherits from pda_status_tracking)"
+    source: "context.pda_detection.fvg_detection"
+    additional_columns:
+      - {col: fvg_fill_pct, formula: "fill_depth / fvg_size"}
+      - {col: fvg_fully_broken, formula: "fill_pct >= 100%"}
+      - {col: in_fvg, formula: "price BETWEEN fvg_low AND fvg_high"}
     ref: "NEX:L5"
 
-  ob_tracking:
-    id: "SIG-COND-031"
-    name: "Order Block Tracking"
-    per_ob:
-      - ob_body_high
-      - ob_body_low
-      - ob_mt
-      - ob_body_pct
-      - ob_displacement_pips
-      - ob_has_fvg
-      - ob_age_bars
-      - ob_touch_count
-      - ob_fully_broken
-      - in_ob
+  ob_status:
+    id: "SIG-COND-032"
+    name: "OB Status (inherits from pda_status_tracking)"
+    source: "context.pda_detection.ob_detection"
+    additional_columns:
+      - {col: ob_touch_count, type: int}
+      - {col: ob_fully_broken, formula: "close accepted through body"}
+      - {col: in_ob, formula: "price BETWEEN ob_body_low AND ob_body_high"}
     note: "BODY only, NOT wicks"
     ref: "NEX:L9"
-
-  pda_status:
-    id: "SIG-COND-032"
-    name: "PDA Status Tracking"
-    status_types: [respected, broken, untested]
-    ref: "L0:757-790"
 
 # =============================================================================
 # TIMING FRESHNESS
@@ -234,10 +225,13 @@ composite_gates:
     name: "High Quality Long"
     requires:
       - "in_structural_discount"
-      - "freshness_score >= 6"
-      - "touch_count <= 2"
       - "entry_matches_htf_long"
-      - "NOT conflicting_signals"
+    
+    evaluator_inputs:
+      - {col: freshness_score, type: float}
+      - {col: touch_count, type: int}
+    
+    note: "Thresholds (freshness >= 6, touches <= 2) applied by evaluator"
     output: "GRADE_A_LONG"
     ref: "NEX:L11"
 
@@ -246,10 +240,13 @@ composite_gates:
     name: "High Quality Short"
     requires:
       - "in_structural_premium"
-      - "freshness_score >= 6"
-      - "touch_count <= 2"
       - "entry_matches_htf_short"
-      - "NOT conflicting_signals"
+    
+    evaluator_inputs:
+      - {col: freshness_score, type: float}
+      - {col: touch_count, type: int}
+    
+    note: "Thresholds (freshness >= 6, touches <= 2) applied by evaluator"
     output: "GRADE_A_SHORT"
     ref: "NEX:L11"
 
@@ -276,8 +273,8 @@ conflicts:
     refs: ["NEX:L8:73-82", "NEX:L11:110-111"]
   
   - id: "CONFLICT-COND-002"
-    desc: "L10 has hardcoded freshness thresholds, L11 says 'thresholds in evaluator'"
-    recommendation: "Move scoring to evaluator"
+    desc: "✅ RESOLVED: Thresholds moved to evaluator, Conditions outputs counts only"
+    recommendation: "N/A - resolved"
     refs: ["NEX:L10:127-158", "NEX:L11:7-9"]
 
 # =============================================================================

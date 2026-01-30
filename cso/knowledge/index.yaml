@@ -40,7 +40,7 @@ drawers:
       - GAP 7 (liquidity status 4-state model)
       - GAP 9 (PDH/PDL/PWH/PWL forex day definition)
     counts:
-      definitions: 27  # +1 (inducement)
+      definitions: 22  # Actual verified count
       invariants: 21
       prohibitions: 8
     status: "v1.1 — GAP 7 + GAP 9 + inducement definition"
@@ -119,7 +119,7 @@ drawers:
 
 totals:
   files: 5
-  definitions: 27  # +1 inducement
+  definitions: 22  # Actual verified count
   signals: 71  # context: 30, conditions: 13, entry: 15, management: 13
   invariants: 21
   prohibitions: 8
