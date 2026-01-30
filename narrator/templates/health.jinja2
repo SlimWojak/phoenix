@@ -1,0 +1,36 @@
+OINK! HEALTH CHECK 🐗
+═══════════════════════════════════════
+{{ timestamp_str }}
+
+RIVER
+─────────────────────────────────────
+  STATUS:     {{ river.health_status }}
+  STALENESS:  {{ river.staleness_seconds | format_staleness }}
+{% if river.is_stale %}  ⚠️ DATA STALE{% endif %}
+
+IBKR SUPERVISOR
+─────────────────────────────────────
+  STATE:      {{ supervisor.state }}
+  CONNECTED:  {% if supervisor.ibkr_connected %}YES{% else %}NO{% endif %}
+  HEARTBEAT:  {% if supervisor.heartbeat_ok %}OK{% else %}MISSED{% endif %}
+  DEGRADATION: {{ supervisor.degradation_level | default('NONE') }}
+
+CIRCUIT BREAKERS
+─────────────────────────────────────
+  STATUS:     {{ supervisor.circuit_breakers_closed }}/{{ supervisor.circuit_breakers_total }} CLOSED
+
+{% if tests.collected %}
+TEST SUITE
+─────────────────────────────────────
+  COLLECTED:  {{ tests.collected }}
+  PASSED:     {{ tests.passed }}
+  FAILED:     {{ tests.failed }}
+{% endif %}
+
+═══════════════════════════════════════
+{% if river.health_status == 'HEALTHY' and supervisor.state == 'RUNNING' %}
+No heresy detected. Floor holding.
+{% else %}
+⚠️ ATTENTION REQUIRED
+{% endif %}
+═══════════════════════════════════════

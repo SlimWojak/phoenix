@@ -1,0 +1,19 @@
+🚨 OINK OINK! ALERT! 🚨
+═══════════════════════════════════════
+
+SEVERITY:   {{ severity }}
+COMPONENT:  {{ component }}
+EVENT:      {{ event }}
+
+{% if message %}
+MESSAGE:    {{ message }}
+{% endif %}
+
+ACTION_TAKEN: {{ action_taken }}
+{% if degradation_level %}
+DEGRADATION:  {{ degradation_level }}
+{% endif %}
+
+═══════════════════════════════════════
+Human attention required.
+═══════════════════════════════════════
