@@ -1,10 +1,11 @@
 # Phoenix / WarBoar
 
-**Status:** S40 COMPLETE | S33 Phase 2 BLOCKED (Olya-dependent)
+**Status:** S42 COMPLETE | S43-S52 PATH LOCKED → WARBOAR v0.1
 **Founded:** 2026-01-24
-**S35-S39 Block:** CONSTITUTIONAL CEILING COMPLETE (2026-01-29)
-**S40:** SLEEP-SAFE CERTIFIED (2026-01-30)
-**Tests:** 1279 passing | **Invariants:** 89+ proven | **Chaos Vectors:** 204 handled
+**S35-S42 Block:** COMPLETE (Constitutional Ceiling + Sleep-Safe + WarBoar + Trust Closure)
+**Current:** S43 QUICK_WINS (active)
+**Target:** WARBOAR v0.1 (10 sprints, 5-7 weeks)
+**Tests:** 1465 passing (28 xfailed) | **Invariants:** 95+ proven | **Chaos Vectors:** 224 handled
 
 ---
 
@@ -28,7 +29,7 @@ Phoenix (App)    = The Trading System — River, CSO, Execution
 
 ---
 
-## S35-S40 Complete — Sleep-Safe Certified
+## S35-S41 Complete — WarBoar Certified
 
 | Sprint | Codename | Tests | Key Invariant |
 |--------|----------|-------|---------------|
@@ -37,8 +38,10 @@ Phoenix (App)    = The Trading System — River, CSO, Execution
 | S37 | ATHENA | 51 | INV-ATTR-PROVENANCE |
 | S38 | HUNT | 69 | INV-HUNT-NO-SURVIVOR-RANKING |
 | S39 | VALIDATION | 109 | INV-SCALAR-BAN |
-| **S40** | **SLEEP_SAFE** | **312** | **20 invariants, 15 chaos vectors** |
-| **TOTAL** | | **1279** | **89+ proven, 204 chaos vectors** |
+| S40 | SLEEP_SAFE | 312 | 20 invariants, 15 chaos vectors |
+| **S41** | **WARBOAR** | **195** | **6 invariants, 20 chaos vectors, Live Gateway** |
+| **S42** | **TRUST_CLOSURE** | **CSO** | **Gate glossary, health file, operator docs** |
+| **TOTAL** | | **1465+** | **95+ proven, 224 chaos vectors** |
 
 **What This Means:**
 - **NEX died saying:** "Strategy Stability Index: 78/100"
@@ -62,8 +65,9 @@ See: `docs/DEFINITIVE_FATE.yaml` for complete capability mapping.
 | S37 | Memory Discipline | ✓ **Complete** (51 tests) |
 | S38 | Hunt Infrastructure | ✓ **Complete** (69 tests) |
 | S39 | Research Validation | ✓ **Complete** (109 tests) |
-| **S40** | **Sleep-Safe Resilience** | ✓ **Complete** (312 tests) |
-| S41 | WARBOAR_AWAKENS | NEXT |
+| S40 | Sleep-Safe Resilience | ✓ **Complete** (312 tests) |
+| **S41** | **WARBOAR_AWAKENS** | ✓ **Complete** (195 tests) **SEALED** |
+| S42 | TBD | PLANNING |
 
 ### Key Invariants Proven (S35-S40)
 
@@ -82,6 +86,14 @@ See: `docs/DEFINITIVE_FATE.yaml` for complete capability mapping.
 - **INV-IBKR-DEGRADE-1/2:** Graceful degradation cascade (T2→T1→T0)
 - **INV-HOOK-1/2/3/4:** Constitutional enforcement at commit + runtime
 - **INV-NARRATOR-1/2/3:** Facts-only projection (no synthesis)
+
+**S41 (WarBoar):**
+- **INV-SLM-READONLY-1:** SLM output cannot mutate state
+- **INV-SLM-NO-CREATE-1:** SLM cannot create new information
+- **INV-SLM-CLASSIFICATION-ONLY-1:** Output is classification, not decision
+- **INV-SLM-BANNED-WORDS-1:** SLM detects all banned categories
+- **INV-ALERT-TAXONOMY-1/2:** Alerts use defined categories and severity enum
+- **Live Gateway Validated:** Real IBKR connection (paper mode)
 
 See: `docs/SPRINT_ROADMAP.md` for full detail.
 
@@ -167,8 +179,9 @@ Full list: `docs/DEFINITIVE_FATE.yaml` → invariants section
 | S37 | 15 | ✓ PASS |
 | S38 | 23 | ✓ PASS |
 | S39 | 28 | ✓ PASS |
-| **S40** | **15** | **✓ PASS** |
-| **Total** | **204** | |
+| S40 | 15 | ✓ PASS |
+| **S41** | **20** | **✓ PASS** |
+| **Total** | **224** | |
 
 ---
 
@@ -227,6 +240,6 @@ phoenix/
 
 ---
 
-*S35-S40 COMPLETE. Human frames, machine computes. Human sleeps.*
+*S35-S41 COMPLETE. Human frames, machine computes. Human sleeps.*
 *No scalar scores. No rankings. No verdicts. Ever.*
-*Ceiling set. Floor holds. Sleep-safe certified. 🐗🔥*
+*Ceiling set. Floor holds. Guard dog armed. Live gateway validated. 🐗🔥*

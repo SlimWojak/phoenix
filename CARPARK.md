@@ -3,10 +3,10 @@
 
 ```yaml
 document: CARPARK.md
-version: 4.1
-date: 2026-01-30
+version: 5.0
+date: 2026-01-31
 status: CANONICAL
-source: DEFINITIVE_FATE.yaml carpark section + advisor synthesis
+source: S43+ advisory convergence + DEFINITIVE_FATE.yaml
 ```
 
 ---
@@ -103,65 +103,71 @@ invariants: INV-CIRCUIT-1/2, INV-BACKOFF-1/2, INV-HEALTH-1/2, INV-HEAL-REENTRANC
 
 ---
 
-## S42 CANDIDATES
+## COMPLETED (S42) ✓ — TRUST_CLOSURE
 
-### TECH_DEBT_CLEANUP
+### TECH_DEBT_CLEANUP — DONE
 ```yaml
 description: |
-  Clean up 104 pre-existing test failures + 7 errors.
-  - test_no_live_orders.py: ExecutionIntent import error
-  - test_telegram_real.py: API mismatch
-  - test_schema_lockdown.py: Schema drift
-  - test_chaos_bunny.py: Chaos vectors incomplete
-status: CANDIDATE
-priority: P1
-effort: 1-2 hours
-reference: docs/TECH_DEBT.md
+  Cleaned up 104 pre-existing test failures + 7 errors.
+  28 xfailed (documented), 0 failures.
+status: S42_COMPLETE ✓
+path: tests/conftest.py, docs/S42_FAILURE_TRIAGE.md
 ```
 
-### RIVER_DATA_PIPELINE
+### RIVER_DATA_PIPELINE — DONE (SYNTHETIC FALLBACK)
 ```yaml
 description: |
-  Connect River to live data source.
-  No recent bars during S41 validation.
-status: CANDIDATE
-priority: P2
-dependencies: IBKR market data subscription OR alternative source
+  Created synthetic river fallback for testing.
+  Real River connectivity remains IBKR-dependent.
+status: S42_COMPLETE ✓
+path: river/synthetic_river.py
 ```
+
+### CSO_PRODUCTION_READINESS — DONE
+```yaml
+description: |
+  Gate glossary (48 gates), health file, operator docs.
+  CSO validated for production.
+status: S42_COMPLETE ✓
+paths:
+  - cso/knowledge/GATE_GLOSSARY.yaml
+  - state/health_writer.py
+  - docs/OPERATOR_INSTRUCTIONS/
+```
+
+---
+
+## S48-S51 CANDIDATES (PRE-SCHEDULED)
 
 ### VOICE_WHISPERER
 ```yaml
 description: |
   Natural language voice interface.
-  Parked from S40.
-status: PARKED
+status: SCHEDULED → S48 (HUD_SURFACE)
 priority: P3
-dependencies: Foundation proven in production
 ```
 
 ### OINK_EASTER_EGGS
 ```yaml
 description: |
   Fun messages on success ("Recombobulation complete").
-  Parked from S41 Phase 2E.
-status: PARKED
+status: SCHEDULED → S51 (PRO_FLOURISHES)
 priority: P4
-dependencies: Post-production launch
 ```
 
 ---
 
-## S43 CANDIDATES
+## S43 SCOPE (SCHEDULED)
 
 ### PYTEST_PARALLELIZATION
 ```yaml
-status: PROPOSED
+status: SCHEDULED → S43_BUILD_MAP (Track A)
 source: NEX pattern subsumption + banteg zero-jank hardening
-priority: P3 (post-S42)
+priority: P0
 sprint_target: S43
 
 description: |
-  Leverage pytest-xdist (-n auto / -n logical) to parallelize 
+  Leverage pytest-xdist (-n auto / -n logical) to parallelize
   chaos bunny + validation suite.
   Goal: 1502+ tests from ~7 min → <3 min wall time.
   Preserve strict ordering for stateful fixtures via xdist groups / worker gating.
@@ -187,8 +193,8 @@ hardware_context:
 effort_estimate: 2-4 hours (config + grouping + smoke)
 
 chaos_upside: |
-  Run bunny vectors in parallel → discover race conditions 
-  we never saw sequentially. If it breaks, we learn. 
+  Run bunny vectors in parallel → discover race conditions
+  we never saw sequentially. If it breaks, we learn.
   If it flies, supremacy speed unlocked.
 ```
 
@@ -228,7 +234,79 @@ effort_estimate: Unknown (needs scoping)
 
 ---
 
-## S42+ DORMANT (GROK Frontier Synthesis)
+## POST v0.1 PARKED (S43+ Advisory Convergence)
+
+### MULTI_AGENT_ORCHESTRATION_LIGHT
+```yaml
+status: PARKED (post v0.1)
+source: GROK synthesis, advisory convergence 2026-01-31
+priority: P4 (complexity after foundation stable)
+
+description: |
+  Orchestrator spawns sub-agents for Hunt/CFP parallel execution.
+  Full business orchestration beyond trading scope.
+
+dependencies:
+  - S35-S42 foundation proven ✓
+  - WARBOAR v0.1 complete
+  - Production stability observed
+
+governance: Requires T2 extension to sub-agent spawning
+verdict: KEEP PARKED — complexity after foundation stable
+```
+
+### TOKEN_COST_INFRASTRUCTURE
+```yaml
+status: NEW_PARK (post v0.1)
+source: GROK synthesis, advisory convergence 2026-01-31
+priority: P3 (nice-to-have)
+
+description: |
+  - Per-lease budget enforcement
+  - Spike alerts
+  - No runaway bills
+
+relation: INV-HUNT-BUDGET is immediate (S38)
+verdict: PARK — nice-to-have, not blocking v0.1
+```
+
+### REGIME_NUKE_AUTOPSY
+```yaml
+status: NEW_PARK (post v0.1)
+source: GROK synthesis, advisory convergence 2026-01-31
+priority: P3 (forensic enhancement)
+
+description: |
+  Post-crash bead palace queries ("why did lease fail?")
+  Enhanced forensic analysis on regime changes.
+
+dependencies:
+  - Bead palace operational ✓
+  - Lease framework complete (S47)
+
+verdict: PARK — forensic palace exists, enhance post-ship
+```
+
+### OLYA_OCD_INTEGRATION
+```yaml
+status: OPERATOR_PACED (post v0.1)
+source: CSO observation, advisory convergence 2026-01-31
+priority: P4 (Olya-dependent)
+
+description: |
+  Custom runbook checklists as filing cabinet extension.
+  Olya's personal workflow integration.
+
+dependencies:
+  - 5-drawer filing cabinet stable ✓
+  - Olya calibration complete (S50)
+
+verdict: PARK — can't force Olya's rhythm, revisit post-calibration
+```
+
+---
+
+## S42+ DORMANT (Original GROK Frontier Synthesis)
 
 ### MULTI_AGENT_ORCHESTRATION
 ```yaml
@@ -237,7 +315,7 @@ description: |
   Enables "runs a business" endgame beyond trading.
 dependencies: S35-S40 foundation proven
 governance: Requires T2 extension to sub-agent spawning
-status: DORMANT
+status: DORMANT (superseded by MULTI_AGENT_ORCHESTRATION_LIGHT)
 ```
 
 ### WORKFLOW_LEARNING

@@ -505,20 +505,20 @@ gate_glossary:
   file: cso/knowledge/GATE_GLOSSARY.yaml
   gates_mapped: 48
   purpose: "Gate name → drawer location + meaning"
-  
+
 health_file:
   file: state/health_writer.py
   output: state/health.yaml
   purpose: "CSO-readable system health snapshot"
-  
+
 operator_docs:
   - docs/OPERATOR_INSTRUCTIONS/OPERATOR_EXPECTATIONS.md
   - docs/OPERATOR_INSTRUCTIONS/WHEN_TO_IGNORE_PHOENIX.md
-  
+
 cso_prompt:
   file: cso/knowledge/CSO_HEALTH_PROMPT.md
   purpose: "Instructions for health file consumption"
-  
+
 foundation_addition:
   concept: "inducement"
   location: foundation.yaml
@@ -539,21 +539,83 @@ boundary_respect: "CSO knows when Phoenix can/cannot help"
 
 ---
 
-## S43+: CARPARK (FUTURE FUEL)
+## S43-S52: PATH TO WARBOAR v0.1 (CANONICAL)
 
 ```yaml
-status: DORMANT
-activation: Post-S39 foundation
-source: GROK frontier synthesis
+status: CONVICTION_LOCKED
+date: 2026-01-31
+source: Advisory team convergence (CTO + GPT + GROK + OPUS)
+target: WARBOAR v0.1 — Production standard software
+estimated_timeline: 5-7 weeks (10 sprints)
 ```
 
-| Item | Description | Dependencies |
-|------|-------------|--------------|
-| Multi-agent orchestration | Orchestrator → sub-agents w/ dependency graphs | S35-S39 proven |
-| Self-healing mechanisms | Backoff, circuit breakers, auto-escalation | S35-S39 proven |
-| Workflow learning | Store successful patterns → propose refinements (human veto) | INV-NO-UNSOLICITED salvage |
-| RBAC sub-agents | T2 gating extended to sub-agent spawning | Multi-agent operational |
-| Token/cost infrastructure | Per-workflow budget, prompt optimization | INV-HUNT-BUDGET extended |
+### Philosophy
+```yaml
+1: Quick wins first (S43) — momentum
+2: Prove it works (S44-S45) — confidence
+3: Design before build (S46-S47) — governance
+4: Make it visible (S48) — operator happiness
+5: Make it installable (S49) — real software
+6: Operationalize it (S50) — boring excellence
+7: Make it delightful (S51) — engagement
+8: Ship it (S52) — production standard
+```
+
+### Sprint Skeleton
+
+| Sprint | Codename | Scope | Outcome |
+|--------|----------|-------|---------|
+| **S43** | QUICK_WINS | pytest parallelization, alert bundling, config centralization, narrator templates | Developer velocity unlocked |
+| **S44** | LIVE_VALIDATION | IBKR paper end-to-end, "boring 48h" soak, chaos replay, multi-degrade drills | Full path proven under real conditions |
+| **S45** | RESEARCH_UX | IDEA → HUNT → CFP → DECIDE journey, chunked output, lens presets | Research feels like superpower |
+| **S46** | LEASE_DESIGN | Lease schema (bounds, expiry, revoke), perish-by-default, attestation bead | Delegated autonomy design-complete |
+| **S47** | LEASE_IMPLEMENTATION | Lease interpreter + expiry, revoke path, evidence, halt integration | Bounded autonomy operational |
+| **S48** | HUD_SURFACE | phoenix_status → widget, daily briefing, "what needs me", voice whisperer | Zero "is it broken?" messages |
+| **S49** | DMG_PACKAGING | One-command build, DMG signed, first-run wizard, config migration | Installs like real software |
+| **S50** | RUNBOOKS_CALIBRATION | Runbooks for ALL states, escalation ladder, CSO calibration prep | Incidents boring, CSO ready |
+| **S51** | PRO_FLOURISHES | Sound/haptics, OINK easter eggs, session summaries, drift dashboard | Feels engaging, not just correct |
+| **S52** | WARBOAR_SEAL | Invariant freeze, constitutional audit, acceptance checklist, handover | **WARBOAR v0.1 COMPLETE** |
+
+### New Invariants (S43-S52)
+
+```yaml
+# Global (after S44)
+INV-NO-CORE-REWRITES-POST-S44:
+  rule: "After live validation, no architectural rewrites. Only tightening, surfacing, governance."
+  rationale: "Prevents 'one last clever refactor' syndrome. Protects momentum."
+
+# S45 Research UX
+INV-RESEARCH-RAW-DEFAULT:
+  rule: "Research output defaults to raw table. Human summary is opt-in toggle, not default."
+  rationale: "Catches authority leakage at UX layer. Prevents NEX dashboard poison."
+
+# S47 Lease Implementation
+INV-HALT-OVERRIDES-LEASE:
+  rule: "Halt signal overrides lease bounds check. Halt always wins. <50ms."
+  rationale: "Constitutional safety non-negotiable. No revoke race with halt."
+```
+
+### Dependencies
+
+```yaml
+key_dependencies:
+  S44: IBKR availability (may delay)
+  S50: Olya availability (partial, operator-paced)
+  S51: Can run parallel to S50
+
+acceleration_options:
+  merge_s48_s51: "HUD + flourishes if ahead of schedule"
+  ten_to_eight: "Possible if no IBKR blockers — let velocity reveal"
+```
+
+### Parked Items (Post v0.1)
+
+| Item | Status | Notes |
+|------|--------|-------|
+| Multi-agent orchestration | ALREADY_PARKED | Complexity after foundation stable |
+| Token cost infrastructure | NEW_PARK | Nice-to-have, not blocking v0.1 |
+| Regime nuke autopsy | NEW_PARK | Forensic palace exists, enhance post-ship |
+| Olya OCD integration | OPERATOR_PACED | Can't force Olya's rhythm |
 
 ---
 
@@ -599,9 +661,14 @@ source: GROK frontier synthesis
 ### Narrator — S40 ✓
 - INV-NARRATOR-1/2/3
 
-**Total: 89+ invariants proven (S28-S40)**
-**Tests: 1279 passing**
-**Chaos vectors: 204 handled**
+### S43-S52 (New — Path to v0.1)
+- INV-NO-CORE-REWRITES-POST-S44 (global, after S44)
+- INV-RESEARCH-RAW-DEFAULT (S45)
+- INV-HALT-OVERRIDES-LEASE (S47)
+
+**Total: 95+ invariants proven (S28-S42)**
+**Tests: 1465 passing (28 xfailed)**
+**Chaos vectors: 224 handled**
 
 ---
 
@@ -657,7 +724,7 @@ s42_theme: "TRUST_CLOSURE"
 what_this_means: |
   NEX died saying: "Strategy Stability Index: 78/100"
   Phoenix says: "Walk-forward delta: +0.3 Sharpe. Monte Carlo 95th DD: -12%. You interpret."
-  
+
   No scalar scores. No rankings. No verdicts.
   Human frames, machine computes. Human sleeps.
   The boar barks clean facts — receipts hidden, alerts glanceable.
@@ -670,7 +737,7 @@ key_modules_delivered:
   athena/: Memory discipline (CLAIM/FACT/CONFLICT)
   hunt/: Exhaustive grid compute
   validation/: Decomposed outputs + ScalarBanLinter
-  
+
   # S40 (Sleep-Safe)
   governance/circuit_breaker.py: Self-healing FSM
   governance/health_fsm.py: Health state tracking
@@ -678,7 +745,7 @@ key_modules_delivered:
   brokers/ibkr/degradation.py: Graceful T2→T1→T0 cascade
   narrator/: Template-based facts projection
   tools/hooks/: Constitutional enforcement at commit + runtime
-  
+
   # S41 (WarBoar Awakens)
   slm/: Classification API (rule-based, 100% accuracy)
   governance/slm_boundary.py: ContentClassifier guard dog
@@ -686,7 +753,7 @@ key_modules_delivered:
   narrator/surface.py: Human-readable formatters
   notification/alert_taxonomy.py: One-liner alert formatters
   drills/s41_phase3_live_validation.py: Real Gateway validation
-  
+
   # S42 (Trust Closure)
   cso/knowledge/GATE_GLOSSARY.yaml: 48 gates mapped
   state/health_writer.py: CSO-readable health file
