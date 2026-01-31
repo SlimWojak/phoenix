@@ -1,0 +1,26 @@
+{# S43: Research Summary Template — INV-NARRATOR-FACTS-ONLY #}
+{# MANDATORY_FACTS_BANNER #}
+{% include 'facts_banner.jinja2' %}
+
+## Research Summary
+
+**Query:** `{{ query }}`
+**Dataset:** `{{ dataset_hash }}`
+**Rows:** {{ row_count }}
+
+{% if results %}
+### Results
+
+{% for row in results %}
+- {{ row }}
+{% endfor %}
+{% else %}
+*No results matching criteria.*
+{% endif %}
+
+{% if receipts_link %}
+📎 [Receipts]({{ receipts_link }})
+{% endif %}
+
+---
+*Facts only. You interpret.*

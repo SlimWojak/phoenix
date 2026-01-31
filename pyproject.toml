@@ -15,6 +15,7 @@ dependencies = [
 dev = [
     "pytest>=8.0",
     "pytest-asyncio>=0.23",
+    "pytest-xdist>=3.5.0",  # S43: parallel test execution
     "mypy>=1.8",
     "ruff>=0.2",
     "pre-commit>=3.6",
@@ -71,10 +72,13 @@ testpaths = ["tests"]
 python_files = ["test_*.py"]
 python_functions = ["test_*"]
 pythonpath = ["."]
+# S43: Enable parallel execution with xdist
+addopts = "-n auto --dist loadgroup"
 markers = [
     "invariant: constitutional compliance tests (INV-*)",
     "chaos: chaos engineering / stress tests",
     "slow: tests that take >5s",
+    "xdist_group(name): group tests to run in same worker (stateful isolation)",
 ]
 asyncio_mode = "auto"
 

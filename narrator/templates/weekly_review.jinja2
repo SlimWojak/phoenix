@@ -1,0 +1,29 @@
+{# S43: Weekly Review Template — INV-NARRATOR-FACTS-ONLY #}
+{# MANDATORY_FACTS_BANNER #}
+{% include 'facts_banner.jinja2' %}
+
+## Weekly Review: {{ week_start }} → {{ week_end }}
+
+### Summary
+
+| Metric | Value |
+|--------|-------|
+| Trades | {{ trade_count }} |
+| Gates passed | {{ gates_summary }} |
+{% if win_count is defined %}| Wins | {{ win_count }} |{% endif %}
+{% if loss_count is defined %}| Losses | {{ loss_count }} |{% endif %}
+
+{% if trades %}
+### Trade Log
+
+{% for trade in trades %}
+- **{{ trade.timestamp }}**: {{ trade.pair }} — {{ trade.direction }} — {{ trade.outcome }}
+{% endfor %}
+{% endif %}
+
+{% if receipts_link %}
+📎 [Receipts]({{ receipts_link }})
+{% endif %}
+
+---
+*Facts only. You interpret.*
