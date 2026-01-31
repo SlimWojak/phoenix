@@ -58,7 +58,9 @@ struct HUDContentView: View {
         .animation(.easeInOut(duration: 0.3), value: watcher.isStale)
         .animation(.easeInOut(duration: 0.3), value: watcher.lastError != nil)
         .onAppear {
-            watcher.startWatchingMock()
+            // Production: watch real Phoenix manifest
+            // Falls back to mock if Phoenix manifest not found
+            watcher.startWatchingPhoenix()
         }
         .onDisappear {
             watcher.stopWatching()

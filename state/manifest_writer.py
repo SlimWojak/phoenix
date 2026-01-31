@@ -91,7 +91,7 @@ def get_current_killzone(now: dt | None = None) -> dict[str, Any]:
     return {
         "kz": "OFF_SESSION",
         "active": False,
-        "time_remaining": None,
+        "time_remaining": "--",  # HUD expects non-null string
         "next_session": next_kz,
         "next_start": f"{next_start:02d}:00",
     }
@@ -266,20 +266,36 @@ def map_health_to_hud(health_data: dict[str, Any]) -> dict[str, Any]:
 
     # Extract component statuses
     components_raw = health_data.get("components", {})
-    components = {}
     degraded_reasons = []
 
-    for comp_name, comp_data in components_raw.items():
+    def get_comp_color(comp_name: str) -> str:
+        comp_data = components_raw.get(comp_name, {})
         if isinstance(comp_data, dict):
             comp_status = comp_data.get("status", "UNKNOWN")
         else:
-            comp_status = str(comp_data)
+            comp_status = str(comp_data) if comp_data else "UNKNOWN"
+        return status_map.get(comp_status, "YELLOW")
 
-        comp_color = status_map.get(comp_status, "YELLOW")
-        components[comp_name] = comp_color
+    # Build HUD-compatible components dict
+    # HUD expects exactly: ibkr, river, halt_state, lease, decay
+    components = {
+        "ibkr": get_comp_color("ibkr"),
+        "river": get_comp_color("river"),
+        "halt_state": get_comp_color("halt"),
+        "lease": "GREEN",  # Stub - no lease system yet
+        "decay": "GREEN",  # Stub - no decay tracking yet
+    }
+
+    # Build degraded reasons from all components
+    for comp_name, comp_data in components_raw.items():
+        if isinstance(comp_data, dict):
+            comp_status = comp_data.get("status", "UNKNOWN")
+            detail = comp_data.get("detail", "")
+        else:
+            comp_status = str(comp_data) if comp_data else "UNKNOWN"
+            detail = ""
 
         if comp_status not in ("HEALTHY", "READY", "RUNNING", "CONNECTED"):
-            detail = comp_data.get("detail", "") if isinstance(comp_data, dict) else ""
             degraded_reasons.append(
                 f"{comp_name}: {comp_status}" + (f" ({detail})" if detail else "")
             )
@@ -371,12 +387,13 @@ def build_manifest() -> dict[str, Any]:
     health = map_health_to_hud(health_data)
 
     # Stub sections (Phoenix doesn't have these yet)
+    # Note: HUD Swift models expect non-null numbers, use 0.0 as default
     portfolio = {
-        "balance": None,
+        "balance": 0.0,
         "currency": "USD",
-        "today_pnl": None,
-        "today_pct": None,
-        "week_pct": None,
+        "today_pnl": 0.0,
+        "today_pct": 0.0,
+        "week_pct": 0.0,
     }
 
     live_positions: list[dict[str, Any]] = []

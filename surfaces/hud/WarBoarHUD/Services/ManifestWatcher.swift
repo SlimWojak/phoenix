@@ -90,6 +90,40 @@ final class ManifestWatcher: ObservableObject {
         setupStaleCheckTimer()
     }
 
+    /// Start watching the real Phoenix manifest (production mode)
+    func startWatchingPhoenix() {
+        // Look for manifest via symlinked state/ directory (relative to app bundle)
+        // Path: surfaces/hud/state/ -> ../../state/manifest.json
+        let bundlePath = Bundle.main.bundlePath
+        let appDir = URL(fileURLWithPath: bundlePath).deletingLastPathComponent()
+
+        // Try several possible paths
+        let possiblePaths = [
+            // Symlinked state directory (when running from Xcode build)
+            appDir
+                .deletingLastPathComponent()  // Products
+                .deletingLastPathComponent()  // Build
+                .deletingLastPathComponent()  // build
+                .appendingPathComponent("state/manifest.json"),
+            // Direct path to Phoenix state (fallback)
+            URL(fileURLWithPath: NSString(string: "~/phoenix/state/manifest.json").expandingTildeInPath),
+            // HUD's symlinked state directory
+            URL(fileURLWithPath: NSString(string: "~/phoenix/surfaces/hud/state/manifest.json").expandingTildeInPath)
+        ]
+
+        for url in possiblePaths {
+            if FileManager.default.fileExists(atPath: url.path) {
+                print("🎯 ManifestWatcher: Found Phoenix manifest at \(url.path)")
+                startWatching(url: url)
+                return
+            }
+        }
+
+        // No Phoenix manifest found, fall back to mock
+        print("⚠️ ManifestWatcher: Phoenix manifest not found, falling back to mock")
+        startWatchingMock()
+    }
+
     /// Start watching the default mock manifest (for development)
     func startWatchingMock() {
         // Try bundle first
@@ -99,7 +133,7 @@ final class ManifestWatcher: ObservableObject {
         }
 
         // Fallback to dev path
-        let devPath = NSString(string: "~/phoenix-hud/WarBoarHUD/Preview Content/MockManifest.json").expandingTildeInPath
+        let devPath = NSString(string: "~/phoenix/surfaces/hud/WarBoarHUD/Preview Content/MockManifest.json").expandingTildeInPath
         let devURL = URL(fileURLWithPath: devPath)
 
         if FileManager.default.fileExists(atPath: devURL.path) {
