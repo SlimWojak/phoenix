@@ -80,9 +80,13 @@ def emit_heartbeat_bead(status_snapshot: dict) -> str:
 
 
 def get_phoenix_status() -> dict:
-    """Get current phoenix status snapshot."""
+    """Get current phoenix status snapshot including IBKR."""
+    status = {
+        "timestamp": datetime.now(UTC).isoformat(),
+    }
+    
+    # Get phoenix_status CLI output
     try:
-        # Run phoenix_status CLI and capture output
         import subprocess
         result = subprocess.run(
             [sys.executable, "cli/phoenix_status.py"],
@@ -91,16 +95,34 @@ def get_phoenix_status() -> dict:
             timeout=10,
             cwd=Path(__file__).parent.parent,
         )
-        return {
-            "output": result.stdout[:500],  # Truncate
-            "exit_code": result.returncode,
-            "timestamp": datetime.now(UTC).isoformat(),
-        }
+        status["phoenix_status"] = result.stdout[:500]
+        status["exit_code"] = result.returncode
     except Exception as e:
-        return {
-            "error": str(e),
-            "timestamp": datetime.now(UTC).isoformat(),
-        }
+        status["phoenix_status_error"] = str(e)
+    
+    # Get direct IBKR status
+    try:
+        from brokers.ibkr.config import IBKRConfig
+        from brokers.ibkr.connector import IBKRConnector
+        
+        config = IBKRConfig.from_env()
+        status["ibkr_mode"] = config.mode.value
+        status["ibkr_port"] = config.port
+        
+        if config.mode.value != "MOCK":
+            connector = IBKRConnector(config=config)
+            connected = connector.connect()
+            if connected:
+                health = connector.health_check()
+                status["ibkr_connected"] = True
+                status["ibkr_account"] = health.get("account_id", "unknown")
+                connector.disconnect()
+            else:
+                status["ibkr_connected"] = False
+    except Exception as e:
+        status["ibkr_error"] = str(e)
+    
+    return status
 
 
 def start_soak():

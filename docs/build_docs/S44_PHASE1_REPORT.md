@@ -1,7 +1,7 @@
 # S44 Phase 1: River Verification Report
 
 **Date:** 2026-01-31
-**Status:** FINDINGS_DOCUMENTED
+**Status:** COMPLETE ✅ (IBKR diagnosed + fixed)
 
 ---
 
@@ -126,13 +126,41 @@ Before Phase 2, verify cold restart coherence.
 
 ---
 
+## IBKR Diagnosis (Mid-Phase)
+
+**Issue:** Phoenix reported MOCK mode while Gateway was GREEN.
+
+**Root Cause:** `.env` file not loaded by Python.
+
+**Fix:** Added `python-dotenv` loading to CLI and scripts.
+
+**Result:**
+```
+Before: IBKR: MOCK (port 4002)
+After:  IBKR: PAPER (DUO768070)
+```
+
+**Full connection verified:**
+- Account: DUO768070
+- Net liquidation: $1,004,069.16
+- Connected: True
+
+See: `S44_IBKR_DIAGNOSIS.md` for full details.
+
+---
+
 ## Phase 1 Conclusion
 
-**Status:** PASS (with synthetic fallback)
+**Status:** COMPLETE ✅
 
-**Next:** Phase 2 (Full Path Test) using Synthetic River
+| Outcome | Status |
+|---------|--------|
+| River verified | ✅ (stale but documented) |
+| IBKR diagnosed | ✅ (config gap found) |
+| IBKR fixed | ✅ (dotenv loading added) |
+| IBKR verified | ✅ (PAPER DUO768070) |
 
-**Escalation Note:** Real River refresh should be addressed post-S44 or when live trading environment is set up.
+**Next:** Phase 2 (Full Path Test) → Phase 3 (48h Soak on REAL IBKR)
 
 ---
 
