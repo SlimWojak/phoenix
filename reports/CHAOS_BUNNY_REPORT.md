@@ -1,7 +1,7 @@
 # CHAOS BUNNY REPORT
 
 **SPRINT:** 26.TRACK_A.DAY_2
-**DATE:** 2026-01-27 11:42 UTC
+**DATE:** 2026-01-31 01:10 UTC
 **ADVISOR:** BOAR (post-execution audit requested)
 
 ---
@@ -22,7 +22,7 @@
 
 | Vector | Status | Health | Quality | Silent |
 |--------|--------|--------|---------|--------|
-| GAPS | PASS ✓ | HALT | 0.978 | False |
+| GAPS | PASS ✓ | HALT | 0.973 | False |
 | LATENCY | PASS ✓ | HEALTHY | 0.998 | False |
 | SPIKE | PASS ✓ | HALT | 0.996 | False |
 | SEQUENCE | PASS ✓ | HALT | 0.990 | False |
@@ -37,8 +37,8 @@
 ```yaml
 detected: True
 gaps_injected: 10
-gaps_detected: 6
-bars_removed: 184
+gaps_detected: 7
+bars_removed: 203
 ```
 
 ### 2. LATENCY
@@ -105,7 +105,7 @@ rationale:
 ```yaml
 symbol: EURUSD
 total_bars: 500
-test_window: 2026-01-26 04:40:00+00:00 → 2026-01-26 12:59:00+00:00
+test_window: 2026-01-30 07:10:00+00:00 → 2026-01-30 15:29:00+00:00
 test_isolation_acknowledged: True
 mitigation_deferred: live_shadow_mode (S27+)
 ```

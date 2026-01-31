@@ -3,35 +3,34 @@ FACTS_ONLY — NO INTERPRETATION
 ═══════════════════════════════════════
 {{ timestamp_str }}
 
-RIVER
+DATA STREAM
 ─────────────────────────────────────
-  STATUS:     {{ river.health_status }}
-  STALENESS:  {{ river.staleness_seconds | format_staleness }}
-{% if river.is_stale %}  ⚠️ DATA STALE{% endif %}
+  {{ river.health_status | health_emoji }} {{ river.health_status }}
+  Updated {{ river.staleness_seconds | format_staleness }}
+{% if river.is_stale %}  ⚠️ Stale — check connection{% endif %}
 
-IBKR SUPERVISOR
+BROKER
 ─────────────────────────────────────
-  STATE:      {{ supervisor.state }}
-  CONNECTED:  {% if supervisor.ibkr_connected %}YES{% else %}NO{% endif %}
-  HEARTBEAT:  {% if supervisor.heartbeat_ok %}OK{% else %}MISSED{% endif %}
-  DEGRADATION: {{ supervisor.degradation_level | default('NONE') }}
+  {{ supervisor.state | health_emoji }} {{ supervisor.state }}
+{% if supervisor.ibkr_connected %}  Connected{% else %}  Disconnected{% endif %}
+{% if supervisor.heartbeat_ok %}  Heartbeat OK{% else %}  ⚠️ Heartbeat missed{% endif %}
+{% if supervisor.degradation_level and supervisor.degradation_level != 'NONE' %}  {{ supervisor.degradation_level }}{% endif %}
 
-CIRCUIT BREAKERS
+CIRCUITS
 ─────────────────────────────────────
-  STATUS:     {{ supervisor.circuit_breakers_closed }}/{{ supervisor.circuit_breakers_total }} CLOSED
+  {{ supervisor.circuit_breakers_closed | circuit_status(supervisor.circuit_breakers_total) }}
 
 {% if tests.collected %}
 TEST SUITE
 ─────────────────────────────────────
-  COLLECTED:  {{ tests.collected }}
-  PASSED:     {{ tests.passed }}
-  FAILED:     {{ tests.failed }}
+  {{ tests.passed }} of {{ tests.collected }} passed
+{% if tests.failed %}  {{ tests.failed }} failed{% endif %}
 {% endif %}
 
 ═══════════════════════════════════════
 {% if river.health_status == 'HEALTHY' and supervisor.state == 'RUNNING' %}
-No heresy detected. Floor holding.
+All systems nominal.
 {% else %}
-⚠️ ATTENTION REQUIRED
+⚠️ Attention required — review above.
 {% endif %}
 ═══════════════════════════════════════

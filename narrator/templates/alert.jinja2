@@ -1,18 +1,18 @@
-🚨 OINK OINK! ALERT! 🚨
+🚨 ALERT 🚨
 FACTS_ONLY — NO INTERPRETATION
 ═══════════════════════════════════════
 
-SEVERITY:   {{ severity }}
-COMPONENT:  {{ component }}
-EVENT:      {{ event }}
+{% if severity == 'CRITICAL' %}🔴{% elif severity == 'WARNING' %}🟡{% else %}🟢{% endif %} {{ severity }}  {{ component | upper }}
+
+{{ event }}
 
 {% if message %}
-MESSAGE:    {{ message }}
+{{ message }}
 {% endif %}
 
-ACTION_TAKEN: {{ action_taken }}
-{% if degradation_level %}
-DEGRADATION:  {{ degradation_level }}
+Action: {{ action_taken }}
+{% if degradation_level and degradation_level != 'NONE' %}
+Degradation: {{ degradation_level }}
 {% endif %}
 
 ═══════════════════════════════════════

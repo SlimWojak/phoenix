@@ -34,6 +34,23 @@ from .renderer import (
     NarratorRenderer,
     TemplateRenderError,
     UndefinedVariableError,
+    NarratorHeresyError,
+    narrator_emit,
+    canonicalize_content,
+)
+from .templates import MANDATORY_FACTS_BANNER
+from .surface import (
+    GATE_PHRASES,
+    gates_to_phrases,
+    format_gate_facts,
+    DegradedState,
+    DEGRADED_MESSAGES,
+    get_degraded_message,
+    format_alert_oneliner,
+    format_health_status,
+    format_staleness,
+    format_receipts,
+    format_circuit_status,
 )
 
 __all__ = [
@@ -47,8 +64,24 @@ __all__ = [
     "HuntData",
     "TemplateRegistry",
     "FORBIDDEN_WORDS",
+    "MANDATORY_FACTS_BANNER",
     "validate_template_content",
     "NarratorRenderer",
     "TemplateRenderError",
     "UndefinedVariableError",
+    "NarratorHeresyError",
+    "narrator_emit",
+    "canonicalize_content",
+    # S41 Phase 2E Surface
+    "GATE_PHRASES",
+    "gates_to_phrases",
+    "format_gate_facts",
+    "DegradedState",
+    "DEGRADED_MESSAGES",
+    "get_degraded_message",
+    "format_alert_oneliner",
+    "format_health_status",
+    "format_staleness",
+    "format_receipts",
+    "format_circuit_status",
 ]

@@ -54,3 +54,9 @@ hive/next_check_note.txt
 logs/*.log
 logs/*.json
 !logs/.gitkeep
+
+# Generated responses (transient, regeneratable)
+responses/
+
+# SLM model files (too large for git)
+slm/models/

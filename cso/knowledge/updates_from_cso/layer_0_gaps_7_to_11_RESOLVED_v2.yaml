@@ -1,0 +1,708 @@
+# LAYER 0 GAPS 7-11 - RESOLUTION
+# VERSION: 2.0 (GAP 7 & 8 RESOLVED)
+# DATE: 2026-01-27
+# PURPOSE: Complete remaining gaps in Layer 0 HTF Context
+# STATUS: GAP 7 ✅ GAP 8 ✅ GAP 9 (NEXT)
+
+schema_version: "2.0.0"
+created: "2026-01-27"
+updated: "2026-01-27"
+author: "Claude (with Olya)"
+source: "LAYER_0_HTF_CONTEXT_FINAL_v4_with_5_gaps.md"
+purpose: "Resolve GAP 7-11 to complete Layer 0 HTF Context specification"
+
+# =============================================================================
+# RESOLUTION STATUS
+# =============================================================================
+
+resolution_status:
+  gap_7_liquidity_sweep: "✅ RESOLVED"
+  gap_8_post_expansion: "✅ RESOLVED"
+  gap_9_pdh_pdl: "✅ RESOLVED"
+  gap_10_11: "ℹ️ NOT LAYER 0 GAPS (belong to D15MB strategy)"
+  
+  layer_0_status: "✅ COMPLETE - ALL 9 GAPS RESOLVED"
+
+# =============================================================================
+# GAP 7: LIQUIDITY SWEEP (STATUS CLASSIFICATION) ✅ RESOLVED
+# =============================================================================
+
+gap_7_liquidity_sweep:
+  id: "GAP-007"
+  priority: "HIGH"
+  location: "Layer 0, Section B5 (Daily Objectives)"
+  status: "✅ RESOLVED"
+  
+  principle:
+    "Liquidity is defined by IMPACT, not by TIME.
+    Consequence exists only within a narrative, never across narratives.
+    One-line truth: Liquidity is defined by impact, not by time."
+  
+  terminology_locked:
+    correct_terms:
+      - "Liquidity Undelivered (untaken liquidity)"
+      - "Liquidity Sweep (liquidity was taken)"
+      - "Rejected (swept then rejected back)"
+      - "Break (consequence detected)"
+    
+    deprecated_terms:
+      - "❌ Defended → ✅ Rejected"
+      - "❌ Liquidity Run / Raid → ✅ Liquidity Sweep"
+      - "❌ Acceptance → ✅ Break"
+      - "❌ Weakly defended → ✅ Liquidity Undelivered"
+      - "❌ Not Delivered → ✅ Liquidity Undelivered"
+    
+    key_distinction:
+      undelivered: "The destination (target this)"
+      sweep: "The trigger (identifies liquidity removal, don't target)"
+  
+  final_state_model:
+    one_line_rule: "LIQUIDITY_UNDELIVERED is the destination. LIQUIDITY_SWEEP is the trigger."
+    
+    principle: "The market is primarily drawn to untaken liquidity."
+    
+    state_flow: |
+      UNDELIVERED
+         ├─(no touch)→ stays UNDELIVERED
+         └─(touch)→ LIQUIDITY_SWEEP
+                      ├─(follow-through)→ BREAK
+                      └─(fails)→ REJECTED
+    
+    states:
+      LIQUIDITY_UNDELIVERED:
+        condition: "Price has not touched/exceeded the level"
+        definition: "Liquidity still resting, orders untaken"
+        quality: "⭐ PRIMARY TARGET"
+        valid_target: true
+        priority: 1
+        note: "The destination - market is drawn to untaken liquidity"
+        detection: "Level never touched OR price ran close within tolerance but did not take it"
+      
+      LIQUIDITY_SWEEP:
+        condition: "Price traded through the level (liquidity WAS TAKEN)"
+        definition: "Liquidity removed from book"
+        quality: "Transitional state (trigger, not target)"
+        valid_target: false
+        priority: 2
+        note: "The trigger - identifies liquidity was taken, not a trading objective"
+        next_states: "Evolves to BREAK (follow-through) or REJECTED (fails)"
+      
+      REJECTED:
+        condition: "Liquidity taken (swept) then rejected back"
+        definition: "Market showed intent away from level"
+        quality: "Shows level validity but NOT a draw"
+        valid_target: false
+        priority: 3
+        note: "Used for BIAS confirmation only, not as trading objective"
+      
+      BREAK:
+        condition: "Close beyond level + consequence detected"
+        definition: "Level broken with structural impact"
+        quality: "Invalid"
+        valid_target: false
+        priority: 4
+        note: "Level no longer valid - structural change occurred"
+  
+  structural_consequences:
+    definition: "A level has consequence if interaction CAUSES any of:"
+    
+    valid_consequences:
+      1_displacement:
+        type: "Displacement"
+        condition: "Impulsive move originating FROM the level"
+        detection: "Uses foundation.displacement (qualitative, no pip constraints)"
+      
+      2_mss:
+        type: "MSS (Market Structure Shift)"
+        condition: "MSS caused by displacement from the level"
+        detection: "MSS originates at level (within 5 pips tolerance)"
+      
+      3_fvg:
+        type: "FVG (Fair Value Gap)"
+        condition: "FVG formed from displacement leg"
+        detection: "FVG created during move away from level"
+      
+      4_liquidity_sweep:
+        type: "Liquidity Sweep (as consequence)"
+        condition: "Fast spike taking nearby liquidity (internal or external)"
+        detection: "Price trades through level, removes liquidity from book"
+        note: "This is LIQUIDITY_SWEEP as a consequence type, not as primary state"
+  
+  liquidity_sweep_detection:
+    definition: "When liquidity transitions from UNDELIVERED → LIQUIDITY_SWEEP"
+    
+    rule: "Liquidity taken when price trades THROUGH the level"
+    
+    trigger_conditions:
+      threshold: "Wick exceeds level by ANY amount (≥0.1 pip beyond)"
+      tolerance: "0-pip tolerance - must trade THROUGH exact level, not just touch"
+      wick_requirement: "Wick must exceed - close is IRRELEVANT"
+      timeframe: "Universal - same rule on ANY timeframe (M1 to Daily)"
+    
+    maximum_extension:
+      hard_cap: 40  # pips - universal across all timeframes
+      rule: "If price exceeds level by >40 pips → NOT a sweep → classify as BREAK"
+      rationale: "Too far = structural change, not liquidity sweep"
+      
+      examples:
+        level_1_1650_high:
+          valid_sweep: "Wick = 1.1690 (40 pips beyond) ✅ Still a sweep"
+          invalid_sweep: "Wick = 1.1691 (41 pips beyond) ❌ Too far → BREAK"
+        
+        level_1_1650_low:
+          valid_sweep: "Wick = 1.1610 (40 pips beyond) ✅ Still a sweep"
+          invalid_sweep: "Wick = 1.1609 (41 pips beyond) ❌ Too far → BREAK"
+    
+    precise_definition:
+      liquidity_taken_when:
+        - "Wick trades through level (any amount beyond)"
+        - "Even 0.1 pip penetration counts"
+        - "Close position does not matter"
+      
+      liquidity_not_taken_when:
+        - "Wick touches exactly at level (0 pips beyond)"
+        - "Wick comes close but doesn't reach (within near-miss tolerance)"
+        - "Close exceeds but wick does not (close irrelevant)"
+    
+    examples:
+      level_at_1_1650:
+        sweep_triggered:
+          - {wick: 1.16501, close: 1.1648, result: "LIQUIDITY_SWEEP ✅"}
+          - {wick: 1.1651, close: 1.1649, result: "LIQUIDITY_SWEEP ✅"}
+          - {wick: 1.1655, close: 1.1652, result: "LIQUIDITY_SWEEP ✅"}
+        
+        sweep_not_triggered:
+          - {wick: 1.1650, close: 1.1652, result: "UNDELIVERED ❌ - wick at level exactly"}
+          - {wick: 1.1649, close: 1.1651, result: "UNDELIVERED ❌ - wick never exceeded"}
+          - {wick: 1.1648, close: 1.1648, result: "UNDELIVERED ❌ - near miss"}
+    
+    state_transition:
+      from: "LIQUIDITY_UNDELIVERED"
+      trigger: "Wick exceeds level"
+      to: "LIQUIDITY_SWEEP (transitional)"
+      then: |
+        Monitor for consequence or rejection:
+        - If consequence detected → BREAK
+        - If rejected back → REJECTED
+        - If neither (yet) → remains LIQUIDITY_SWEEP
+    
+    machine_implementation: |
+      def detect_liquidity_sweep(level, candles):
+          for candle in candles:
+              # Check if wick exceeded level
+              if level_is_high:
+                  if candle.high > level:  # Any amount beyond
+                      return LIQUIDITY_SWEEP
+              else:  # level is low
+                  if candle.low < level:   # Any amount beyond
+                      return LIQUIDITY_SWEEP
+          
+          # Check for near miss (within tolerance, no touch)
+          if within_tolerance(level) and not exceeded(level):
+              return LIQUIDITY_UNDELIVERED
+          
+          # Never touched
+          return LIQUIDITY_UNDELIVERED
+  
+  liquidity_undelivered_detection:
+    definition: "How to identify LIQUIDITY_UNDELIVERED state"
+    
+    equal_highs_lows:
+      rule: "At least 2 swing highs/lows within tolerance"
+      minimum_touches: 2
+      
+      tolerance: 5  # pips - UNIVERSAL across ALL timeframes
+      timeframe_note: "Wicks are price extremes - same on M1 and Daily - NO SCALING"
+      visual_confirmation: "Must look visually 'flat' - equal means equal"
+      
+      approach_direction:
+        equal_highs:
+          valid: "Price must approach from BELOW (testing resistance)"
+          invalid: "❌ Approach from above = not a liquidity test"
+        
+        equal_lows:
+          valid: "Price must approach from ABOVE (testing support)"
+          invalid: "❌ Approach from below = not a liquidity test"
+      
+      note: "Equal highs/lows = liquidity stacking - multiple failed attempts to take level"
+    
+    near_miss:
+      rule: "Price comes within tolerance but does NOT take liquidity"
+      definition: "Ran close - price approached but failed to touch/exceed level"
+      
+      tolerance: 5  # pips - UNIVERSAL (same as equal highs/lows)
+      timeframe_note: "Price is price - no timeframe scaling"
+      
+      note: "Use SAME 5-pip tolerance as equal highs/lows detection"
+    
+    detection_algorithm: |
+      # For each liquidity level:
+      
+      # Check if level ever touched
+      if never_touched(level):
+        return LIQUIDITY_UNDELIVERED
+      
+      # Check for near miss (within tolerance, no touch)
+      if within_tolerance(level) and not touched(level):
+        return LIQUIDITY_UNDELIVERED
+      
+      # Check for equal highs/lows pattern
+      touches = count_touches_within_tolerance(level)
+      if touches >= 2 and all_from_correct_direction(level):
+        if not exceeded(level):
+          return LIQUIDITY_UNDELIVERED
+      
+      # If touched/exceeded
+      if touched_or_exceeded(level):
+        return LIQUIDITY_SWEEP  # Transition state
+        
+        # Then check consequence
+        if has_consequence(level):
+          return BREAK
+        elif rejected_back(level):
+          return REJECTED
+        else:
+          # Remains in LIQUIDITY_SWEEP state until resolved
+    
+    causal_linkage_rule:
+      principle: "Consequence must be CAUSALLY LINKED to level touch"
+      
+      valid:
+        - "Displacement originates AT level"
+        - "FVG forms FROM that displacement"
+        - "MSS caused BY that displacement"
+        - "Liquidity Sweep triggered BY the touch"
+      
+      invalid:
+        - "❌ Displacement occurs later, after price moved away"
+        - "❌ Consequence after price restructured"
+        - "❌ Consequence merely near same price (coincidental)"
+        - "❌ Consequence after new MSS (belongs to new narrative)"
+  
+  consequence_time_window:
+    rule: "Consequence monitored ONLY within current structural regime"
+    
+    mss_as_reset:
+      principle: "MSS = narrative reset"
+      consequence: "Old levels are FROZEN, no retroactive upgrades allowed"
+    
+    evaluation_logic:
+      step_1: "Level touched"
+      step_2: "Monitor for consequence BEFORE next MSS"
+      step_3_if_consequence: "Tag level with that consequence (BREAK)"
+      step_3_if_no_consequence: "Tag level as LIQUIDITY_SWEEP or REJECTED"
+      step_4: "When MSS occurs, FREEZE all level statuses"
+      step_5: "Later moves do NOT change frozen statuses"
+    
+    boundary_conditions:
+      before_mss: "Consequence can upgrade level status"
+      after_mss: "Level status is FROZEN, no changes allowed"
+      causal_link_required: "Must be directly caused by level touch"
+  
+  target_priority_hierarchy:
+    execution_rule: "Target UNDELIVERED liquidity - it is the destination, not the trigger"
+    
+    one_line_rule: "LIQUIDITY_UNDELIVERED is the destination. LIQUIDITY_SWEEP is the trigger."
+    
+    priority_order:
+      1_liquidity_undelivered:
+        priority: 1
+        quality: "⭐ PRIMARY TARGET"
+        condition: "Untaken liquidity - never touched or ran close but not taken"
+        valid_target: true
+        rationale: "Market is primarily drawn to untaken liquidity"
+        note: "This is THE destination - highest priority always"
+      
+      2_liquidity_sweep:
+        priority: 2
+        quality: "Transitional state (NOT a target)"
+        condition: "Liquidity was taken (swept)"
+        valid_target: false
+        rationale: "SWEEP is the trigger that identifies liquidity removal, not a trading objective"
+        note: "Used to track state transitions, not as draw on liquidity"
+      
+      3_rejected:
+        priority: 3
+        quality: "Bias confirmation only"
+        condition: "Liquidity swept then rejected back"
+        valid_target: false
+        rationale: "Shows level validity but market moved away"
+        note: "Used for directional BIAS only, NOT as trading objective"
+      
+      4_break:
+        priority: 4
+        quality: "Invalid"
+        condition: "Level broken with consequence"
+        valid_target: false
+        rationale: "Structural change invalidates level"
+        note: "No longer valid - do not use"
+    
+    selection_logic:
+      step_1: "Identify all LIQUIDITY_UNDELIVERED levels"
+      step_2: "Filter by alignment with HTF direction"
+      step_3: "Select nearest UNDELIVERED level in direction of bias"
+      step_4: "Never target LIQUIDITY_SWEEP (it's a trigger, not destination)"
+      step_5: "Never target REJECTED or BREAK"
+
+# =============================================================================
+# GAP 8: POST-EXPANSION (IMPULSIVE VS GRIND) ✅ RESOLVED
+# =============================================================================
+
+gap_8_post_expansion:
+  id: "GAP-008"
+  priority: "CRITICAL"
+  location: "Layer 0, Section B7 (Structure State)"
+  status: "✅ RESOLVED"
+  
+  purpose:
+    "Distinguish impulsive delivery (triggers Post-Expansion state) from 
+    grind delivery (remains Pre-Expansion)."
+  
+  canon_rules:
+    principle: "Displacement defines intent. FVG enables execution."
+    classification: "If price has to negotiate, it's a grind."
+    final_approach: "Classification based on FINAL APPROACH, not the start."
+  
+  impulsive_delivery_definition:
+    rule: "Delivery is IMPULSIVE if ALL conditions met:"
+    
+    conditions:
+      A_candle_structure:
+        requirement: "At least ONE displacement-grade candle"
+        threshold: "Candle body ≥ 60% of total range"
+        note: "Wick imbalance allowed"
+      
+      B_speed:
+        requirement: "Objective reached within ≤3 execution candles"
+        note: "⛔ No pip-based speed thresholds"
+      
+      C_opposing_candles:
+        requirement: "≤1 opposing candle allowed during delivery"
+        opposing_candle_rules:
+          - "Must be small-bodied"
+          - "Must NOT overlap >50% of prior impulse candle"
+        note: "0 = cleanest, 1 = acceptable, 2+ = grind"
+      
+      D_fvg:
+        critical_separation:
+          classification: "FVG NOT required to classify as impulsive"
+          execution: "FVG IS required for post-expansion trading"
+        
+        logic:
+          impulsive_with_fvg: "Post-Expansion state + trading allowed"
+          impulsive_no_fvg: "Post-Expansion state + trading BLOCKED"
+        
+        note: "If FVG forms during delivery → confirms impulse"
+    
+    all_required: true
+  
+  grind_delivery_definition:
+    rule: "Delivery is GRIND if ANY occur:"
+    
+    disqualifiers:
+      1_time:
+        condition: "Objective reached in >3 candles"
+        rationale: "Too slow, negotiated"
+      
+      2_probes:
+        condition: "≥2 probes / touches of objective level"
+        rationale: "Hesitation, testing"
+      
+      3_overlapping:
+        condition: "2+ overlapping candles with no expansion"
+        definition: |
+          * 2 or more consecutive candles
+          * Clear body overlap
+          * No range expansion
+          * No displacement candle present
+        note: "⛔ No math, no ratios - visual check"
+      
+      4_no_displacement:
+        condition: "No displacement-grade candle"
+        rationale: "Lacks intent"
+      
+      5_opposing:
+        condition: "≥2 opposing candles"
+        rationale: "Back-and-forth = negotiation"
+    
+    any_sufficient: true
+  
+  measurement_sequence:
+    analysis_window: "Delivery leg ONLY"
+    
+    definition:
+      start: "Last pullback / consolidation"
+      end: "Objective touch / close"
+    
+    rationale:
+      - "Isolates intent"
+      - "Excludes prior noise"
+      - "Matches ICT delivery logic"
+      - "Keeps classification clean"
+    
+    exclusions:
+      - "❌ Not entire expansion from MSS"
+      - "❌ Not pullback candles before final push"
+      - "❌ Not consolidation candles"
+  
+  mixed_signals_classification:
+    rule: "Classification based on FINAL APPROACH, not the start"
+    
+    scenarios:
+      fast_start_slow_finish: "→ GRIND"
+      slow_start_fast_finish: "→ IMPULSIVE"
+      fvg_on_final: "→ Confirms IMPULSIVE"
+      early_impulse_fades: "→ GRIND"
+  
+  post_expansion_state_logic:
+    trigger_conditions:
+      1: "Daily objective delivered"
+      2: "Delivery classified as IMPULSIVE"
+      3: "FVG present OR not (determines trading)"
+    
+    state_outcomes:
+      impulsive_with_fvg:
+        state: "POST_EXPANSION"
+        trading_allowed: true
+        operating_range: "Shift to H4/H1 rebalance"
+      
+      impulsive_no_fvg:
+        state: "POST_EXPANSION"
+        trading_allowed: false
+        operating_range: "Shift to H4/H1 (analysis only)"
+      
+      grind:
+        state: "PRE_EXPANSION"
+        trading_allowed: true
+        operating_range: "Remain on Daily range"
+    
+    persistence: "POST_EXPANSION permanent until new Daily MSS"
+
+# =============================================================================
+# GAP 9: PDH/PDL DEFINITION ⏳ PENDING
+# =============================================================================
+
+gap_9_pdh_pdl:
+  id: "GAP-009"
+  priority: "HIGH"
+  location: "Layer 0, Section B5 (Objectives), Section B3 (Dealing Range)"
+  status: "✅ RESOLVED"
+  
+  context:
+    "PDH/PDL (Previous Day High/Low) used as:
+    1. Liquidity targets (objectives)
+    2. Dealing range boundaries (priority 2 in hierarchy)
+    3. Bootstrap boundaries (for first MSS)"
+  
+  forex_trading_day_definition:
+    rule: "Use the Forex Trading Day (NOT midnight)"
+    
+    daily_candle:
+      start: "17:00 NY (local time)"
+      end: "17:00 NY next day (local time)"
+      note: "This is the standard Forex day open/close"
+    
+    dst_handling:
+      rule: "Always use NY local time (automatically adjust for DST)"
+      implementation:
+        - "EDT in summer (UTC-4)"
+        - "EST in winter (UTC-5)"
+        - "⛔ Do NOT hardcode UTC offsets"
+        - "⛔ Do NOT use broker server time"
+      
+      rationale: "NY time is the reference for institutional Forex trading"
+  
+  pdh_pdl_definition:
+    pdh:
+      definition: "Highest price traded during the Forex day (wick)"
+      measurement: "Highest wick high between 17:00 NY → 17:00 NY next day"
+      note: "Liquidity sits at wick extremes"
+    
+    pdl:
+      definition: "Lowest price traded during the Forex day (wick)"
+      measurement: "Lowest wick low between 17:00 NY → 17:00 NY next day"
+      note: "Liquidity sits at wick extremes"
+    
+    not_used:
+      - "❌ Candle close (not used)"
+      - "❌ Candle open (not used)"
+      - "❌ Body extremes (not used)"
+    
+    rationale: "Wicks show where liquidity was tested, closes show acceptance"
+  
+  previous_day_selection:
+    rule: "Use immediately prior completed Forex day"
+    
+    example:
+      scenario: "Today = Wednesday 10:00 AM NY"
+      tuesday_day: "Tuesday 17:00 NY → Wednesday 17:00 NY (just completed)"
+      result: "Use Tuesday's PDH/PDL"
+    
+    not_used:
+      - "❌ Not most recent day with MSS"
+      - "❌ Not highest/lowest from last X days"
+      - "❌ Always use immediately prior completed day"
+  
+  pwh_pwl_definition:
+    forex_week:
+      start: "Sunday 17:00 NY"
+      end: "Sunday 17:00 NY (next week)"
+      note: "Standard Forex week boundaries"
+      dst_handling: "Same as daily (EDT/EST adjustment)"
+    
+    pwh:
+      definition: "Highest price traded during the Forex week (wick)"
+      measurement: "Highest wick high between Sunday 17:00 → Sunday 17:00 next week"
+      note: "Same logic as PDH - wick shows liquidity"
+    
+    pwl:
+      definition: "Lowest price traded during the Forex week (wick)"
+      measurement: "Lowest wick low between Sunday 17:00 → Sunday 17:00 next week"
+      note: "Same logic as PDL - wick shows liquidity"
+    
+    previous_week_selection:
+      rule: "Use most recent completed Forex week"
+      example:
+        scenario: "Today = Wednesday"
+        last_week: "Last Sunday 17:00 → This Sunday 17:00 (completed)"
+        result: "Use last week's PWH/PWL"
+  
+  implementation_notes:
+    timezone_handling:
+      - "Reference timezone: America/New_York"
+      - "Automatically handles EDT/EST transitions"
+      - "No manual UTC offset adjustments"
+    
+    data_requirements:
+      - "Use broker data timestamped to NY time"
+      - "Or convert broker timestamps to NY time"
+      - "Ensure DST transitions are handled"
+    
+    edge_cases:
+      forex_day_transition:
+        scenario: "It's Wednesday 16:00 NY (1 hour before day close)"
+        current_day: "Tuesday 17:00 → Wednesday 17:00 (not yet complete)"
+        previous_day: "Monday 17:00 → Tuesday 17:00"
+        use: "Monday's PDH/PDL (last completed day)"
+      
+      forex_week_transition:
+        scenario: "It's Sunday 16:00 NY (1 hour before week close)"
+        current_week: "Last Sunday 17:00 → This Sunday 17:00 (not yet complete)"
+        previous_week: "Two Sundays ago → Last Sunday"
+        use: "Previous week's PWH/PWL"
+    
+    machine_execution:
+      daily:
+        - "Get current time in NY timezone"
+        - "Identify last completed Forex day (prior 17:00 → 17:00)"
+        - "Find highest wick high in that period = PDH"
+        - "Find lowest wick low in that period = PDL"
+      
+      weekly:
+        - "Get current time in NY timezone"
+        - "Identify last completed Forex week (prior Sunday 17:00 → Sunday 17:00)"
+        - "Find highest wick high in that period = PWH"
+        - "Find lowest wick low in that period = PWL"
+  
+  summary:
+    daily_candle: "17:00 NY → 17:00 NY next day (local time, DST-adjusted)"
+    pdh: "Highest wick in prior completed Forex day"
+    pdl: "Lowest wick in prior completed Forex day"
+    weekly_candle: "Sunday 17:00 NY → Sunday 17:00 NY next week (local time, DST-adjusted)"
+    pwh: "Highest wick in prior completed Forex week"
+    pwl: "Lowest wick in prior completed Forex week"
+    
+    critical_rules:
+      - "⛔ Do NOT use midnight (00:00) boundaries"
+      - "⛔ Do NOT use candle closes"
+      - "⛔ Do NOT hardcode UTC offsets"
+      - "✅ Always use 17:00 NY boundaries"
+      - "✅ Always use wicks (extremes)"
+      - "✅ Always use NY local time (auto DST)"
+
+# =============================================================================
+# GAP 10 & 11: NOT LAYER 0 GAPS ℹ️
+# =============================================================================
+
+gap_10_11_clarification:
+  status: "NOT LAYER 0 GAPS"
+  
+  explanation:
+    "GAP 10 (Risk Removal) and GAP 11 (Session Filters) are D15MB strategy-specific gaps.
+    They belong to D15MB Layers 2-3 (Operating Range + Execution), NOT Layer 0 (HTF Context).
+    
+    Layer 0 provides environment. D15MB strategy uses that environment.
+    
+    GAP 10 and 11 will be resolved when building D15MB strategy layers."
+  
+  gap_10_risk_removal:
+    belongs_to: "D15MB Layer 3 (Management)"
+    topics:
+      - "Remove risk definition (SL to BE vs partial close)"
+      - "Floating profit +1% calculation"
+      - "Partials and trailing stops"
+      - "Continuation protection clause"
+    note: "Trade management is strategy-specific, not HTF context"
+  
+  gap_11_session_filters:
+    belongs_to: "D15MB Layer 2 (Conditions / Session Gates)"
+    topics:
+      - "CBDR / Asian Range filters"
+      - "Time windows (LOKZ)"
+      - "Grace periods for setup completion"
+    note: "Session filtering is strategy-specific, not HTF context"
+  
+  layer_0_scope:
+    what_layer_0_provides:
+      - "Weekly MSS + range"
+      - "Daily MSS + range + structure state"
+      - "Premium/Discount zones"
+      - "Objectives (targets)"
+      - "PDAs (FVGs, OBs)"
+      - "Liquidity levels + status"
+      - "Trade bias (3Q framework)"
+    
+    what_layer_0_does_not_provide:
+      - "❌ Entry timing"
+      - "❌ Trade management"
+      - "❌ Position sizing"
+      - "❌ Session filters"
+      - "❌ Risk removal logic"
+      - "❌ Partial exits"
+    
+    note: "Layer 0 = environment. Strategy layers = execution."
+
+# =============================================================================
+# LAYER 0 GAPS: COMPLETE ✅
+# =============================================================================
+
+layer_0_gaps_summary:
+  total_gaps: 9
+  resolved: 9
+  remaining: 0
+  
+  resolved_gaps:
+    gap_1: "✅ Bootstrap MSS (PDH/PDL/PWH/PWL only)"
+    gap_2: "✅ BOS → MSS terminology (same thing)"
+    gap_3: "✅ Displacement (qualitative, 5 components)"
+    gap_4: "✅ FVG detection (universal, no scaling)"
+    gap_5: "✅ Validated swings (immediate displacement)"
+    gap_6: "✅ MMXM (failed auction, two roles)"
+    gap_7: "✅ Liquidity Sweep (status classification)"
+    gap_8: "✅ Post-Expansion (impulsive vs grind)"
+    gap_9: "✅ PDH/PDL/PWH/PWL (Forex day 17:00 NY)"
+  
+  status: "LAYER 0 HTF CONTEXT IS COMPLETE"
+
+# =============================================================================
+# VERSION HISTORY
+# =============================================================================
+
+version_history:
+  v1:
+    date: "2026-01-27"
+    changes: "Initial draft with questions"
+  
+  v2:
+    date: "2026-01-27"
+    changes: "GAP 7 & 8 resolved with Olya's specifications"

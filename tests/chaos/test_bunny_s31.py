@@ -454,7 +454,7 @@ class TestBunnyWave4Telegram:
         Inject: 5 READY signals
         Expect: Batched into summary
         """
-        from notification import Alert, AlertAggregator
+        from notification import LegacyAlert as Alert, AlertAggregator
 
         aggregator = AlertAggregator(max_batch_size=10)
 

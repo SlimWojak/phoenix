@@ -1,7 +1,7 @@
 # HISTORICAL NUKES REPORT
 
 **SPRINT:** 26.TRACK_A.DAY_2.5
-**DATE:** 2026-01-27 11:42 UTC
+**DATE:** 2026-01-31 01:10 UTC
 **SOURCE:** BOAR_AUDIT vector 6_REGIME_NUKE
 
 ---
@@ -21,9 +21,9 @@
 
 | Event | Data Source | Quality Min | Recovery (bars) | Anomalies | Verdict |
 |-------|-------------|-------------|-----------------|-----------|---------|
-| CHF_PEG | SYNTHETIC (20% move  | 0.517 | 60 | 43 | PASS |
+| CHF_PEG | SYNTHETIC (20% move  | 0.500 | 60 | 42 | PASS |
 | JPY_CARRY | REAL (2024-08) | 0.000 | 2400 | 4436 | PASS |
-| GBP_FLASH | SYNTHETIC (6% crash  | 0.967 | 60 | 14 | FAIL (SILENT) |
+| GBP_FLASH | SYNTHETIC (6% crash  | 0.950 | 60 | 15 | FAIL (SILENT) |
 
 ---
 
@@ -38,12 +38,12 @@ data_source: SYNTHETIC (20% move simulated)
 verdict: PASS
 crashed: False
 quality_before: 0.997
-quality_min: 0.517
+quality_min: 0.500
 quality_after: 0.983
 quality_reflects_chaos: True
 recovery_observed: True
-anomalies_detected: 43
-health_states: ['HEALTHY', 'HALT']
+anomalies_detected: 42
+health_states: ['HALT', 'HEALTHY']
 bars_tested: 1440
 ```
 
@@ -61,7 +61,7 @@ quality_after: 0.983
 quality_reflects_chaos: True
 recovery_observed: True
 anomalies_detected: 4436
-health_states: ['HEALTHY', 'HALT']
+health_states: ['HALT', 'HEALTHY']
 bars_tested: 10080
 event_window: 2024-08-01 00:00:00+00:00 → 2024-08-09 23:59:00+00:00
 ```
@@ -75,12 +75,12 @@ data_source: SYNTHETIC (6% crash simulated)
 verdict: FAIL (SILENT)
 crashed: False
 quality_before: 0.989
-quality_min: 0.967
+quality_min: 0.950
 quality_after: 0.983
 quality_reflects_chaos: True
 recovery_observed: True
-anomalies_detected: 14
-health_states: ['HEALTHY', 'HALT']
+anomalies_detected: 15
+health_states: ['HALT', 'HEALTHY']
 bars_tested: 1440
 ```
 

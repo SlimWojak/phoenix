@@ -6,36 +6,35 @@ FACTS_ONLY — NO INTERPRETATION
 ═══════════════════════════════════════
 {{ timestamp_str }}
 
-SYSTEM STATUS
+SYSTEM
 ─────────────────────────────────────
-  STATE:      {{ orientation.health_status }}
-  MODE:       {{ orientation.mode }}
-  PHASE:      {{ orientation.execution_phase }}
-  KILL_FLAGS: {% if orientation.kill_flags %}{{ orientation.kill_flags | join(', ') }}{% else %}NONE{% endif %}
+  {{ orientation.health_status | health_emoji }} {{ orientation.health_status }}
+  MODE:  {{ orientation.mode }}
+  PHASE: {{ orientation.execution_phase }}
+{% if orientation.kill_flags %}  KILLS: {{ orientation.kill_flags | join(', ') }}{% endif %}
 
 POSITIONS
 ─────────────────────────────────────
-  OPEN:       {{ trades.open_positions }}
-  DAILY P&L:  {{ trades.daily_pnl | format_pnl }}
+  OPEN: {{ trades.open_positions }}
+  P&L:  {{ trades.daily_pnl | format_pnl }}
 
 {% if cso.gates_per_pair %}
-CSO SETUPS
+ACTIVE PAIRS
 ─────────────────────────────────────
 {% for pair, gates in cso.gates_per_pair.items() %}
-  {{ pair }}: gates_passed={{ gates | format_gates }}
+  {{ pair }}: {{ gates | gate_facts }}
 {% endfor %}
 {% endif %}
 
 HUNT QUEUE
 ─────────────────────────────────────
-  PENDING:    {{ hunt.pending_hypotheses }} hypotheses
+  {{ hunt.pending_hypotheses }} hypothesis(es) pending
 
 {% if tests.passed %}
 TESTS
 ─────────────────────────────────────
-  COLLECTED:  {{ tests.collected }}
-  PASSED:     {{ tests.passed }}
-  FAILED:     {{ tests.failed }}
+  {{ tests.passed }} of {{ tests.collected }} passed
+{% if tests.failed %}  {{ tests.failed }} failed{% endif %}
 {% endif %}
 
 ═══════════════════════════════════════

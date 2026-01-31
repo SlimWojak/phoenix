@@ -1,0 +1,374 @@
+# SLM IO Schema — S41 Track A
+# =============================
+#
+# Defines the read-only boundary for the distilled SLM guard dog.
+# The SLM can CLASSIFY existing facts. It cannot CREATE new information.
+#
+# INVARIANT: INV-SLM-READONLY-1 "SLM output cannot mutate state"
+#
+# Date: 2026-01-23
+# Sprint: S41 Phase 2A
+# Author: OPUS (distillation build)
+
+version: "1.0"
+status: FROZEN
+theme: "The boar learns to bark, not to bite"
+
+# =============================================================================
+# CONSTITUTIONAL CONSTRAINTS
+# =============================================================================
+
+constraints:
+  
+  # NON-NEGOTIABLE: What the SLM may NOT do
+  may_not:
+    - emit_alerts: "SLM cannot emit system alerts"
+    - rank_strategies: "SLM cannot rank or prioritize"
+    - score_setups: "SLM cannot assign confidence/quality scores"
+    - modify_gates: "SLM cannot change gate status"
+    - create_information: "SLM cannot synthesize new facts"
+    - mutate_state: "SLM output cannot affect execution state"
+    - recommend_actions: "SLM cannot suggest what human should do"
+    - assign_causality: "SLM cannot claim X caused Y"
+  
+  # ALLOWED: What the SLM may do
+  may_only:
+    - classify_existing_facts: "Tag input as VALID_FACTS or BANNED"
+    - detect_violations: "Identify constitutional violations in text"
+    - suggest_severity: "Advisory severity suggestion (not binding)"
+    - tag_patterns: "Apply classification tags to recognized patterns"
+
+# =============================================================================
+# INPUT SCHEMA (READ-ONLY FACTS)
+# =============================================================================
+
+input_schema:
+  
+  description: |
+    All inputs to the SLM must be read-only facts.
+    No mutable state. No execution context.
+    
+  fields:
+    
+    # The text to classify
+    content:
+      type: string
+      required: true
+      description: "Narrator output to classify"
+      max_length: 8192
+      
+    # Context type (for specialized classification)
+    content_type:
+      type: enum
+      values: [briefing, health, trade, alert, custom]
+      required: false
+      default: custom
+      
+    # Provenance (where did this content come from)
+    provenance:
+      type: object
+      required: false
+      properties:
+        template_name:
+          type: string
+        render_timestamp:
+          type: string
+          format: iso8601
+        bead_id:
+          type: string
+          
+  # Validation rules
+  validation:
+    - content_not_empty: "content field must have length > 0"
+    - no_executable_code: "content must not contain executable expressions"
+
+# =============================================================================
+# OUTPUT SCHEMA (CLASSIFICATION ONLY)
+# =============================================================================
+
+output_schema:
+  
+  description: |
+    SLM outputs are CLASSIFICATIONS, not decisions.
+    Output cannot mutate any system state.
+    
+  fields:
+    
+    # Primary classification
+    classification:
+      type: enum
+      values: [VALID_FACTS, BANNED]
+      required: true
+      description: "Primary classification of input content"
+      
+    # Reason code (if BANNED)
+    reason_code:
+      type: enum
+      values:
+        - CAUSAL          # "because", "due to", "driven by"
+        - RANKING         # "best", "worst", "top", "ranked"
+        - SCORING         # "score", "viability", "confidence %"
+        - RECOMMENDATION  # "should", "consider", "recommend"
+        - SYNTHESIS       # "I noticed", "it appears", "seems like"
+        - ADJECTIVE       # "strong", "weak", "safe", "unsafe"
+        - BANNER_MISSING  # FACTS_ONLY banner not present
+        - PROVENANCE_MISSING  # Required provenance absent
+      required: false
+      description: "Reason for BANNED classification"
+      
+    # Violation details (for debugging)
+    violation_details:
+      type: array
+      items:
+        type: object
+        properties:
+          word:
+            type: string
+          position:
+            type: integer
+          context:
+            type: string
+      required: false
+      max_items: 10
+      description: "Specific violations found (for audit trail)"
+      
+    # Confidence (advisory only, NOT binding)
+    confidence:
+      type: enum
+      values: [high, medium, low]
+      required: false
+      description: "Advisory confidence (human must still review BANNED)"
+      note: "This is NOT a score — it's a qualitative classification"
+      
+  # Output constraints
+  output_constraints:
+    - no_mutation: "Output cannot contain mutation instructions"
+    - no_new_facts: "Output cannot assert facts not in input"
+    - no_causality: "Output cannot claim causal relationships"
+
+# =============================================================================
+# BANNED WORD PATTERNS
+# =============================================================================
+
+banned_patterns:
+  
+  # Causal language (INV-ATTR-CAUSAL-BAN)
+  causal:
+    patterns:
+      - "because"
+      - "due to"
+      - "driven by"
+      - "caused"
+      - "as a result"
+      - "therefore"
+      - "consequently"
+      - "leads to"
+      - "results in"
+      - "the data suggests"
+      - "this indicates"
+    reason_code: CAUSAL
+    
+  # Ranking language (INV-ATTR-NO-RANKING)
+  ranking:
+    patterns:
+      - "best"
+      - "worst"
+      - "top"
+      - "bottom"
+      - "ranked"
+      - "grade"
+      - "tier"
+      - "superior"
+      - "inferior"
+      - "#1"
+      - "#2"
+    reason_code: RANKING
+    
+  # Scoring language (INV-SCALAR-BAN)
+  scoring:
+    patterns:
+      - "score"
+      - "viability"
+      - "confidence"
+      - "probability"
+      - "likelihood"
+      - "percentage chance"
+      - "odds"
+      - "/10"
+      - "/100"
+      - "rating"
+    reason_code: SCORING
+    
+  # Recommendation language (INV-NO-UNSOLICITED)
+  recommendation:
+    patterns:
+      - "should"
+      - "consider"
+      - "recommend"
+      - "suggest"
+      - "advise"
+      - "might want"
+      - "you could"
+      - "better to"
+      - "worse to"
+      - "prefer"
+      - "avoid"
+    reason_code: RECOMMENDATION
+    
+  # Synthesis language (INV-NARRATOR-1)
+  synthesis:
+    patterns:
+      - "I noticed"
+      - "I observed"
+      - "it appears"
+      - "seems like"
+      - "looks like"
+      - "probably"
+      - "likely"
+      - "unlikely"
+      - "in my opinion"
+      - "I think"
+      - "I believe"
+    reason_code: SYNTHESIS
+    
+  # Adjective language (GPT tightening)
+  adjective:
+    patterns:
+      - "strong"
+      - "weak"
+      - "safe"
+      - "unsafe"
+      - "good"
+      - "bad"
+      - "excellent"
+      - "poor"
+      - "optimal"
+      - "suboptimal"
+    reason_code: ADJECTIVE
+
+# =============================================================================
+# REQUIRED ELEMENTS
+# =============================================================================
+
+required_elements:
+  
+  # Facts banner must be present
+  facts_banner:
+    pattern: "FACTS_ONLY — NO INTERPRETATION"
+    required: true
+    missing_reason: BANNER_MISSING
+    
+  # Provenance for CFP outputs
+  provenance:
+    required_for: [cfp, hunt]
+    fields:
+      - query_string
+      - dataset_hash
+      - bead_id
+    missing_reason: PROVENANCE_MISSING
+
+# =============================================================================
+# TRAINING PROMPT TEMPLATE
+# =============================================================================
+
+prompt_template: |
+  Classify this narrator output.
+  
+  You are a constitutional guard. You detect violations, not create them.
+  Respond ONLY with: VALID_FACTS or BANNED — [REASON_CODE]
+  
+  DO NOT:
+  - Add explanations beyond the reason code
+  - Suggest fixes or improvements
+  - Create new information
+  - Make recommendations
+  
+  Output to classify:
+  {content}
+  
+  Classification:
+
+# =============================================================================
+# EXAMPLE IO PAIRS
+# =============================================================================
+
+examples:
+  
+  valid_examples:
+    
+    - input: |
+        OINK OINK MOTHERFUCKER! 🐗🔥
+        FACTS_ONLY — NO INTERPRETATION
+        
+        SYSTEM STATUS
+        STATE: ARMED
+        MODE: SHADOW
+        POSITIONS: 2 open
+        DAILY P&L: +$450.00
+      expected_output: "VALID_FACTS"
+      
+    - input: |
+        FACTS_ONLY — NO INTERPRETATION
+        
+        EURUSD: gates_passed=[1,2,4]
+        GBPUSD: gates_passed=[1]
+      expected_output: "VALID_FACTS"
+      
+  banned_examples:
+    
+    - input: "EURUSD is the best setup today"
+      expected_output: "BANNED — RANKING"
+      
+    - input: "Sharpe improved because volatility decreased"
+      expected_output: "BANNED — CAUSAL"
+      
+    - input: "You should consider taking this trade"
+      expected_output: "BANNED — RECOMMENDATION"
+      
+    - input: "The data suggests London entries perform better"
+      expected_output: "BANNED — SYNTHESIS"
+      
+    - input: "Strong bullish momentum detected"
+      expected_output: "BANNED — ADJECTIVE"
+      
+    - input: "Confidence score: 85%"
+      expected_output: "BANNED — SCORING"
+
+# =============================================================================
+# INVARIANTS
+# =============================================================================
+
+invariants:
+  
+  INV-SLM-READONLY-1:
+    description: "SLM output cannot mutate state"
+    enforcement: "Decorator blocks any state-changing return values"
+    test: "tests/test_slm_boundary.py::test_slm_readonly"
+    
+  INV-SLM-NO-CREATE-1:
+    description: "SLM cannot create new information"
+    enforcement: "Output schema allows only classification enums"
+    test: "tests/test_slm_boundary.py::test_slm_no_creation"
+    
+  INV-SLM-CLASSIFICATION-ONLY-1:
+    description: "SLM output is classification, not decision"
+    enforcement: "Output does not contain action verbs"
+    test: "tests/test_slm_boundary.py::test_classification_only"
+    
+  INV-SLM-BANNED-WORDS-1:
+    description: "SLM detects all banned word categories"
+    enforcement: "Banned patterns cover all constitutional violations"
+    test: "tests/test_slm_boundary.py::test_banned_word_detection"
+
+# =============================================================================
+# METADATA
+# =============================================================================
+
+metadata:
+  created: "2026-01-23T10:00:00Z"
+  frozen_at: "2026-01-23T10:00:00Z"
+  sprint: "S41"
+  track: "A"
+  phase: "2A"
+  author: "OPUS"
+  model_target: "Qwen-2.5-1.5B via MLX"

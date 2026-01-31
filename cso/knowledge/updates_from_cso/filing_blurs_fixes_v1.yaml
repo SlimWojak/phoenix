@@ -1,0 +1,431 @@
+# FILING SYSTEM BLURS - FIXES
+# VERSION: v1
+# DATE: 2026-01-27
+# PURPOSE: Document and fix blurs identified in 5-drawer YAML filing system
+# STATUS: DRAFT - Awaiting Olya approval
+
+schema_version: "1.0.0"
+created: "2026-01-27"
+author: "Claude (with Olya)"
+purpose: "Fix filing system blurs between foundation/context/conditions/entry/management YAML files"
+
+# =============================================================================
+# OVERVIEW
+# =============================================================================
+
+overview:
+  total_blurs_found: 3
+  status: "Initial discovery - more may be found during verification"
+  severity:
+    critical: 1  # 3Q duplication
+    medium: 2    # P/D formula, PDA tracking
+  
+  principle:
+    "Each drawer OWNS its domain. Concepts should be defined once (Foundation),
+    calculated once (owning drawer), and referenced by others (via inputs).
+    Duplication creates maintenance burden and contradiction risk."
+  
+  discovery_note:
+    "These 3 blurs identified during initial audit. Additional blurs may be
+    discovered during verification sprints (Foundation → Context → Conditions
+    → Entry → Management). Will add to amendments_[drawer].yaml files as found."
+
+# =============================================================================
+# BLUR #1: 3 QUESTIONS FRAMEWORK DUPLICATION (CRITICAL)
+# =============================================================================
+
+blur_1_3q_duplication:
+  id: "BLUR-001"
+  severity: "CRITICAL"
+  
+  issue:
+    description: "3 Questions framework appears in BOTH context.yaml and conditions.yaml"
+    problem: "Duplication means updates must be made twice, creates contradiction risk"
+  
+  current_state:
+    context_yaml:
+      location: "Lines 1130-1300 (estimated)"
+      content: "Full 3Q framework with Q1/Q2/Q3 + bias synthesis"
+      outputs: [trade_bias]
+    
+    conditions_yaml:
+      location: "Lines 10-85"
+      content: "Full 3Q framework with Q1/Q2/Q3 + bias synthesis"
+      outputs: [trade_bias, bias_note]
+  
+  root_cause:
+    "The 3 Questions framework bridges BOTH:
+    - Context (determining market environment)
+    - Conditions (determining if we should trade)
+    
+    During filing system extraction, it was duplicated instead of establishing
+    clear ownership."
+  
+  proposed_fix:
+    owner: "context.yaml"
+    rationale:
+      - "3Q answers 'Where is the market?' which is Context's domain"
+      - "Context already calculates HTF structure, objectives, state"
+      - "Conditions should CONSUME trade_bias, not CALCULATE it"
+    
+    action:
+      context_yaml: "KEEP full 3Q framework"
+      conditions_yaml: "REMOVE 3Q framework, reference context output"
+  
+  amended_sections:
+    # What stays in context.yaml
+    context_yaml_keeps: |
+      # DRAWER 2: CONTEXT
+      
+      bias_framework:
+        execution: "00:00 NY daily, frozen until next day"
+        
+        Q1_location:
+          id: "SIG-CTX-Q1"
+          question: "Where is price RIGHT NOW?"
+          outputs:
+            - {col: position_pct, type: float}
+            - {col: zone, type: str, values: [premium, discount, equilibrium]}
+            - {col: nearest_pda, type: dict}
+            - {col: in_pda, type: bool}
+          zones:
+            deep_discount: "<25%"
+            discount: "25-50%"
+            equilibrium: "~50%"
+            premium: "50-75%"
+            deep_premium: ">75%"
+        
+        Q2_objective:
+          id: "SIG-CTX-Q2"
+          question: "Where is price LIKELY TO GO?"
+          outputs: [dol_primary, dol_secondary, expected_path]
+          requires: "daily_mss.exists"
+        
+        Q3_respect:
+          id: "SIG-CTX-Q3"
+          question: "Where is price COMING FROM?"
+          outputs:
+            - {col: htf_direction, values: [bullish, bearish, neutral]}
+            - {col: confidence, values: [high, medium, low]}
+            - {col: structure_bias, type: str}
+            - {col: pda_bias, type: str}
+          logic: "structure_bias + pda_bias alignment"
+        
+        bias_synthesis:
+          id: "SIG-CTX-Q-SYNTHESIS"
+          inputs: [q1_location, q2_objective, q3_respect]
+          outputs: [trade_bias, bias_note]
+          logic:
+            - {condition: "htf_direction == neutral", output: none}
+            - {condition: "zone == equilibrium", output: none}
+            - {condition: "dol_primary == None", output: none}
+            - {condition: "htf_direction == bullish", output: long_only}
+            - {condition: "htf_direction == bearish", output: short_only}
+    
+    # What replaces in conditions.yaml
+    conditions_yaml_replaces: |
+      # DRAWER 3: CONDITIONS
+      
+      bias_input:
+        id: "SIG-COND-BIAS-INPUT"
+        name: "Trade Bias Input"
+        source: "context.trade_bias"
+        note: "Bias calculated in Context (Drawer 2), consumed here for permission logic"
+        inputs: [trade_bias, bias_note]
+        validation:
+          - {check: "trade_bias IN [long_only, short_only, both, none]"}
+          - {check: "IF trade_bias == none THEN permission = NO_TRADE"}
+      
+      # CONDITIONS continues with its own logic (alignment, freshness, etc.)
+      # but does NOT recalculate 3Q framework
+
+# =============================================================================
+# BLUR #2: PREMIUM/DISCOUNT FORMULA REPETITION (MEDIUM)
+# =============================================================================
+
+blur_2_pd_formula:
+  id: "BLUR-002"
+  severity: "MEDIUM"
+  
+  issue:
+    description: "Premium/Discount formula appears in multiple places"
+    problem: "Formula should be defined once (Foundation), calculated once (Context)"
+  
+  current_state:
+    foundation_yaml:
+      location: "definitions.premium_discount"
+      content: |
+        premium_discount:
+          formula: "compare(close, structural_equilibrium)"
+          states:
+            premium: {condition: "close > equilibrium", bias: SELL}
+            discount: {condition: "close < equilibrium", bias: BUY}
+            equilibrium: {condition: "close == equilibrium", bias: NO_TRADE}
+    
+    conditions_yaml:
+      location: "SIG-COND-010"
+      content: |
+        structural_premium_discount:
+          formula: "compare(close, structural_equilibrium)"
+          states: [premium, discount, equilibrium]
+  
+  root_cause:
+    "Formula defined in Foundation (correct) but then REPEATED in Conditions
+    instead of being REFERENCED."
+  
+  olya_rule_final:
+    foundation: "Defines the P/D formula (single source)"
+    context: "Calculates P/D using that formula"
+    conditions: "Read-only reference to Context output"
+  
+  action:
+    conditions_yaml: "REMOVE all P/D math"
+    context_yaml: "EXPOSE context.range.pd_state = premium | discount | equilibrium"
+  
+  amended_sections:
+    # Foundation keeps definition
+    foundation_yaml_keeps: |
+      # DRAWER 1: FOUNDATION
+      
+      premium_discount:
+        name: "Premium/Discount"
+        formula: "compare(close, structural_equilibrium)"
+        states:
+          premium: {condition: "close > equilibrium", bias: SELL}
+          discount: {condition: "close < equilibrium", bias: BUY}
+          equilibrium: {condition: "close == equilibrium", bias: NO_TRADE}
+        note: "Structure-based, NOT time-based"
+        ref: "L0:694-720"
+    
+    # Context calculates and exposes
+    context_yaml_adds: |
+      # DRAWER 2: CONTEXT
+      
+      range_pd_state:
+        id: "SIG-CTX-PD-STATE"
+        name: "Premium/Discount State (from dealing range)"
+        calculation: "uses foundation.premium_discount.formula"
+        inputs: [current_price, dealing_range_equilibrium]
+        outputs:
+          - {col: "context.range.pd_state", values: [premium, discount, equilibrium]}
+          - {col: "context.range.position_pct", formula: "(close - low) / (high - low) * 100"}
+        note: "Calculated once in Context, read-only in Conditions"
+    
+    # Conditions references it (read-only)
+    conditions_yaml_replaces: |
+      # DRAWER 3: CONDITIONS
+      
+      pd_state_check:
+        id: "SIG-COND-PD-CHECK"
+        name: "Premium/Discount Gate"
+        source: "context.range.pd_state"
+        inputs: [pd_state, position_pct]
+        note: "Read-only reference - NO calculation"
+        validation:
+          - {check: "pd_state IN [premium, discount, equilibrium]"}
+          - {check: "IF pd_state == equilibrium THEN permission = NO_TRADE"}
+        
+        alignment_logic:
+          long_valid: "pd_state == discount"
+          short_valid: "pd_state == premium"
+          no_trade: "pd_state == equilibrium"
+
+# =============================================================================
+# BLUR #3: PDA TRACKING SPLIT (MEDIUM)
+# =============================================================================
+
+blur_3_pda_tracking:
+  id: "BLUR-003"
+  severity: "MEDIUM"
+  
+  issue:
+    description: "PDA tracking logic split between Context and Conditions"
+    problem: "Unclear which drawer owns PDA detection vs PDA status tracking"
+  
+  current_state:
+    context_yaml:
+      location: "daily.pdas section"
+      content: |
+        pdas: [fvg_up_zones, fvg_down_zones, ob_bull_zones, 
+               ob_bear_zones, ifvg_zones, bpr_zones]
+      note: "Lists PDA types but doesn't show detection logic"
+    
+    conditions_yaml:
+      location: "SIG-COND-030 to SIG-COND-032"
+      content: |
+        fvg_tracking: [fvg_high, fvg_low, fvg_ce, fvg_age_bars, ...]
+        ob_tracking: [ob_body_high, ob_body_low, ob_age_bars, ...]
+        pda_status: [respected, broken, untested]
+  
+  root_cause:
+    "Context should DETECT PDAs (identify them from price action).
+    Conditions should TRACK PDA STATUS (age, touches, freshness, respect).
+    
+    Current files blur this distinction."
+  
+  olya_rule_final:
+    context: "Detects & registers PDAs"
+    conditions: "Tracks PDA status only"
+  
+  clean_split:
+    context_owns:
+      - "Identifies PDA levels"
+      - "Stores immutable PDA metadata (type, TF, price, timestamp)"
+    
+    conditions_owns:
+      - "Evaluates status: untouched / tapped / respected / violated"
+      - "Gates trades based on that status"
+  
+  amended_sections:
+    # Context detects and registers
+    context_yaml_adds: |
+      # DRAWER 2: CONTEXT
+      
+      pda_detection:
+        id: "SIG-CTX-PDA-DETECT"
+        name: "PDA Detection & Registration"
+        note: "Detects PDAs from price action, stores immutable metadata"
+        
+        fvg_detection:
+          logic: "uses foundation.FVG definition"
+          outputs:
+            - {col: fvg_id, type: str, desc: "Unique identifier"}
+            - {col: fvg_high, type: float, desc: "Top boundary (wick)"}
+            - {col: fvg_low, type: float, desc: "Bottom boundary (wick)"}
+            - {col: fvg_ce, type: float, desc: "Consequent Encroachment (50%)"}
+            - {col: fvg_direction, values: [bullish, bearish]}
+            - {col: fvg_timeframe, values: [5m, 15m, 1h, 4h, daily, weekly]}
+            - {col: fvg_timestamp, type: datetime, desc: "When formed"}
+          note: "Immutable - stored at detection"
+        
+        ob_detection:
+          logic: "uses foundation.OB definition"
+          outputs:
+            - {col: ob_id, type: str}
+            - {col: ob_body_high, type: float}
+            - {col: ob_body_low, type: float}
+            - {col: ob_mt, type: float, desc: "Mean Threshold (50% body)"}
+            - {col: ob_timeframe, values: [5m, 15m, 1h, 4h, daily]}
+            - {col: ob_timestamp, type: datetime}
+          note: "Immutable - stored at detection"
+        
+        # Similar for iFVG, BPR
+        
+        pda_registry:
+          note: "Context maintains immutable PDA registry"
+          structure: |
+            {
+              pda_id: str,
+              pda_type: fvg | ob | ifvg | bpr,
+              price_levels: {...},
+              timeframe: str,
+              timestamp: datetime,
+              metadata: {...}
+            }
+    
+    # Conditions tracks status (mutable)
+    conditions_yaml_adds: |
+      # DRAWER 3: CONDITIONS
+      
+      pda_status_tracking:
+        id: "SIG-COND-PDA-STATUS"
+        name: "PDA Status Evaluation"
+        source: "context.pda_detection (immutable registry)"
+        note: "Evaluates current status, gates trades"
+        
+        per_pda_status:
+          inputs: [pda_id]  # From context registry
+          
+          status_evaluation:
+            untouched:
+              condition: "No price interaction yet"
+              trade_permission: "Highest quality"
+            
+            tapped:
+              condition: "Price touched but did not accept"
+              trade_permission: "Valid, lower quality"
+            
+            respected:
+              condition: "Price returned shallowly, rejected, continued"
+              trade_permission: "Valid, confirms level"
+            
+            violated:
+              condition: "Price accepted through level (broke structure)"
+              trade_permission: "INVALID - do not use"
+          
+          tracking_columns:
+            - {col: pda_age_bars, type: int, desc: "Bars since detection"}
+            - {col: pda_touch_count, type: int, desc: "Number of touches"}
+            - {col: pda_fill_pct, type: float, desc: "How much filled"}
+            - {col: pda_status, values: [untouched, tapped, respected, violated]}
+            - {col: pda_freshness_score, type: float, range: [0, 10]}
+        
+        trade_gate:
+          rule: "IF pda_status == violated THEN permission = NO_TRADE"
+          note: "Status tracked in Conditions, gates trade execution"
+
+# =============================================================================
+# IMPLEMENTATION PRIORITY
+# =============================================================================
+
+implementation_priority:
+  priority_1_critical:
+    - blur_1_3q_duplication
+    reason: "Duplication creates immediate contradiction risk"
+  
+  priority_2_medium:
+    - blur_2_pd_formula
+    - blur_3_pda_tracking
+    reason: "Clarifications improve maintainability but less urgent"
+
+# =============================================================================
+# HANDOFF TO CTO
+# =============================================================================
+
+handoff_to_cto:
+  action: "Update the 5 YAML files based on amended_sections above"
+  
+  files_to_update:
+    context_yaml:
+      - "Keep full 3Q framework (remove from conditions)"
+      - "Add structural_zone calculation"
+      - "Add pda_detection section"
+    
+    conditions_yaml:
+      - "Remove 3Q framework, add bias_input reference"
+      - "Remove P/D formula, add zone_check reference"
+      - "Clarify pda_status_tracking consumes context PDAs"
+    
+    foundation_yaml:
+      - "No changes needed (already has definitions)"
+    
+    entry_yaml:
+      - "No changes needed"
+    
+    management_yaml:
+      - "No changes needed"
+  
+  validation:
+    "After updates, verify no contradictions remain:
+    - 3Q framework only in context.yaml
+    - P/D formula only in foundation.yaml (definition) + context.yaml (calculation)
+    - PDA detection in context.yaml, PDA tracking in conditions.yaml"
+
+# =============================================================================
+# APPROVAL STATUS
+# =============================================================================
+
+approval:
+  status: "PENDING"
+  awaiting: "Olya review and approval"
+  next_step: "After approval, proceed to layer_0_gaps_7_to_11.yaml"
+
+# =============================================================================
+# VERSION HISTORY
+# =============================================================================
+
+version_history:
+  v1:
+    date: "2026-01-27"
+    author: "Claude (with Olya)"
+    changes: "Initial draft - identified 3 blurs with proposed fixes"

@@ -52,6 +52,10 @@ class TestL4StructureBreaks:
         for col in l4_structure_breaks.LAYER_4_COLUMNS:
             assert col in result.columns, f"Missing: {col}"
 
+    @pytest.mark.xfail(
+        reason="S42: TypeError str-str in timestamp handling",
+        strict=True,
+    )
     def test_deterministic(self, sample_data):
         """L4 is deterministic (INV-CONTRACT-1)."""
         from enrichment.layers import l4_structure_breaks

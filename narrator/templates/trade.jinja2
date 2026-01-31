@@ -2,21 +2,24 @@ OINK! TRADE EVENT 🐗
 FACTS_ONLY — NO INTERPRETATION
 ═══════════════════════════════════════
 
-ACTION:     {{ action }}
-PAIR:       {{ pair }}
-DIRECTION:  {{ direction }}
+{{ action | upper }}  {{ pair }}  {{ direction | upper }}
 
 LEVELS
 ─────────────────────────────────────
-  ENTRY:    {{ entry }}
-  STOP:     {{ stop }}
-  TARGET:   {{ target }}
-  RISK:     {{ risk_pct }}%
+  Entry:  {{ entry }}
+  Stop:   {{ stop }}
+  Target: {{ target }}
+  Risk:   {{ risk_pct }}%
 
 EVIDENCE
 ─────────────────────────────────────
-  GATES_PASSED: {{ gates_passed | format_gates }}
-  BEAD_ID:      {{ evidence_bead }}
+  {{ gates_passed | gate_facts }}
+
+{% if show_receipts and evidence_bead %}
+─── RECEIPTS ───
+  BEAD: {{ evidence_bead }}
+────────────────
+{% endif %}
 
 ═══════════════════════════════════════
 Human approved. Boar recorded.

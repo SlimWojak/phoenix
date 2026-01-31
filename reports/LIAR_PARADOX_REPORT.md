@@ -1,7 +1,7 @@
 # LIAR'S PARADOX REPORT
 
 **SPRINT:** 26.TRACK_A.DAY_1.5
-**DATE:** 2026-01-27 11:42 UTC
+**DATE:** 2026-01-31 01:10 UTC
 **CONTRACT:** phoenix/contracts/ICT_DATA_CONTRACT.md v1.0.0
 
 ---
@@ -13,7 +13,7 @@
 | **injection_detected** | True |
 | **detection_method** | HASH_MISMATCH |
 | **detection_latency** | 1 cycle(s) |
-| **quality_score** | 0.9280 |
+| **quality_score** | 0.9240 |
 
 ---
 
@@ -22,11 +22,11 @@
 | Parameter | Value |
 |-----------|-------|
 | bar_index | 500 |
-| timestamp | 2026-01-26 04:40:00+00:00 |
+| timestamp | 2026-01-30 07:10:00+00:00 |
 | field | close |
 | delta | +1.0 pips |
-| original | 1.18583 |
-| corrupted | 1.18593 |
+| original | 1.19219 |
+| corrupted | 1.19229 |
 
 ---
 
@@ -36,8 +36,8 @@
 is_valid: False
 is_corrupted: True
 anomaly_suspected: True
-anomalies_found: 72
-message: CORRUPTION_DETECTED: 2 critical anomalies
+anomalies_found: 76
+message: CORRUPTION_DETECTED: 1 critical anomalies
 ```
 
 ---
@@ -47,7 +47,7 @@ message: CORRUPTION_DETECTED: 2 critical anomalies
 ```yaml
 symbol: EURUSD
 bars_tested: 1000
-window: 2026-01-23 20:05:00+00:00 → 2026-01-26 12:59:00+00:00
+window: 2026-01-29 22:50:00+00:00 → 2026-01-30 15:29:00+00:00
 injection_delta_pips: 1.0
 injection_field: close
 ```

@@ -111,6 +111,7 @@ def sample_trade_data() -> dict:
         "risk_pct": 0.5,
         "gates_passed": [1, 2, 3, 5, 6],
         "evidence_bead": "TRADE_2026_01_30_001",
+        "show_receipts": False,  # S41: Receipts hidden by default
     }
 
 
@@ -190,7 +191,8 @@ class TestTemplateRendering:
 
         assert "HEALTH CHECK" in output
         assert "RUNNING" in output
-        assert "CLOSED" in output
+        # Circuit status: S41 changed from "CLOSED" to "All circuits closed"
+        assert "circuits closed" in output.lower()
         print("✓ Health renders")
 
     def test_render_trade(
@@ -277,12 +279,18 @@ class TestValidation:
 
 
 class TestCustomFilters:
-    """Test custom Jinja2 filters."""
+    """Test custom Jinja2 filters.
+    
+    Note: These tests use emit=False to test filter logic without
+    going through the narrator_emit() chokepoint. The chokepoint
+    validates for FACTS_ONLY banner which is not relevant for
+    testing individual filter behavior.
+    """
 
     def test_format_pnl_positive(self, renderer: NarratorRenderer):
         """format_pnl formats positive values."""
         template_str = "{{ value | format_pnl }}"
-        output = renderer.render_string(template_str, {"value": 150.50})
+        output = renderer.render_string(template_str, {"value": 150.50}, emit=False)
 
         assert output == "+$150.50"
         print("✓ format_pnl positive")
@@ -290,7 +298,7 @@ class TestCustomFilters:
     def test_format_pnl_negative(self, renderer: NarratorRenderer):
         """format_pnl formats negative values."""
         template_str = "{{ value | format_pnl }}"
-        output = renderer.render_string(template_str, {"value": -50.25})
+        output = renderer.render_string(template_str, {"value": -50.25}, emit=False)
 
         assert output == "-$50.25"
         print("✓ format_pnl negative")
@@ -298,7 +306,7 @@ class TestCustomFilters:
     def test_format_gates(self, renderer: NarratorRenderer):
         """format_gates formats gate list."""
         template_str = "{{ gates | format_gates }}"
-        output = renderer.render_string(template_str, {"gates": [1, 2, 3, 5]})
+        output = renderer.render_string(template_str, {"gates": [1, 2, 3, 5]}, emit=False)
 
         assert output == "[1,2,3,5]"
         print("✓ format_gates")
@@ -307,10 +315,10 @@ class TestCustomFilters:
         """format_staleness formats duration."""
         template_str = "{{ seconds | format_staleness }}"
 
-        output1 = renderer.render_string(template_str, {"seconds": 0.5})
+        output1 = renderer.render_string(template_str, {"seconds": 0.5}, emit=False)
         assert output1 == "fresh"
 
-        output2 = renderer.render_string(template_str, {"seconds": 30})
+        output2 = renderer.render_string(template_str, {"seconds": 30}, emit=False)
         assert "30.0s ago" == output2
 
         print("✓ format_staleness")
@@ -335,9 +343,13 @@ class TestGracefulErrors:
         print("✓ Missing orientation graceful")
 
     def test_render_with_empty_data(self, renderer: NarratorRenderer):
-        """Render with empty optional fields."""
+        """Render with empty optional fields.
+        
+        Note: Uses emit=False as we're testing conditional rendering,
+        not the full narrator pipeline.
+        """
         template_str = "{% if value %}Value: {{ value }}{% else %}No value{% endif %}"
-        output = renderer.render_string(template_str, {"value": None})
+        output = renderer.render_string(template_str, {"value": None}, emit=False)
 
         assert "No value" in output
         print("✓ Empty data handled")
