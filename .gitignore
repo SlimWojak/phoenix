@@ -60,3 +60,13 @@ responses/
 
 # SLM model files (too large for git)
 slm/models/
+
+# HUD build artifacts
+surfaces/hud/WarBoarHUD/DerivedData/
+surfaces/hud/WarBoarHUD/*.xcuserdata/
+surfaces/hud/WarBoarHUD/build/
+surfaces/hud/state/
+
+# Manifest writer state (generated)
+state/.manifest_seq
+state/manifest.json

@@ -1,0 +1,182 @@
+{
+  "meta": {
+    "schema_version": "1.1",
+    "generated_at": "2026-01-31T14:45:00Z",
+    "manifest_seq": 12345,
+    "phoenix_state_hash": "abc123def456",
+    "source": "phoenix"
+  },
+
+  "session": {
+    "kz": "LONDON",
+    "active": true,
+    "time_remaining": "2h 15m",
+    "next_session": "NEW_YORK",
+    "next_start": "13:00"
+  },
+
+  "portfolio": {
+    "balance": 10234.56,
+    "currency": "USD",
+    "today_pnl": 82.50,
+    "today_pct": 0.81,
+    "week_pct": 2.3
+  },
+
+  "live_positions": [
+    {
+      "pair": "EURUSD",
+      "direction": "LONG",
+      "entry_price": 1.0842,
+      "current_price": 1.0857,
+      "pnl_pips": 15,
+      "pnl_dollars": 45.00,
+      "duration": "2h 15m",
+      "bead_id": "TRADE_2026_01_31_001"
+    },
+    {
+      "pair": "GBPUSD",
+      "direction": "SHORT",
+      "entry_price": 1.2680,
+      "current_price": 1.2650,
+      "pnl_pips": 30,
+      "pnl_dollars": 90.00,
+      "duration": "1h 30m",
+      "bead_id": "TRADE_2026_01_31_002"
+    }
+  ],
+
+  "recent_trades": {
+    "items": [
+      {
+        "bead_id": "TRADE_2026_01_31_010",
+        "pair": "GBPUSD",
+        "result_pips": 32,
+        "close_time": "11:30"
+      },
+      {
+        "bead_id": "TRADE_2026_01_31_009",
+        "pair": "EURUSD",
+        "result_pips": -18,
+        "close_time": "09:15"
+      },
+      {
+        "bead_id": "TRADE_2026_01_31_008",
+        "pair": "USDJPY",
+        "result_pips": 24,
+        "close_time": "08:45"
+      },
+      {
+        "bead_id": "TRADE_2026_01_31_007",
+        "pair": "GBPUSD",
+        "result_pips": 41,
+        "close_time": "07:30"
+      },
+      {
+        "bead_id": "TRADE_2026_01_31_006",
+        "pair": "EURUSD",
+        "result_pips": -12,
+        "close_time": "06:15"
+      }
+    ],
+    "total_count": 10
+  },
+
+  "gates_summary": [
+    {
+      "pair": "EURUSD",
+      "passed": 5,
+      "total": 5,
+      "status": "READY"
+    },
+    {
+      "pair": "GBPUSD",
+      "passed": 4,
+      "total": 5,
+      "status": "WATCHING"
+    },
+    {
+      "pair": "USDJPY",
+      "passed": 2,
+      "total": 5,
+      "status": "WATCHING"
+    }
+  ],
+
+  "narrator": {
+    "lines": [
+      {
+        "timestamp": "14:32",
+        "text": "London active, 2h remaining.",
+        "source_bead_id": null
+      },
+      {
+        "timestamp": "14:31",
+        "text": "EURUSD +15 pips, holding steady.",
+        "source_bead_id": "TRADE_2026_01_31_001"
+      },
+      {
+        "timestamp": "14:31",
+        "text": "GBPUSD +30 pips, momentum building.",
+        "source_bead_id": "TRADE_2026_01_31_002"
+      },
+      {
+        "timestamp": "14:30",
+        "text": "Systems nominal. Heartbeat 5s ago.",
+        "source_bead_id": null
+      },
+      {
+        "timestamp": "14:28",
+        "text": "GBPUSD 4/5 gates, watching.",
+        "source_bead_id": null
+      },
+      {
+        "timestamp": "14:25",
+        "text": "Position opened GBPUSD SHORT.",
+        "source_bead_id": "TRADE_2026_01_31_002"
+      },
+      {
+        "timestamp": "14:20",
+        "text": "Position opened EURUSD LONG.",
+        "source_bead_id": "TRADE_2026_01_31_001"
+      },
+      {
+        "timestamp": "14:15",
+        "text": "Gate threshold met for EURUSD.",
+        "source_bead_id": null
+      }
+    ],
+    "buffer_size": 20
+  },
+
+  "requires_action": [
+    {
+      "type": "LEASE_EXPIRY",
+      "message": "Lease expires 58m — review?",
+      "severity": "WARNING",
+      "action_required": true
+    }
+  ],
+
+  "health": {
+    "overall": "GREEN",
+    "status": "HEALTHY",
+    "since": "2026-01-31T12:00:00Z",
+    "degraded_reasons": [],
+    "components": {
+      "ibkr": "GREEN",
+      "river": "GREEN",
+      "halt_state": "GREEN",
+      "lease": "GREEN",
+      "decay": "GREEN"
+    },
+    "heartbeat_age_seconds": 5
+  },
+
+  "lease": {
+    "status": "ACTIVE",
+    "strategy": "ICT_FVG_v1",
+    "time_remaining": "3h 30m",
+    "expires_at": "2026-01-31T18:00:00Z"
+  }
+}
