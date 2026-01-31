@@ -32,6 +32,13 @@ from pathlib import Path
 # Add project root to path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
+# Load .env file
+try:
+    from dotenv import load_dotenv
+    load_dotenv(Path(__file__).parent.parent / ".env")
+except ImportError:
+    pass  # dotenv not required
+
 # Constants
 SOAK_STATE_FILE = Path(__file__).parent / ".soak_state.json"
 BEAD_DB = Path.home() / "God_Mode" / "boardroom" / "advisor_beads.db"
