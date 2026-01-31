@@ -3,8 +3,8 @@
 
 ```yaml
 document: SPRINT_ROADMAP.md
-version: 2.1
-date: 2026-01-30
+version: 2.2
+date: 2026-01-31
 status: CANONICAL
 format: M2M_DENSE
 audience: Advisors (GPT, GROK, OWL, Opus)
@@ -15,20 +15,32 @@ audience: Advisors (GPT, GROK, OWL, Opus)
 ## CURRENT STATE
 
 ```yaml
-current_sprint: S42_COMPLETE ✅
-status: S35-S42_COMPLETE | POST_S42_FREEZE ACTIVE
+current_sprint: S44_IN_PROGRESS (soak test ~30h remaining)
+status: S43_COMPLETE | S44_SOAK_ACTIVE | S46_DESIGN_LOCKED
 s33_p2: BLOCKED (Olya CSO calibration)
-s42_completion_date: 2026-01-30
-certification: WARBOAR_CERTIFIED | LIVE_GATEWAY_VALIDATED | CSO_PRODUCTION_READY
+
+recent_completions:
+  s43_completion_date: 2026-01-31
+  s46_design_locked: 2026-01-31
+  filing_cabinet: 2026-01-31
+
+certification: WARBOAR_CERTIFIED | LIVE_GATEWAY_VALIDATED | CSO_PRODUCTION_READY | S46_CANONICAL
 cumulative:
-  sprints_complete: 15 (S28 → S42)
-  tests_passing: 1465+
+  sprints_complete: 16 (S28 → S43)
+  tests_passing: 1500+
   xfailed: 28 (documented, strict)
   chaos_vectors: 224/224 PASS
-  invariants_proven: 95+
+  invariants_proven: 100+
   bead_types: 17
   runbooks: 8
   gate_glossary: 48 gates mapped
+  
+s44_soak_status:
+  started: 2026-01-31
+  duration: 48h
+  ibkr_mode: PAPER (DUO768070)
+  heartbeat: 6h intervals
+  mission: "Boring for 48h on REAL IBKR"
 ```
 
 ---
@@ -539,6 +551,155 @@ boundary_respect: "CSO knows when Phoenix can/cannot help"
 
 ---
 
+## S43: FOUNDATION_TIGHTENING — COMPLETE ✅
+
+```yaml
+status: COMPLETE ✅
+completion_date: 2026-01-31
+theme: "Quick wins = momentum. Boring = correct."
+codename: FOUNDATION_TIGHTENING
+```
+
+### Tracks Delivered
+| Track | Name | Key Deliverables |
+|-------|------|------------------|
+| A | PYTEST_PARALLEL | xdist_group markers for stateful tests, parallelization enabled |
+| B | ALERT_BUNDLING | CRITICAL/HALT bypass bundling, 30min window configurable, MULTI_DEGRADED summary |
+| C | CONFIG_CENTRAL | Pydantic schema (config/schema.py), zero new deps, virgin VM concept |
+| D | NARRATOR_FACTS | INV-NARRATOR-FACTS-ONLY linter, forbidden words regex, receipts_link template option |
+
+### New Invariants
+```yaml
+INV-NARRATOR-FACTS-ONLY:
+  rule: "Narrator templates contain facts only, no interpretation"
+  enforcement: Pre-commit linter + test
+  forbidden: ["edge concentrates", "best", "strongest", "likely"]
+```
+
+### Exit Gates
+```yaml
+GATE_S43_1: "pytest -n auto completes without fixture errors"
+GATE_S43_2: "Alert bundling passes >5 alerts → MULTI_DEGRADED test"
+GATE_S43_3: "Config validates on virgin VM concept"
+GATE_S43_4: "Narrator templates pass facts-only linter"
+GATE_S43_5: "All xfails reviewed before close"
+```
+
+### Exit Gate
+"Developer velocity unlocked, foundation tightened. Tests 2:21, parallel-safe."
+
+---
+
+## S44: LIVE_VALIDATION — IN PROGRESS ⏳
+
+```yaml
+status: IN_PROGRESS ⏳ (soak test running)
+started: 2026-01-31
+theme: "Boring for 48h"
+codename: LIVE_VALIDATION
+soak_remaining: ~30h
+```
+
+### Phases
+| Phase | Name | Status | Outcome |
+|-------|------|--------|---------|
+| 1 | RIVER_VERIFICATION | ✅ COMPLETE | River verified, IBKR diagnosed + fixed |
+| 2 | FULL_PATH_TEST | ✅ COMPLETE | CSO → Narrator → Execution path validated |
+| 3 | 48H_SOAK | ⏳ IN_PROGRESS | Real IBKR soak running |
+
+### Phase 1 Findings
+```yaml
+river_status: Synthetic fallback operational (real River stale)
+ibkr_diagnosis: 
+  issue: ".env not loaded, defaulted to MOCK"
+  fix: "Added dotenv loading to phoenix_status and soak script"
+  verification: "IBKR: PAPER (DUO768070) confirmed"
+```
+
+### Phase 3 Soak Features
+```yaml
+dead_man_switch: "Heartbeat bead every 6h"
+end_soak_replay: "Replay 48h beads, assert no hash mismatch"
+restart_sanity: "phoenix_status coherent after cold restart"
+```
+
+### Exit Gates
+```yaml
+GATE_S44_P1: "River has fresh bars or synthetic fallback" ✅
+GATE_S44_P2: "Historical/live seam flagged correctly" ✅
+GATE_S44_P3: "Truth Teller quality scores accurate" ✅
+GATE_S44_P4: "Full loop completes without error" ✅
+GATE_S44_P5: "Execution bead has correct provenance" ✅
+GATE_S44_P6: "Narrator output passes guard dog" ✅
+GATE_S44_P7: "48h elapsed, no unexpected alerts" ⏳
+GATE_S44_P8: "Health log shows no CRITICAL" ⏳
+GATE_S44_P9: "All beads have valid provenance" ⏳
+```
+
+---
+
+## S46: CARTRIDGE_AND_LEASE_DESIGN — COMPLETE ✅ LOCKED
+
+```yaml
+status: COMPLETE ✅ CANONICAL
+completion_date: 2026-01-31
+theme: "Governance architecture for bounded autonomy"
+codename: CARTRIDGE_AND_LEASE_DESIGN
+canonical_doc: docs/canon/designs/CARTRIDGE_AND_LEASE_DESIGN_v1.0.md
+```
+
+### Design Delivered
+```yaml
+cartridge:
+  purpose: "Strategy manifest — the WHAT"
+  schema: identity, scope, risk_defaults, gate_requirements, methodology_hash
+  new_fields: primitive_set, calibration_threshold_pct, regime_affinity
+  
+lease:
+  purpose: "Governance wrapper — the WHEN/HOW MUCH"
+  schema: identity, bounds, duration, state_machine, attestation
+  new_fields: governance_buffer_seconds, expiry_behavior, state_lock_hash
+  states: DRAFT → ACTIVE → EXPIRED | REVOKED | HALTED
+```
+
+### New Invariants (S46)
+```yaml
+INV-NO-SESSION-OVERLAP: "One lease per session, no concurrent execution"
+INV-LEASE-CEILING: "Lease bounds = ceiling, Cartridge = floor"
+INV-BEAD-COMPLETENESS: "Calibration bead must link to lease schema version"
+INV-EXPIRY-BUFFER: "60-second buffer before lease expiry triggers MARKET_CLOSE"
+INV-STATE-LOCK: "State transition guard prevents race conditions"
+```
+
+### Insertion Protocol (8-step)
+```yaml
+steps:
+  1: Load cartridge YAML
+  2: Schema validation + dependency check
+  3: CSO knowledge merge (5-drawer)
+  4: Gate compatibility check
+  5: Lease creation (DRAFT)
+  6: Human attestation (DRAFT → ACTIVE)
+  7: Calibration smoke test
+  8: Guard Dog final scan
+```
+
+### Advisor Consensus
+```yaml
+reviewers: [GPT, GROK, OWL, Opus]
+verdict: UNANIMOUS_APPROVAL
+key_decisions:
+  - Single active cartridge for v1.0 (multi earned later)
+  - OR logic for bounds (any breach = halt)
+  - Session-level only (no partial sessions)
+  - Per-direction extension tracking
+```
+
+### Exit Gate
+"S46 design locked. CARTRIDGE_AND_LEASE_DESIGN_v1.0_CANONICAL.md is authoritative."
+
+---
+
 ## S43-S52: PATH TO WARBOAR v0.1 (CANONICAL)
 
 ```yaml
@@ -563,18 +724,18 @@ estimated_timeline: 5-7 weeks (10 sprints)
 
 ### Sprint Skeleton
 
-| Sprint | Codename | Scope | Outcome |
-|--------|----------|-------|---------|
-| **S43** | QUICK_WINS | pytest parallelization, alert bundling, config centralization, narrator templates | Developer velocity unlocked |
-| **S44** | LIVE_VALIDATION | IBKR paper end-to-end, "boring 48h" soak, chaos replay, multi-degrade drills | Full path proven under real conditions |
-| **S45** | RESEARCH_UX | IDEA → HUNT → CFP → DECIDE journey, chunked output, lens presets | Research feels like superpower |
-| **S46** | LEASE_DESIGN | Lease schema (bounds, expiry, revoke), perish-by-default, attestation bead | Delegated autonomy design-complete |
-| **S47** | LEASE_IMPLEMENTATION | Lease interpreter + expiry, revoke path, evidence, halt integration | Bounded autonomy operational |
-| **S48** | HUD_SURFACE | phoenix_status → widget, daily briefing, "what needs me", voice whisperer | Zero "is it broken?" messages |
-| **S49** | DMG_PACKAGING | One-command build, DMG signed, first-run wizard, config migration | Installs like real software |
-| **S50** | RUNBOOKS_CALIBRATION | Runbooks for ALL states, escalation ladder, CSO calibration prep | Incidents boring, CSO ready |
-| **S51** | PRO_FLOURISHES | Sound/haptics, OINK easter eggs, session summaries, drift dashboard | Feels engaging, not just correct |
-| **S52** | WARBOAR_SEAL | Invariant freeze, constitutional audit, acceptance checklist, handover | **WARBOAR v0.1 COMPLETE** |
+| Sprint | Codename | Scope | Status |
+|--------|----------|-------|--------|
+| **S43** | FOUNDATION_TIGHTENING | pytest parallelization, alert bundling, config centralization, narrator templates | ✅ COMPLETE |
+| **S44** | LIVE_VALIDATION | IBKR paper end-to-end, "boring 48h" soak, chaos replay, multi-degrade drills | ⏳ SOAK_ACTIVE (~30h) |
+| **S45** | RESEARCH_UX | IDEA → HUNT → CFP → DECIDE journey, chunked output, lens presets | PENDING |
+| **S46** | CARTRIDGE_LEASE_DESIGN | Cartridge + Lease schema, insertion protocol, state machine, attestation | ✅ COMPLETE (CANONICAL) |
+| **S47** | LEASE_IMPLEMENTATION | Lease interpreter + expiry, revoke path, evidence, halt integration | NEXT (after S44 soak) |
+| **S48** | HUD_SURFACE | phoenix_status → widget, daily briefing, "what needs me", voice whisperer | PENDING |
+| **S49** | DMG_PACKAGING | One-command build, DMG signed, first-run wizard, config migration | PENDING |
+| **S50** | RUNBOOKS_CALIBRATION | Runbooks for ALL states, escalation ladder, CSO calibration prep | PENDING |
+| **S51** | PRO_FLOURISHES | Sound/haptics, OINK easter eggs, session summaries, drift dashboard | PENDING |
+| **S52** | WARBOAR_SEAL | Invariant freeze, constitutional audit, acceptance checklist, handover | **WARBOAR v0.1 TARGET** |
 
 ### New Invariants (S43-S52)
 
@@ -661,40 +822,54 @@ acceleration_options:
 ### Narrator — S40 ✓
 - INV-NARRATOR-1/2/3
 
-### S43-S52 (New — Path to v0.1)
-- INV-NO-CORE-REWRITES-POST-S44 (global, after S44)
+### S43 (Foundation Tightening) ✓
+- INV-NARRATOR-FACTS-ONLY: "Narrator templates contain facts only, no interpretation"
+
+### S46 (Cartridge + Lease Design) ✓
+- INV-NO-SESSION-OVERLAP: "One lease per session, no concurrent execution"
+- INV-LEASE-CEILING: "Lease bounds = ceiling, Cartridge = floor"
+- INV-BEAD-COMPLETENESS: "Calibration bead must link to lease schema version"
+- INV-EXPIRY-BUFFER: "60-second buffer before lease expiry triggers MARKET_CLOSE"
+- INV-STATE-LOCK: "State transition guard prevents race conditions"
+
+### S43-S52 (Path to v0.1)
+- INV-NO-CORE-REWRITES-POST-S44 (global, after S44 soak completes)
 - INV-RESEARCH-RAW-DEFAULT (S45)
 - INV-HALT-OVERRIDES-LEASE (S47)
 
-**Total: 95+ invariants proven (S28-S42)**
-**Tests: 1465 passing (28 xfailed)**
+**Total: 100+ invariants proven (S28-S43, S46 design)**
+**Tests: 1500+ passing (28 xfailed)**
 **Chaos vectors: 224 handled**
 
 ---
 
 ## CRITICAL REFERENCES
 
-| Document | Purpose |
-|----------|---------|
-| `DEFINITIVE_FATE.yaml` | NEX→Phoenix fate table, invariants, patterns |
-| `PHOENIX_MANIFEST.md` | System topology (M2M bootstrap) |
-| `conditions.yaml` | 5-drawer gate predicates |
-| `schemas/beads.yaml` | Bead type definitions |
+| Document | Location | Purpose |
+|----------|----------|---------|
+| `DEFINITIVE_FATE.yaml` | `docs/canon/` | NEX→Phoenix fate table, invariants, patterns |
+| `PHOENIX_MANIFEST.md` | `docs/canon/` | System topology (M2M bootstrap) |
+| `SPRINT_ROADMAP.md` | `docs/canon/` | This document |
+| `ARCHITECTURAL_FINALITY.md` | `docs/canon/` | System architecture freeze |
+| `CARTRIDGE_AND_LEASE_DESIGN_v1.0.md` | `docs/canon/designs/` | S46 governance architecture |
+| `conditions.yaml` | `cso/knowledge/` | 5-drawer gate predicates |
+| `schemas/beads.yaml` | `schemas/` | Bead type definitions |
+| `REPO_MAP.md` | root | Repository navigation |
 
 ---
 
 ```yaml
 # Advisor Bootstrap Checklist
 orientation_sequence:
-  1: cat DEFINITIVE_FATE.yaml | head -100  # Fate framework
-  2: cat SPRINT_ROADMAP.md | grep -A20 "S35:"  # Current sprint
-  3: cat conditions.yaml  # CSO gates
-  4: cat state/orientation.yaml  # Current state (if exists)
+  1: cat REPO_MAP.md  # Repository navigation
+  2: cat docs/canon/SPRINT_ROADMAP.md | head -80  # Current state
+  3: cat cso/knowledge/conditions.yaml  # CSO gates
+  4: cat docs/canon/designs/CARTRIDGE_AND_LEASE_DESIGN_v1.0.md | head -100  # S46 design
 
 first_questions:
-  - "Which sprint is active?"
-  - "What invariants must this sprint prove?"
-  - "What NEX capabilities does this sprint address?"
+  - "Which sprint is active?" → S44 (soak test in progress)
+  - "What's next after soak?" → S47 (Lease Implementation)
+  - "Where is the design spec?" → docs/canon/designs/
 ```
 
 ---
@@ -704,22 +879,29 @@ first_questions:
 
 ---
 
-## S35-S42 BLOCK SUMMARY
+## S35-S46 BLOCK SUMMARY
 
 ```yaml
 s35_s39_completion_date: 2026-01-29
 s40_completion_date: 2026-01-30
 s41_completion_date: 2026-01-23
 s42_completion_date: 2026-01-30
-total_tests: 1465+ (28 xfailed)
+s43_completion_date: 2026-01-31
+s44_status: SOAK_IN_PROGRESS (~30h remaining)
+s46_design_locked: 2026-01-31
+
+total_tests: 1500+ (28 xfailed)
 total_bunny_vectors: 224
-total_invariants: 95+
+total_invariants: 100+
 total_gates_mapped: 48
 
 s35_s39_theme: "CONSTITUTIONAL CEILING"
 s40_theme: "SLEEP_SAFE"
 s41_theme: "WARBOAR_AWAKENS"
 s42_theme: "TRUST_CLOSURE"
+s43_theme: "FOUNDATION_TIGHTENING"
+s44_theme: "LIVE_VALIDATION"
+s46_theme: "CARTRIDGE_AND_LEASE_DESIGN"
 
 what_this_means: |
   NEX died saying: "Strategy Stability Index: 78/100"
@@ -729,6 +911,8 @@ what_this_means: |
   Human frames, machine computes. Human sleeps.
   The boar barks clean facts — receipts hidden, alerts glanceable.
   CSO understands the methodology. Operator understands the boundaries.
+  
+  S46 adds: Cartridges define WHAT. Leases bound WHEN/HOW MUCH. Human always sovereign.
 
 key_modules_delivered:
   # S35-S39 (Constitutional Ceiling)
@@ -757,17 +941,42 @@ key_modules_delivered:
   # S42 (Trust Closure)
   cso/knowledge/GATE_GLOSSARY.yaml: 48 gates mapped
   state/health_writer.py: CSO-readable health file
-  docs/OPERATOR_INSTRUCTIONS/: Operator expectations + boundaries
+  docs/operations/operator/: Operator expectations + boundaries
   cso/knowledge/CSO_HEALTH_PROMPT.md: Health consumption guide
+  
+  # S43 (Foundation Tightening)
+  config/schema.py: Pydantic centralized config
+  tests/test_narrator_templates.py: INV-NARRATOR-FACTS-ONLY linter
+  
+  # S46 (Cartridge + Lease Design) — DESIGN ONLY
+  docs/canon/designs/CARTRIDGE_AND_LEASE_DESIGN_v1.0.md: Canonical spec
+  # Implementation in S47
 
 the_floor_holds: |
   S40 proves the system survives coordinated chaos.
   S41 proves the guard dog catches heresy at the throat.
   S42 proves CSO understands the methodology and operator knows the boundaries.
+  S43 proves developer velocity with tightened foundation.
+  S44 proves it works FOR REAL on live IBKR (soak in progress).
+  S46 proves governance architecture for bounded autonomy (design locked).
+  
   Real IBKR Gateway validated in paper mode.
   15 + 20 attack vectors, 0 cascade failures, 0 alert storms.
   48 gates mapped. Health visible. Operator instructed.
+  Filing cabinet operational. Cartridge/Lease design canonical.
+  
   No 3am wake-ups. Sleep-safe + warboar + trust certified.
+  Next: S44 soak completes → S47 implementation begins.
+
+filing_cabinet_update: |
+  As of 2026-01-31:
+  - docs/canon/ = Authoritative locked docs
+  - docs/operations/ = Runbooks + operator guides
+  - docs/build/current/ = Active sprint (S44)
+  - docs/archive/ = Historical reference
+  - cartridges/ = Strategy manifests (ready for S47)
+  - leases/ = Governance wrappers (ready for S47)
+  - REPO_MAP.md = Navigation at root
 ```
 
-*S35-S42 COMPLETE. Ceiling set. Floor holds. Guard dog armed. Trust closed. 🐗🔥*
+*S35-S43 COMPLETE. S44 SOAK ACTIVE. S46 DESIGN LOCKED. Ready for S47. 🐗🔥*
