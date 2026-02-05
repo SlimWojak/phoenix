@@ -18,16 +18,23 @@
 ```yaml
 project: Phoenix / WarBoar
 purpose: Constitutional trading system
-status: S42_COMPLETE | POST_S42_FREEZE | CSO_PRODUCTION_READY | S33_P2_BLOCKED (Olya)
-block_complete: S35-S42 (CONSTITUTIONAL_CEILING + SLEEP_SAFE + WARBOAR_AWAKENS + TRUST_CLOSURE)
-s42_completion_date: 2026-01-30
-certification: WARBOAR_CERTIFIED | LIVE_GATEWAY_VALIDATED | CSO_PRODUCTION_READY
+status: S47_COMPLETE | POST_S44_FREEZE | CSO_PRODUCTION_READY | S33_P2_BLOCKED (Olya — unblock via COE)
+block_complete: S35-S44, S47 (CONSTITUTIONAL_CEILING + SLEEP_SAFE + WARBOAR_AWAKENS + TRUST_CLOSURE + FOUNDATION_VALIDATED + LEASE_PROVEN)
+s44_completion_date: 2026-02-04
+s47_completion_date: 2026-02-04
+current_sprint: S49_PENDING (DMG Packaging) | S45 blocked (Olya)
+certification: WARBOAR_CERTIFIED | LIVE_GATEWAY_VALIDATED | CSO_PRODUCTION_READY | S44_FOUNDATION_VALIDATED | S47_LEASE_PROVEN
 relationship: Sibling to God_Mode (forge builds tools, Phoenix protects capital)
+sibling_system: Dexter (Sovereign Evidence Refinery — ICT extraction, separate Mac Mini)
 canonical_fate: docs/DEFINITIVE_FATE.yaml
-total_tests: 1465+ (28 xfailed)
-total_invariants: 95+
-total_chaos_vectors: 224
+total_tests: 1618+ (28 xfailed)
+total_invariants: 111+
+total_chaos_vectors: 240
 gate_glossary: 48 gates mapped
+
+INV-NO-CORE-REWRITES-POST-S44: ACTIVE
+  rule: "After live validation, no architectural rewrites. Only tightening, surfacing, governance."
+  enforced_since: 2026-02-04
 ```
 
 ## 1b. NON-GOALS
@@ -113,42 +120,42 @@ governance/circuit_breaker.py:
   purpose: Circuit breaker FSM (CLOSED→OPEN→HALF_OPEN)
   authority: SELF_HEALING
   status: S40_COMPLETE ✓
-  
+
 governance/backoff.py:
   purpose: Exponential backoff with jitter
   authority: RETRY_CONTROL
   status: S40_COMPLETE ✓
-  
+
 governance/health_fsm.py:
   purpose: Health state machine (HEALTHY→DEGRADED→CRITICAL→HALTED)
   authority: HEALTH_MONITORING
   status: S40_COMPLETE ✓
-  
+
 governance/runtime_assertions.py:
   purpose: Constitutional assertions at runtime boundaries
   authority: RUNTIME_ENFORCEMENT
   status: S40_COMPLETE ✓
-  
+
 brokers/ibkr/supervisor.py:
   purpose: Shadow supervisor OUTSIDE trading loop
   authority: WATCHDOG
   status: S40_COMPLETE ✓
-  
+
 brokers/ibkr/heartbeat.py:
   purpose: Connector liveness monitoring
   authority: HEARTBEAT
   status: S40_COMPLETE ✓
-  
+
 brokers/ibkr/degradation.py:
   purpose: Graceful degradation cascade (T2→T1→T0)
   authority: DEGRADATION
   status: S40_COMPLETE ✓
-  
+
 narrator/:
   purpose: Template-based state projection (boar dialect)
   authority: PROJECTION_ONLY (facts, no synthesis)
   status: S40_COMPLETE ✓
-  
+
 tools/hooks/:
   purpose: Pre-commit constitutional enforcement
   authority: BUILD_TIME_ENFORCEMENT
@@ -164,7 +171,7 @@ governance/slm_boundary.py:
   purpose: ContentClassifier + @slm_output_guard
   authority: HERESY_DETECTION
   status: S41_COMPLETE ✓
-  
+
 narrator/renderer.py:
   purpose: narrator_emit() single chokepoint
   authority: EMISSION_GATE
@@ -200,6 +207,27 @@ docs/OPERATOR_INSTRUCTIONS/:
   purpose: Operator expectations and boundaries
   authority: OPERATOR_GUIDANCE
   status: S42_COMPLETE ✓
+
+# S47 (COMPLETE)
+governance/lease_types.py:
+  purpose: Pydantic models (CartridgeManifest, Lease, LeaseState, bead types)
+  authority: SCHEMA_DEFINITION
+  status: S47_COMPLETE ✓
+
+governance/lease.py:
+  purpose: Lease state machine + interpreter + manager
+  authority: GOVERNANCE_ENFORCEMENT
+  status: S47_COMPLETE ✓
+
+governance/cartridge.py:
+  purpose: Cartridge loader + linter + registry
+  authority: CARTRIDGE_GOVERNANCE
+  status: S47_COMPLETE ✓
+
+governance/insertion.py:
+  purpose: 8-step insertion protocol
+  authority: INSERTION_GATE
+  status: S47_COMPLETE ✓
 ```
 
 ### DAEMONS
@@ -276,6 +304,21 @@ bead_schema:
 INV-D4-NO-DERIVATION-1:
   status: PROVEN (verbatim projection contract)
   test: drills/d4_verification.py
+
+lease_state_machine:
+  status: PROVEN (S47 implementation)
+  path: governance/lease.py
+  states: DRAFT → ACTIVE → EXPIRED | REVOKED | HALTED
+  transitions: [activate, expire, revoke, halt_override]
+  invariants: [INV-HALT-OVERRIDES-LEASE, INV-NO-SESSION-OVERLAP, INV-STATE-LOCK]
+  tests: tests/test_lease/test_state_machine.py
+
+cartridge_contract:
+  status: PROVEN (S47 implementation)
+  path: governance/cartridge.py
+  schema: schemas/cartridge_schema.yaml
+  invariants: [INV-LEASE-CEILING, INV-BEAD-COMPLETENESS]
+  tests: tests/test_lease/test_bounds.py
 ```
 
 ---
@@ -597,6 +640,35 @@ INV-REGIME-GOVERNANCE: "Regimes versioned, capped (~20 max)"
   enforcement: schema validation
 ```
 
+### LEASE SYSTEM (S47) ✓
+
+```yaml
+INV-HALT-OVERRIDES-LEASE: "Halt wins. Always. <50ms."
+  test: tests/test_lease/test_halt_override.py
+  enforcement: Halt bypasses state_lock_hash verification in LeaseStateMachine
+  measured: <1ms (halt_callback + state transition)
+
+INV-NO-SESSION-OVERLAP: "One lease per session, no concurrent execution"
+  test: tests/chaos/test_bunny_s47.py::TestConcurrentActivation
+  enforcement: LeaseManager.activate_lease() rejects if active lease exists
+
+INV-LEASE-CEILING: "Lease bounds = ceiling, Cartridge = floor"
+  test: tests/test_lease/test_bounds.py::TestLeaseCeiling
+  enforcement: validate_bounds_ceiling() in insertion.py
+
+INV-BEAD-COMPLETENESS: "Calibration bead must link to lease schema version"
+  test: tests/test_lease/test_state_machine.py::TestBeadEmission
+  enforcement: All transitions emit StateLockBead with schema_version
+
+INV-EXPIRY-BUFFER: "60-second buffer before lease expiry triggers MARKET_CLOSE"
+  test: tests/test_lease/test_expiry.py::TestExpiryBuffer
+  enforcement: get_effective_expiry() subtracts governance_buffer_seconds
+
+INV-STATE-LOCK: "State transition guard prevents race conditions"
+  test: tests/test_lease/test_state_machine.py::TestStateLock
+  enforcement: compute_state_hash() verification before all transitions (except halt)
+```
+
 ---
 
 ## 5. PATTERNS
@@ -781,8 +853,42 @@ S42: TRUST_CLOSURE | ✓ Gate glossary (48 gates), health file, operator docs
   Track_E: Observability (phoenix_status CLI)
   Track_F: Doc Seal (START_HERE, archive sweep)
 
+# S44 COMPLETE (Foundation Validated)
+S44: LIVE_VALIDATION | ✓ 24h unattended soak, zero arch flaws, zero invariant violations
+  Phase_1: River verification (synthetic fallback operational)
+  Phase_2: Full path test (CSO → Narrator → Execution validated)
+  Phase_3: 24h soak (IBKR paper mode, no crashes, no violations)
+  exit_gate: FOUNDATION_VALIDATED
+  ops_gaps_documented: [heartbeat daemon, IBKR disconnect, River staleness, health_writer]
+  disposition: "Software exists. Now we operate."
+
+# S47 COMPLETE (Lease Implementation)
+S47: LEASE_IMPLEMENTATION | ✓ 118 tests, 16 BUNNY, 6 invariants
+  Deliverables:
+    - governance/lease_types.py (Pydantic models)
+    - governance/lease.py (state machine + interpreter)
+    - governance/cartridge.py (loader + linter)
+    - governance/insertion.py (8-step protocol)
+  Invariants_proven:
+    - INV-HALT-OVERRIDES-LEASE (<1ms halt override)
+    - INV-NO-SESSION-OVERLAP (one lease per session)
+    - INV-LEASE-CEILING (Lease=ceiling, Cartridge=floor)
+    - INV-BEAD-COMPLETENESS (schema version linking)
+    - INV-EXPIRY-BUFFER (60s buffer)
+    - INV-STATE-LOCK (race condition guard)
+  exit_gate: LEASE_PROVEN
+  theme: "Bounded autonomy with sovereign override"
+  completion_date: 2026-02-04
+
+# PARALLEL TRACKS (Independent)
+DEXTER_COE: OPERATIONAL (Mac Mini, separate CTO, ICT extraction)
+CSO_COE: MODEL_SHIFT_ACCEPTED (recognition-based validation)
+  paradigm: "Dexter + Perplexity → comprehensive base → Olya validates"
+  unblocks: S33_P2 (when Olya provides curriculum)
+
 # CURRENT STATE
-S42_COMPLETE | POST_S42_FREEZE ACTIVE | CSO_PRODUCTION_READY
+S47_COMPLETE | POST_S44_FREEZE ACTIVE | CSO_PRODUCTION_READY | S49_NEXT
+# INV-NO-CORE-REWRITES-POST-S44: No architectural rewrites. Only tightening, surfacing, governance.
 # See docs/ARCHITECTURAL_FINALITY.md for freeze rules
 ```
 
@@ -806,8 +912,10 @@ cat state/orientation.yaml  # if exists
 - "What is current execution_phase?"
 - "Any kill_flags_active?"
 - "What's the last human action bead?"
-- "Which sprint is active?"
+- "Which sprint is active?" # S49_PENDING (DMG Packaging) | S45 blocked (Olya)
 - "What invariants must this sprint prove?"
+- "What just completed?" # S47 LEASE_IMPLEMENTATION — 118 tests, 6 invariants
+- "Where is the lease code?" # governance/{lease.py, cartridge.py, lease_types.py, insertion.py}
 ```
 
 ### WHAT_NOT_TO_ASSUME

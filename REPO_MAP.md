@@ -2,8 +2,8 @@
 
 ```yaml
 document: REPO_MAP
-version: 1.0
-date: 2026-01-31
+version: 1.1
+date: 2026-02-04
 purpose: Filing cabinet reference
 ```
 
@@ -81,8 +81,25 @@ phoenix/
 ├── reports/                      # Test results
 ├── drills/                       # Validation scripts
 │
-└── [module folders]              # Code modules
-    (brokers, cfp, execution, governance, narrator, etc.)
+├── governance/                   # Governance enforcement
+│   ├── halt.py                   # Kill switch (<50ms)
+│   ├── lease.py                  # S47: State machine + interpreter
+│   ├── lease_types.py            # S47: Pydantic models
+│   ├── cartridge.py              # S47: Loader + linter
+│   ├── insertion.py              # S47: 8-step protocol
+│   └── ...
+│
+├── tests/
+│   ├── test_lease/               # S47: Lease system tests
+│   │   ├── test_state_machine.py
+│   │   ├── test_halt_override.py
+│   │   ├── test_bounds.py
+│   │   └── test_expiry.py
+│   └── chaos/
+│       └── test_bunny_s47.py     # S47: Chaos vectors
+│
+└── [other module folders]        # Code modules
+    (brokers, cfp, execution, narrator, etc.)
 ```
 
 ---
@@ -132,4 +149,4 @@ phoenix/
 
 ---
 
-*Last updated: 2026-01-31 (Filing Cabinet Stage 3)*
+*Last updated: 2026-02-04 (S47 Lease Implementation added)*
