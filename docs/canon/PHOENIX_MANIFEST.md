@@ -792,6 +792,19 @@ RBAC_SUB_AGENTS:
 TOKEN_COST_INFRASTRUCTURE:
   description: Per-workflow budget, prompt optimization
   relation: INV-HUNT-BUDGET extended
+
+# NEW: DEXTER_RESEARCH_REFINERY (Captured 2026-02-05)
+DEXTER_RESEARCH_REFINERY:
+  description: "24/7 hypothesis → test → evidence loop"
+  dependencies: "v0.1 + Olya Stage 2 validation"
+  design_doc: docs/canon/ENDGAME_VISION_v0.2.md
+  sprint_target: S53+
+  new_invariants:
+    - INV-DEXTER-NO-AUTO-PROMOTE-TO-LIVE
+    - INV-VARIANT-PROVENANCE
+    - INV-DEXTER-EVIDENCE-NOT-ADVICE
+  infrastructure_ready: S35-S44, S47 (constitutional ceiling + lease)
+  foundry_link: "Cartridge = methodology, Dexter = extraction + testing, Phoenix = execution"
 ```
 
 ---

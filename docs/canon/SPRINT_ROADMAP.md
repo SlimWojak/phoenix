@@ -1070,6 +1070,39 @@ acceleration_options:
 | Token cost infrastructure | NEW_PARK | Nice-to-have, not blocking v0.1 |
 | Regime nuke autopsy | NEW_PARK | Forensic palace exists, enhance post-ship |
 | Olya OCD integration | OPERATOR_PACED | Can't force Olya's rhythm |
+| **DEXTER_RESEARCH_REFINERY** | **NEW_PARK (S53+)** | **24/7 hypothesis → test → evidence loop** |
+
+```yaml
+# NEW: DEXTER_RESEARCH_REFINERY (Captured 2026-02-05)
+DEXTER_RESEARCH_REFINERY:
+  source: "G + CTO synthesis, 2026-02-05"
+  description: "24/7 autonomous research loop — extract, hypothesize, test, evidence, human gate"
+  dependencies:
+    - "Olya Stage 2 validation (Dexter extraction proven)"
+    - "v0.1 shipped (S47-S52)"
+    - "Dexter bridge operational"
+  sprint_target: S53+
+  design_doc: docs/canon/ENDGAME_VISION_v0.2.md
+
+  new_invariants_needed:
+    INV-DEXTER-NO-AUTO-PROMOTE-TO-LIVE:
+      rule: "No Dexter-generated thesis can enter live execution without explicit human promotion"
+    INV-VARIANT-PROVENANCE:
+      rule: "Every variant must link to root FACT_BEAD validated by Olya"
+    INV-DEXTER-EVIDENCE-NOT-ADVICE:
+      rule: "Dexter outputs are evidence bundles, never recommendations or advice"
+
+  infrastructure_already_built:
+    - S35_CFP (conditional facts)
+    - S36_CSO (gate evaluation)
+    - S37_ATHENA (CLAIM/FACT memory)
+    - S38_HUNT (exhaustive testing)
+    - S39_VALIDATION (walk-forward, Monte Carlo)
+    - S44_LIVE (IBKR paper)
+    - S47_LEASE (bounded autonomy)
+
+  foundry_link: "If Dexter can run this for ICT, it can run for ANY methodology"
+```
 
 ---
 
