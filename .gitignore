@@ -35,6 +35,9 @@ htmlcov/
 *.swp
 *.swo
 
+# Claude Code local settings (hooks config with paths)
+.claude/settings.local.json
+
 # OS
 .DS_Store
 Thumbs.db
