@@ -16,8 +16,8 @@ audience: Advisors (GPT, GROK, OWL, Opus)
 ## CURRENT STATE
 
 ```yaml
-current_sprint: S48_PENDING (next after S47 complete)
-status: S44_COMPLETE | S46_DESIGN_LOCKED | S47_COMPLETE | S48_HUD_COMPLETE
+current_sprint: S49_PENDING (DMG Packaging)
+status: S44_COMPLETE | S46_DESIGN_LOCKED | S47_COMPLETE | S48_HUD_COMPLETE | MISSION_CONTROL_v0.2_LOCKED
 s33_p2: BLOCKED (Olya CSO calibration) — unblock via COE model
 
 recent_completions:
@@ -28,14 +28,19 @@ recent_completions:
   s48_completion_date: 2026-01-31
   filing_cabinet: 2026-01-31
   a8ra_brand_capture: 2026-02-09  # BRAND_IDENTITY.md + Mission Control validation
+  mission_control_v0.2: 2026-02-09  # Design locked, all 13 decisions finalized
+  ground_tests: 2026-02-09          # 6/6 PASS — Claude Code native features validated
+  phoenix_swarm_repo: 2026-02-09    # Coordination scaffold built (30 files)
+  office_identities: 2026-02-09     # CLAUDE.md authored for Phoenix, Dexter, Oracle
+  brand_identity: 2026-02-09        # a8ra BRAND_IDENTITY.md + website operational
 
-certification: WARBOAR_CERTIFIED | LIVE_GATEWAY_VALIDATED | CSO_PRODUCTION_READY | S46_CANONICAL | HUD_INTEGRATED | S44_FOUNDATION_VALIDATED | S47_LEASE_PROVEN
+certification: WARBOAR_CERTIFIED | LIVE_GATEWAY_VALIDATED | CSO_PRODUCTION_READY | S46_CANONICAL | HUD_INTEGRATED | S44_FOUNDATION_VALIDATED | S47_LEASE_PROVEN | MC_v0.2_LOCKED
 cumulative:
-  sprints_complete: 19 (S28 → S44, S47, S48)
+  sprints_complete: 19 (S28-S44, S46-S48)
   tests_passing: 1618+
   xfailed: 28 (documented, strict)
   chaos_vectors: 240/240 PASS
-  invariants_proven: 111+
+  invariants_proven: 124+ (111 Phoenix + 13 Mission Control)
   bead_types: 17
   runbooks: 8
   gate_glossary: 48 gates mapped
@@ -1201,7 +1206,7 @@ RATIONALE: "Binary states. Rich metadata. GPT wins on state machine, OWL wins on
 | `DEFINITIVE_FATE.yaml` | `docs/canon/` | NEX→Phoenix fate table, invariants, patterns |
 | `PHOENIX_MANIFEST.md` | `docs/canon/` | System topology (M2M bootstrap) |
 | `SPRINT_ROADMAP.md` | `docs/canon/` | This document |
-| `MISSION_CONTROL_DESIGN_v0.1.md` | `docs/canon/designs/` | Multi-office swarm architecture |
+| `MISSION_CONTROL_DESIGN_v0_2.md` | `docs/canon/designs/` | Multi-office swarm architecture (canonical) |
 | `ARCHITECTURAL_FINALITY.md` | `docs/canon/` | System architecture freeze |
 | `CARTRIDGE_AND_LEASE_DESIGN_v1.0.md` | `docs/canon/designs/` | S46 governance architecture |
 | `POST_S44_SYNTHESIS_v0.1.md` | `docs/` | S44 closure + Dexter + COE advisor synthesis |
@@ -1266,20 +1271,39 @@ s47_theme: "LEASE_IMPLEMENTATION" → BOUNDED_AUTONOMY
 s48_theme: "HUD_SURFACE"
 
 parallel_tracks:
-  dexter_coe: OPERATIONAL (Mac Mini, ICT extraction)
+  dexter_coe: OPERATIONAL (Mac Mini, ICT extraction, 981 signatures)
   cso_coe: MODEL_SHIFT_ACCEPTED (recognition-based validation)
-  mission_control: DESIGN_LOCKED (see docs/canon/designs/MISSION_CONTROL_DESIGN_v0.1.md)
+  mission_control: |
+    v0.2 CANONICAL (2026-02-09)
+    - Design locked: 13/13 decisions, 32 MC invariants
+    - Ground tests: 6/6 PASS (MEMORY.md, hooks, resume, headless, subagents)
+    - phoenix-swarm/ repo: BUILT (30 files, coordination scaffold)
+    - Office identities: AUTHORED (Phoenix, Dexter, Oracle CLAUDE.md)
+    - Naming: PHOENIX/DEXTER/ORACLE (propagated across all files)
+    - Awaiting: M3 Ultra arrival → 2-3hr bootstrap → operational
+    - See: docs/canon/designs/MISSION_CONTROL_DESIGN_v0_2.md
 
 brand_identity:
-  date: 2026-02-09
-  deliverables:
-    - docs/canon/BRAND_IDENTITY.md (canonical)
-    - Mission Control pattern validated (a8ra_web/Picasso Forge)
-    - a8ra.com + a8ra.ai live (autonomous art installation)
-    - X handle: @a8ra_ai (auto-publish operational)
-  status: OPERATIONAL
+  status: OPERATIONAL (2026-02-09)
+  deliverables: BRAND_IDENTITY.md, a8ra.com, a8ra.ai, @a8ra_ai
   cost: "$5-9/month"
   maintenance: None required
+
+ground_test_discoveries: |
+  Claude Code native capabilities validated (2026-02-09):
+  - CLAUDE.md: Auto-loads as project instructions every session ✓
+  - /memory command: Project-scoped persistent notes across all sessions ✓
+  - SessionEnd hooks: Fire on exit, capture session_id in JSON ✓
+  - --resume UUID: Restores session context ✓
+  - claude -p: Headless non-interactive mode ✓
+  - Task(): Native subagent delegation ✓
+
+  Key corrections from ground truth testing:
+  - MEMORY.md is NOT auto-loaded (contrary to some documentation)
+  - Native /memory command is the real persistence mechanism
+  - Headless flag is -p (not --headless)
+  - Subagents use Task() tool (not /delegate)
+  - Hooks config: .claude/settings.local.json (project-level)
 
 INV-NO-CORE-REWRITES-POST-S44: ACTIVE (2026-02-04)
 
