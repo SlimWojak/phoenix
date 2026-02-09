@@ -5,6 +5,7 @@ document: ENDGAME_VISION
 version: 0.2
 date: 2026-02-05
 status: VISION_LOCKED | CARPARK
+brand: a8ra (public identity — Phoenix is internal codename)
 source: G + CTO synthesis dialogue
 gating: Requires Olya Stage 2 validation + v0.1 shipped before design sprint
 sprint_target: S53+

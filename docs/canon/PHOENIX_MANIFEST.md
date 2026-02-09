@@ -17,7 +17,8 @@
 
 ```yaml
 project: Phoenix / WarBoar
-purpose: Constitutional trading system
+brand: a8ra (public identity — see docs/canon/BRAND_IDENTITY.md)
+purpose: Constitutional trading system (a8ra's first product)
 status: S47_COMPLETE | POST_S44_FREEZE | CSO_PRODUCTION_READY | S33_P2_BLOCKED (Olya — unblock via COE)
 block_complete: S35-S44, S47 (CONSTITUTIONAL_CEILING + SLEEP_SAFE + WARBOAR_AWAKENS + TRUST_CLOSURE + FOUNDATION_VALIDATED + LEASE_PROVEN)
 s44_completion_date: 2026-02-04

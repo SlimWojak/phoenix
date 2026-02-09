@@ -3,9 +3,10 @@
 
 ```yaml
 document: SPRINT_ROADMAP.md
-version: 2.4
-date: 2026-02-04
+version: 2.5
+date: 2026-02-09
 status: CANONICAL
+brand: a8ra (Phoenix is internal codename — see docs/canon/BRAND_IDENTITY.md)
 format: M2M_DENSE
 audience: Advisors (GPT, GROK, OWL, Opus)
 ```
@@ -26,6 +27,7 @@ recent_completions:
   s47_completion_date: 2026-02-04
   s48_completion_date: 2026-01-31
   filing_cabinet: 2026-01-31
+  a8ra_brand_capture: 2026-02-09  # BRAND_IDENTITY.md + Mission Control validation
 
 certification: WARBOAR_CERTIFIED | LIVE_GATEWAY_VALIDATED | CSO_PRODUCTION_READY | S46_CANONICAL | HUD_INTEGRATED | S44_FOUNDATION_VALIDATED | S47_LEASE_PROVEN
 cumulative:
@@ -1195,9 +1197,11 @@ RATIONALE: "Binary states. Rich metadata. GPT wins on state machine, OWL wins on
 
 | Document | Location | Purpose |
 |----------|----------|---------|
+| `BRAND_IDENTITY.md` | `docs/canon/` | a8ra naming, mythology, positioning |
 | `DEFINITIVE_FATE.yaml` | `docs/canon/` | NEX→Phoenix fate table, invariants, patterns |
 | `PHOENIX_MANIFEST.md` | `docs/canon/` | System topology (M2M bootstrap) |
 | `SPRINT_ROADMAP.md` | `docs/canon/` | This document |
+| `MISSION_CONTROL_DESIGN_v0.1.md` | `docs/canon/designs/` | Multi-office swarm architecture |
 | `ARCHITECTURAL_FINALITY.md` | `docs/canon/` | System architecture freeze |
 | `CARTRIDGE_AND_LEASE_DESIGN_v1.0.md` | `docs/canon/designs/` | S46 governance architecture |
 | `POST_S44_SYNTHESIS_v0.1.md` | `docs/` | S44 closure + Dexter + COE advisor synthesis |
@@ -1264,6 +1268,18 @@ s48_theme: "HUD_SURFACE"
 parallel_tracks:
   dexter_coe: OPERATIONAL (Mac Mini, ICT extraction)
   cso_coe: MODEL_SHIFT_ACCEPTED (recognition-based validation)
+  mission_control: DESIGN_LOCKED (see docs/canon/designs/MISSION_CONTROL_DESIGN_v0.1.md)
+
+brand_identity:
+  date: 2026-02-09
+  deliverables:
+    - docs/canon/BRAND_IDENTITY.md (canonical)
+    - Mission Control pattern validated (a8ra_web/Picasso Forge)
+    - a8ra.com + a8ra.ai live (autonomous art installation)
+    - X handle: @a8ra_ai (auto-publish operational)
+  status: OPERATIONAL
+  cost: "$5-9/month"
+  maintenance: None required
 
 INV-NO-CORE-REWRITES-POST-S44: ACTIVE (2026-02-04)
 
