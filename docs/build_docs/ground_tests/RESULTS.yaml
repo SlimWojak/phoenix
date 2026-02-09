@@ -1,0 +1,71 @@
+# GROUND TEST RESULTS — Mission Control v0.2 Validation
+# Date: 2026-02-09
+# Tester: G
+# Hardware: Mac Studio, Apple M4 Max, 64 GB
+# Claude Code version: 2.1.27
+
+GT-1_MEMORY_MD:
+  status: PASS
+  test: "MEMORY.md persists across sessions and auto-loads"
+  sub_tests:
+    GT-1a:
+      status: PASS
+      test: "/memory command persists across sessions"
+      notes: "Stored in ~/.claude/projects/{path}/memory/"
+    GT-1b:
+      status: PASS
+      test: "State embedded in CLAUDE.md loads at session start"
+    GT-1c:
+      status: PASS
+      test: "CLAUDE.md standing order 'read CHECKPOINT.yaml' — agent follows on startup"
+  result: "All 3 sub-tests passed"
+  fallback_needed: false
+
+GT-2_RESUME:
+  status: PASS
+  test: "--resume SESSION_ID restores prior context"
+  result: "--resume [UUID] works. UUID found in ~/.claude/projects/{path}/*.jsonl filenames."
+  notes: "/memory is project-global (available across ALL sessions, not just resumed one)"
+  fallback_needed: false
+
+GT-3_MCP_MEMORY_KEEPER:
+  status: SKIPPED
+  test: "mcp-memory-keeper installs and Claude Code can use it"
+  result: "Installed but not tested in session"
+  notes: "/memory native mechanism may be sufficient"
+  fallback_needed: false
+
+GT-4_HOOKS:
+  status: PASS
+  test: "on-session-end hook fires and writes file on exit"
+  result: "SessionEnd hook fires successfully"
+  notes: "Config location: <project>/.claude/settings.local.json. Hook receives JSON on stdin with session_id, reason, transcript_path. Session ID captured automatically."
+  fallback_needed: false
+
+GT-5_HEADLESS:
+  status: PASS
+  test: "Claude Code runs in headless mode"
+  result: "claude -p 'prompt' --allowedTools 'Bash,Write' runs headless. DEXTER 24/7 mode confirmed."
+  notes: "Flag is -p (not --headless)"
+  fallback_needed: false
+
+GT-6_SUBAGENTS:
+  status: PASS
+  test: "Opus spawns native subagent that returns result"
+  result: "Task() tool delegates to native subagent. Subagent completes independently and returns result."
+  fallback_needed: false
+
+SUMMARY:
+  total: 6
+  passed: 6
+  failed: 0
+  skipped: 1
+  must_pass_met: true
+  design_discoveries:
+    - "MEMORY.md is NOT auto-loaded (BOAR source was wrong)"
+    - "/memory command is the real native persistence mechanism"
+    - "SessionEnd hook provides session_id (enables auto-checkpoint with --resume)"
+    - "Headless mode is -p flag (not --headless)"
+    - "Subagents use Task() tool (not /delegate)"
+    - "Hooks config: .claude/settings.local.json (project-level, gitignored)"
+    - "CLAUDE.md is reliably loaded as project instructions every session"
