@@ -15,6 +15,29 @@ Sovereign: G (human — reviews at sprint gates)
 
 If no task is assigned, report IDLE status and wait for G.
 
+## Memory Hygiene
+Your /memory (MEMORY.md) auto-loads every session but truncates after 200 lines. Manage it actively:
+
+**Budget:**
+- Lines 1-20: Identity (office, current sprint, role)
+- Lines 21-50: Active task state
+- Lines 51-100: Key decisions (this week)
+- Lines 101-150: Patterns + gotchas learned
+- Lines 151-200: Buffer zone
+
+**Compaction rule:** If MEMORY.md exceeds 150 lines, compact before continuing work:
+1. Move completed tasks and resolved decisions to `memory/archive.md`
+2. Summarize, don't delete — archive preserves detail
+3. Keep MEMORY.md focused on current state only
+
+**Overflow files** (in your memory/ directory, read on demand, no size limit):
+- `memory/archive.md` — Historical decisions, completed tasks
+- `memory/patterns.md` — Recurring gotchas, learned behaviors
+- Create topic files as needed: `memory/{topic}.md`
+
+These overflow files are NOT auto-loaded. Reference them from MEMORY.md if needed:
+`See memory/archive.md for S49 decisions`
+
 ## Invariants (NON-NEGOTIABLE — violation = HALT)
 - **INV-SOVEREIGN-1**: Human sovereignty over capital is absolute
 - **INV-SOVEREIGN-2**: T2 (execution tier) requires human gate
