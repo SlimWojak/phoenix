@@ -16,7 +16,7 @@ audience: Advisors (GPT, GROK, OWL, Opus)
 ## CURRENT STATE
 
 ```yaml
-current_sprint: S49_PENDING (DMG Packaging)
+current_sprint: S49_PENDING (Bootstrap & Deploy)
 status: S44_COMPLETE | S46_DESIGN_LOCKED | S47_COMPLETE | S48_HUD_COMPLETE | MISSION_CONTROL_v0.2_LOCKED
 s33_p2: BLOCKED (Olya CSO calibration) — unblock via COE model
 
@@ -1000,14 +1000,18 @@ timeline: Integration AFTER both systems stabilize
 
 ---
 
-## S43-S52: PATH TO WARBOAR v0.1 (CANONICAL)
+## S43-S50: PATH TO WARBOAR v0.1 (CANONICAL)
 
 ```yaml
 status: CONVICTION_LOCKED
-date: 2026-01-31
-source: Advisory team convergence (CTO + GPT + GROK + OPUS)
+date: 2026-02-09
+source: Advisory team convergence (CTO + GPT + GROK + OPUS) — revised 2026-02-09
 target: WARBOAR v0.1 — Production standard software
-estimated_timeline: 5-7 weeks (10 sprints)
+estimated_timeline: 4-5 days (2 sprints remaining)
+revision_note: |
+  Compressed from 4 remaining sprints to 2. Killed vanity sprints (DMG, code signing,
+  wizard GUI, sound/haptics, easter eggs, drift dashboard, speculative runbooks).
+  Result: ~2 weeks saved, 100% operational value retained.
 ```
 
 ### Philosophy
@@ -1016,10 +1020,8 @@ estimated_timeline: 5-7 weeks (10 sprints)
 2: Prove it works (S44-S45) — confidence
 3: Design before build (S46-S47) — governance
 4: Make it visible (S48) — operator happiness
-5: Make it installable (S49) — real software
-6: Operationalize it (S50) — boring excellence
-7: Make it delightful (S51) — engagement
-8: Ship it (S52) — production standard
+5: Make it operational (S49) — bare Mac → running office in one command
+6: Lock and ship (S50) — invariant freeze, acceptance, WARBOAR SEAL
 ```
 
 ### Sprint Skeleton
@@ -1028,16 +1030,27 @@ estimated_timeline: 5-7 weeks (10 sprints)
 |--------|----------|-------|--------|
 | **S43** | FOUNDATION_TIGHTENING | pytest parallelization, alert bundling, config centralization, narrator templates | ✅ COMPLETE |
 | **S44** | LIVE_VALIDATION | IBKR paper end-to-end, 24h soak, chaos replay, multi-degrade drills | ✅ COMPLETE (FOUNDATION_VALIDATED) |
-| **S45** | RESEARCH_UX | IDEA → HUNT → CFP → DECIDE journey, chunked output, lens presets | PENDING |
+| **S45** | RESEARCH_UX | IDEA → HUNT → CFP → DECIDE journey, chunked output, lens presets | PENDING (blocked: Olya) |
 | **S46** | CARTRIDGE_LEASE_DESIGN | Cartridge + Lease schema, insertion protocol, state machine, attestation | ✅ COMPLETE (CANONICAL) |
 | **S47** | LEASE_IMPLEMENTATION | Lease interpreter + expiry, revoke path, evidence, halt integration | ✅ COMPLETE (118 tests, 16 BUNNY) |
 | **S48** | HUD_SURFACE | WarBoar HUD SwiftUI panel, manifest_writer bridge, file seam integration | ✅ COMPLETE |
-| **S49** | DMG_PACKAGING | One-command build, DMG signed, first-run wizard, config migration | PENDING |
-| **S50** | RUNBOOKS_CALIBRATION | Runbooks for ALL states, escalation ladder, CSO calibration prep | PENDING |
-| **S51** | PRO_FLOURISHES | Sound/haptics, OINK easter eggs, session summaries, drift dashboard | PENDING |
-| **S52** | WARBOAR_SEAL | Invariant freeze, constitutional audit, acceptance checklist, handover | **WARBOAR v0.1 TARGET** |
+| **S49** | BOOTSTRAP_AND_DEPLOY | bootstrap.sh, config migration, verify_office.sh, OPERATOR_SETUP.md | IN_PROGRESS |
+| **S50** | WARBOAR_SEAL | Escalation ladder, invariant freeze, full suite + chaos, acceptance checklist, operator confidence | PENDING — **WARBOAR v0.1 TARGET** |
 
-### New Invariants (S43-S52)
+### Killed Sprints (2026-02-09 decision)
+```yaml
+KILLED:
+  DMG_PACKAGING: "Vanity — bootstrap.sh replaces"
+  CODE_SIGNING: "Unnecessary cost ($99/yr for no benefit)"
+  FIRST_RUN_WIZARD: "GUI wizard killed — bootstrap.sh is the wizard"
+  PRO_FLOURISHES: "Sound/haptics, OINK easter eggs — vanity"
+  DRIFT_DASHBOARD: "Premature — build when needed"
+  SPECULATIVE_RUNBOOKS: "Write when needed, not before"
+  HANDOVER_CONCEPT: "G IS the operator — no handover needed"
+rationale: "4 sprints → 2 sprints. ~2 weeks saved. Zero alpha lost."
+```
+
+### New Invariants (S43-S50)
 
 ```yaml
 # Global (after S44)
@@ -1054,6 +1067,19 @@ INV-RESEARCH-RAW-DEFAULT:
 INV-HALT-OVERRIDES-LEASE:
   rule: "Halt signal overrides lease bounds check. Halt always wins. <50ms."
   rationale: "Constitutional safety non-negotiable. No revoke race with halt."
+
+# S49 Bootstrap & Deploy
+INV-BOOTSTRAP-IDEMPOTENT:
+  rule: "bootstrap.sh can be run N times without damage"
+  enforcement: Skip-if-exists checks for all install steps
+
+INV-NO-SECRETS-IN-FILES:
+  rule: "Zero secrets in any repo file. Keychain only."
+  enforcement: pre-commit hook (phoenix-swarm) + grep audit
+
+INV-SINGLE-COMMAND-SETUP:
+  rule: "One command + secrets entry = operational office"
+  enforcement: Gate S49_1
 ```
 
 ### Dependencies
@@ -1065,8 +1091,7 @@ key_dependencies:
   S51: Can run parallel to S50
 
 acceleration_options:
-  merge_s48_s51: "HUD + flourishes if ahead of schedule"
-  ten_to_eight: "Possible if no IBKR blockers — let velocity reveal"
+  s49_s50_compressed: "4 sprints → 2 (vanity killed 2026-02-09)"
 ```
 
 ### Parked Items (Post v0.1)
@@ -1077,7 +1102,7 @@ acceleration_options:
 | Token cost infrastructure | NEW_PARK | Nice-to-have, not blocking v0.1 |
 | Regime nuke autopsy | NEW_PARK | Forensic palace exists, enhance post-ship |
 | Olya OCD integration | OPERATOR_PACED | Can't force Olya's rhythm |
-| **DEXTER_RESEARCH_REFINERY** | **NEW_PARK (S53+)** | **24/7 hypothesis → test → evidence loop** |
+| **DEXTER_RESEARCH_REFINERY** | **NEW_PARK (S51+)** | **24/7 hypothesis → test → evidence loop** |
 
 ```yaml
 # NEW: DEXTER_RESEARCH_REFINERY (Captured 2026-02-05)
@@ -1086,9 +1111,9 @@ DEXTER_RESEARCH_REFINERY:
   description: "24/7 autonomous research loop — extract, hypothesize, test, evidence, human gate"
   dependencies:
     - "Olya Stage 2 validation (Dexter extraction proven)"
-    - "v0.1 shipped (S47-S52)"
+    - "v0.1 shipped (S49-S50)"
     - "Dexter bridge operational"
-  sprint_target: S53+
+  sprint_target: S51+
   design_doc: docs/canon/ENDGAME_VISION_v0.2.md
 
   new_invariants_needed:
@@ -1189,10 +1214,15 @@ RATIONALE: "Binary states. Rich metadata. GPT wins on state machine, OWL wins on
 - INV-EXPIRY-BUFFER: "60-second buffer before lease expiry triggers MARKET_CLOSE"
 - INV-STATE-LOCK: "State transition guard prevents race conditions"
 
-### S43-S52 (Path to v0.1)
+### S49 (Bootstrap & Deploy)
+- INV-BOOTSTRAP-IDEMPOTENT: "bootstrap.sh can be run N times without damage"
+- INV-NO-SECRETS-IN-FILES: "Zero secrets in any repo file. Keychain only."
+- INV-SINGLE-COMMAND-SETUP: "One command + secrets entry = operational office"
+
+### S43-S50 (Path to v0.1)
 - INV-RESEARCH-RAW-DEFAULT (S45)
 
-**Total: 111+ invariants proven (S28-S44, S46 design, S47 implementation)**
+**Total: 124+ invariants proven (111 Phoenix + 13 Mission Control)**
 **Tests: 1618+ passing (28 xfailed)**
 **Chaos vectors: 240 handled**
 
@@ -1226,8 +1256,8 @@ orientation_sequence:
   4: cat docs/canon/designs/CARTRIDGE_AND_LEASE_DESIGN_v1.0.md | head -100  # S46 design
 
 first_questions:
-  - "Which sprint is active?" → S49 (DMG Packaging) or S45 (Research UX — blocked on Olya)
-  - "What just completed?" → S47 (LEASE_IMPLEMENTATION, 2026-02-04, 118 tests, 16 BUNNY)
+  - "Which sprint is active?" → S49 (Bootstrap & Deploy) or S45 (Research UX — blocked on Olya)
+  - "What just completed?" → S48 (HUD_SURFACE) + Mission Control v0.2 + phoenix-swarm coordination repo
   - "Where is the lease code?" → governance/lease.py, lease_types.py, cartridge.py, insertion.py
   - "What are the parallel tracks?" → Dexter (ICT extraction), CSO COE (recognition-based validation)
   - "What new invariants?" → S47 added 6: INV-HALT-OVERRIDES-LEASE, INV-NO-SESSION-OVERLAP, INV-LEASE-CEILING, INV-BEAD-COMPLETENESS, INV-EXPIRY-BUFFER, INV-STATE-LOCK
@@ -1253,7 +1283,7 @@ s46_design_locked: 2026-01-31
 s47_completion_date: 2026-02-04
 s48_completion_date: 2026-01-31
 
-current_sprint: S49_PENDING (DMG Packaging) | S45 blocked (Olya)
+current_sprint: S49_IN_PROGRESS (Bootstrap & Deploy) | S45 blocked (Olya)
 
 total_tests: 1618+ (28 xfailed)
 total_bunny_vectors: 240
@@ -1382,7 +1412,7 @@ the_floor_holds: |
   Filing cabinet operational. Cartridge/Lease system built.
 
   No 3am wake-ups. Sleep-safe + warboar + trust + foundation + lease certified.
-  S47 COMPLETE → S49 NEXT (DMG Packaging).
+  S47 COMPLETE → S49 IN PROGRESS (Bootstrap & Deploy).
 
 filing_cabinet_update: |
   As of 2026-02-04:
@@ -1401,4 +1431,4 @@ parallel_systems: |
   - INV-NO-CORE-REWRITES-POST-S44: ACTIVE
 ```
 
-*S35-S44, S46-S48 COMPLETE. FOUNDATION_VALIDATED. LEASE_PROVEN. S49 NEXT. Dexter parallel. COE accepted. 🐗🔥*
+*S35-S44, S46-S48 COMPLETE. FOUNDATION_VALIDATED. LEASE_PROVEN. S49 IN PROGRESS (Bootstrap & Deploy). S50 WARBOAR_SEAL → v0.1. Dexter parallel. COE accepted. 🐗🔥*
