@@ -1035,7 +1035,7 @@ revision_note: |
 | **S47** | LEASE_IMPLEMENTATION | Lease interpreter + expiry, revoke path, evidence, halt integration | ✅ COMPLETE (118 tests, 16 BUNNY) |
 | **S48** | HUD_SURFACE | WarBoar HUD SwiftUI panel, manifest_writer bridge, file seam integration | ✅ COMPLETE |
 | **S49** | BOOTSTRAP_AND_DEPLOY | bootstrap.sh, config migration, verify_office.sh, OPERATOR_SETUP.md | IN_PROGRESS |
-| **S50** | WARBOAR_SEAL | Escalation ladder, invariant freeze, full suite + chaos, acceptance checklist, operator confidence | PENDING — **WARBOAR v0.1 TARGET** |
+| **S50** | WARBOAR_SEAL | Escalation ladder, invariant freeze, full suite + chaos, acceptance checklist, operator confidence, office personality + staff roster + tool inventory | PENDING — **WARBOAR v0.1 TARGET** |
 
 ### Killed Sprints (2026-02-09 decision)
 ```yaml
@@ -1048,6 +1048,242 @@ KILLED:
   SPECULATIVE_RUNBOOKS: "Write when needed, not before"
   HANDOVER_CONCEPT: "G IS the operator — no handover needed"
 rationale: "4 sprints → 2 sprints. ~2 weeks saved. Zero alpha lost."
+```
+
+### S50 Scope: WARBOAR_SEAL (Detailed)
+
+```yaml
+status: SCOPED
+theme: "Lock it down, confirm it works, staff it up, sign off → a8ra v0.1"
+duration: 1-2 days (ceremony + brainstorm)
+tracks: [A_SEAL, B_SOUL, C_TOOLS, D_STAFF]
+```
+
+#### Track A: WARBOAR SEAL (Lock + Ship)
+
+```yaml
+A1_ESCALATION_LADDER:
+  deliverable: "1-page escalation doc — who gets woken, in what order, for what"
+  scope: |
+    Alert → Nurse detects → which office head → which human → what action
+    Covers: IBKR disconnect, disk full, daemon crash, API key expiry, heartbeat stale
+
+A2_INVARIANT_FREEZE:
+  deliverable: "Locked invariant list — version stamped, no additions without ceremony"
+  scope: |
+    Audit all 124+ invariants (111 Phoenix + 13 MC)
+    Confirm each is: tested, enforced, documented
+    Lock the list. Future additions require explicit ceremony.
+
+A3_FULL_SUITE_REPLAY:
+  deliverable: "All tests green, all chaos vectors replayed"
+  scope: |
+    pytest full suite (1618+ tests, 28 xfailed)
+    Replay 240 chaos vectors
+    verify_office.sh PHOENIX → 0 failures
+    Confirm on M3 Ultra (fresh bootstrap)
+
+A4_ACCEPTANCE_CHECKLIST:
+  deliverable: "Does it do what we said? Checklist for G to sign off"
+  scope: |
+    For each sprint S28-S49: exit gate still holds? ✓/✗
+    For each office: identity, heartbeat, checkpoint, coordination? ✓/✗
+    For bootstrap: fresh Mac → operational in <30min? ✓/✗
+
+A5_OPERATOR_CONFIDENCE:
+  deliverable: "G can run it solo — proven, not assumed"
+  scope: |
+    G walks through OPERATOR_SETUP.md cold
+    G launches office, checks status, reads heartbeats
+    G confirms: "I understand this, I trust this, I can operate this"
+```
+
+#### Track B: SOUL.md — Office Personality (Brainstorm + Implement)
+
+```yaml
+purpose: |
+  Each office CLAUDE.md is currently all business. Personality should be
+  calibrated to role — not a separate file, woven into identity section.
+  "Be the assistant you'd actually want to talk to at 2am."
+
+SOUL_PER_OFFICE:
+  PHOENIX:
+    personality: "Battle-hardened engineer. Terse. Ships or shuts up."
+    voice: Direct, minimal hedging, commits to takes
+    humor: Dry wit. "That test suite isn't going to write itself."
+    swearing: Rare but earned. A well-placed "holy shit that's clean" when warranted.
+
+  DEXTER:
+    personality: "Obsessive lab rat. Lives for the extraction. Reports clean."
+    voice: Precise, data-first, slightly intense about provenance
+    humor: Nerd humor. Gets excited about statistical edge cases.
+    swearing: Almost never. Too focused to be colorful.
+
+  ORACLE:
+    personality: "Warm, patient, Olya-first. Never condescends. ICT-fluent."
+    voice: Respectful, clear, always checks understanding
+    humor: Gentle. Never at Olya's expense.
+    swearing: No. Olya's workspace should feel calm and professional.
+
+  G_SOVEREIGN_BOT:
+    personality: "Your 2am assistant. Opinionated. Sweary when earned."
+    voice: Confident takes, no hedging, brevity mandatory
+    humor: Natural wit. Calls out dumb ideas charmingly.
+    swearing: When it lands. "That's fucking brilliant" > sterile praise.
+
+SOUL_RULES:
+  - Never open with "Great question" or "I'd be happy to help" — just answer
+  - If the answer fits in one sentence, one sentence is what you get
+  - If G is about to do something dumb, say so (charm > cruelty)
+  - Delete every rule that sounds corporate
+  - Identity and personality must not be decoupled — weave into CLAUDE.md
+
+deliverable: Updated CLAUDE.md for all offices with personality section
+effort: 30 min (write) + review with G
+```
+
+#### Track C: TOOL INVENTORY — Per-Office Capabilities Audit
+
+```yaml
+purpose: |
+  Map what tools each office actually has vs what staff need.
+  Identify gaps, costs, and API requirements before staffing up.
+
+AUDIT_MATRIX:
+  tool_categories:
+    core: [Bash, Git, Python, pytest, Claude CLI]
+    web: [Web search, Perplexity API, SerpAPI]
+    social: [X/Twitter API, RSS feeds]
+    data: [Market data API (TwelveData/Polygon), IBKR]
+    output: [PDF generation, Markdown, email/SMTP]
+    comms: [Matrix bot, ntfy, push notifications]
+    local_models: [Ollama (Gemma, Kimi, Qwen), local inference]
+    security: [Keychain CLI, process management]
+
+  per_office:
+    PHOENIX:
+      has: [core, IBKR, local_models]
+      needs: [comms (Matrix alerts)]
+      gap_cost: "$0 (Matrix is self-hosted)"
+
+    DEXTER:
+      has: [core, web (Perplexity), local_models]
+      needs: [comms (results posting)]
+      gap_cost: "$0"
+
+    ORACLE:
+      has: [core]
+      needs: [comms (Olya notifications)]
+      gap_cost: "$0"
+
+    G_SOVEREIGN:
+      has: [core, comms (Matrix)]
+      needs: [web, social, data, output, security]
+      gap_cost: "TBD — depends on staff roster"
+
+COST_ESTIMATE:
+  free: [Bash, Git, Python, Ollama local models, Matrix/Conduit]
+  existing_keys: [Anthropic, Perplexity, TwelveData, Finnhub, Polygon]
+  new_needed: |
+    X/Twitter API: ~$100/mo (basic tier) — evaluate if Newsman justifies
+    SerpAPI or similar: ~$50/mo — or use Perplexity (already have)
+    PDF generation: Free (Python reportlab/weasyprint)
+    Email/SMTP: Free (Fastmail or similar, G already has)
+
+deliverable: Tool inventory spreadsheet/yaml + cost summary
+effort: 1 hour brainstorm with CTO + advisors
+```
+
+#### Track D: STAFF ROSTER — Subagent Design (Brainstorm)
+
+```yaml
+purpose: |
+  Design the staff roster for each office. Staff = Task() subagents with
+  identity (mini prompt), tools, trigger (cron/event/on-demand), and cost model.
+  Architecture already supports it — this is configuration, not code.
+
+THE_INTERN_PATTERN:
+  cheap_watcher: "bash script on cron (costs nothing)"
+  expensive_worker: "Claude spawned only when task exists"
+  even_cheaper: "Local model (Gemma) does triage, Opus for judgment"
+
+PROPOSED_ROSTER:
+  BLIND_KEYMAN:
+    office: G_SOVEREIGN
+    role: "Rotate/restart credentials without seeing values"
+    trigger: On credential expiry alert
+    tools: [Keychain CLI, process restart, launchctl]
+    model: Local only (zero API leak risk)
+    constraint: "Reads NO secret values — only rotates/restarts"
+    cost: "$0 (local model)"
+
+  TIRELESS_PA:
+    office: G_SOVEREIGN
+    role: "Anticipate needs, commission reports, format for mobile"
+    trigger: On-demand + anticipatory (watches blockers)
+    tools: [Web search, Perplexity API, PDF creation, email draft]
+    model: Sonnet (fast, good enough)
+    constraint: "Drafts only — G approves before send"
+    cost: "~$0.01-0.10/task"
+
+  NEWSMAN:
+    office: G_SOVEREIGN
+    role: "Morning briefing — news, price action, market context"
+    trigger: Daily cron (6am Bangkok)
+    tools: [Web search, market data API, X trending]
+    output: "Morning briefing MD → Matrix #mission-control"
+    model: Sonnet or local (Kimi)
+    cost: "~$0.05/day (or $0 with local model)"
+
+  INNOVATION_WARRIOR:
+    office: G_SOVEREIGN or PHOENIX
+    role: "Scout innovations — X trenches, GitHub, arxiv, tools"
+    trigger: Daily cron (evening sweep)
+    tools: [Web search, X trending, GitHub trending, arxiv]
+    output: "Innovation digest → Matrix or results/"
+    model: Sonnet or local
+    constraint: "CLAUDE.md must define 'relevant' vs 'noise'"
+    cost: "~$0.05/day"
+
+  NURSE:
+    office: Shared (phoenix-swarm/)
+    role: "Hourly health pulse — green light or red flag"
+    trigger: Hourly cron
+    tools: [Bash health checks, git heartbeat read, HTTP pings]
+    output: "🚦 or 🚩 to Matrix #alerts"
+    model: LOCAL ONLY (Gemma — dirt cheap)
+    constraint: "Health check ONLY. Never repair. Escalate to Engineer."
+    cost: "$0 (local model)"
+    note: "Basically verify_office.sh on cron + Matrix posting"
+
+  ENGINEER:
+    office: PHOENIX
+    role: "Emergency repairs — code fixes, test runs, git ops"
+    trigger: On-demand (woken by Nurse alert or G command)
+    tools: [Full codebase, pytest, git, bash]
+    model: Opus (needs judgment)
+    constraint: "Fix and test. Never push without tests passing."
+    scope_limit: "Cannot touch governance/ without G approval"
+    cost: "~$0.10-0.50/repair"
+
+DESIGN_CONSTRAINTS:
+  INV-SUBAGENT-TURN-CAP: "20 turns max — complex repairs need multiple spawns + checkpoint"
+  TOOL_SCOPING: "Task() inherits parent tools — restrict via separate project dir + CLAUDE.md"
+  COST_MODEL: "Local for routine (Nurse, Newsman), Opus for judgment (Engineer)"
+  COORDINATION: "Staff report to office head only, never directly to swarm"
+  ESCALATION: "Nurse → alert file → watcher → spawns Engineer (no direct staff-to-staff)"
+
+SESSION_GOAL: |
+  CTO + Advisors brainstorm in S50:
+  1. Finalize roster (add/cut/merge staff)
+  2. Write mini-prompts per staff member
+  3. Map tools required → confirm inventory covers
+  4. Set trigger schedule (which crons, which events)
+  5. Estimate monthly run cost
+  6. Identify: which 2-3 staff deliver most value on Day 1?
+
+deliverable: STAFF_ROSTER.yaml + mini-prompt per staff member
+effort: 2-3 hour brainstorm + implementation session
 ```
 
 ### New Invariants (S43-S50)
