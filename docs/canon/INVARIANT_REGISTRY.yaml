@@ -1,0 +1,225 @@
+# ═══════════════════════════════════════════════════════════════════════════════
+# a8ra INVARIANT REGISTRY — VERSION FREEZE
+# ═══════════════════════════════════════════════════════════════════════════════
+
+registry:
+  version: "a8ra-v0.1"
+  frozen_at: "2026-02-22"
+  frozen_by: "CTO (Phoenix) + G (Sovereign)"
+  methodology: "Tiered freeze — constitutional core enumerated, subsystems frozen by test suite"
+  ceremony_required_for_additions: true
+  next_review: "Post v0.1, on architectural change only"
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# TIER 1: CONSTITUTIONAL CORE — "Break these and the system is unsafe"
+# Enumerated. Each has: rule, enforcement point, test file.
+# ═══════════════════════════════════════════════════════════════════════════════
+
+tier_1_constitutional:
+  count: 18
+
+  INV-SOVEREIGN-1:
+    rule: "Human sovereignty over capital is absolute"
+    enforcement: governance/interface.py
+    tested_by: tests/test_tier_gates.py
+    sprint: S28
+
+  INV-SOVEREIGN-2:
+    rule: "T2 (execution tier) requires human gate"
+    enforcement: governance/t2/approval.py
+    tested_by: tests/test_tier_gates.py, tests/test_halt_blocks_t2_action.py
+    sprint: S28
+
+  INV-HALT-1:
+    rule: "halt_local < 50ms"
+    enforcement: governance/halt.py
+    tested_by: tests/test_halt_latency.py
+    sprint: S28
+
+  INV-HALT-2:
+    rule: "halt_cascade < 500ms"
+    enforcement: governance/halt.py
+    tested_by: tests/test_halt_propagation_multiprocess.py
+    sprint: S28
+
+  INV-GOV-1:
+    rule: "All organs inherit GovernanceInterface"
+    enforcement: governance/interface.py
+    tested_by: tests/test_execution_path.py
+    sprint: S28
+
+  INV-GOV-HALT-BEFORE-ACTION:
+    rule: "Gate checks halt before any capital action"
+    enforcement: governance/interface.py, governance/tokens.py
+    tested_by: tests/test_halt_before_exec.py
+    sprint: S28
+
+  INV-CONTRACT-1:
+    rule: "Deterministic state machine"
+    enforcement: governance/interface.py
+    tested_by: tests/test_state_hash_canonical.py, tests/test_intent_deterministic.py
+    sprint: S28
+
+  INV-NO-UNSOLICITED:
+    rule: "System never proposes hypotheses unprompted"
+    enforcement: governance/cartridge.py (REQUIRED_INVARIANTS)
+    tested_by: tests/test_cso/, tests/test_narrator_templates.py
+    sprint: S35
+
+  INV-HALT-OVERRIDES-LEASE:
+    rule: "Halt signal overrides lease bounds. Halt always wins. <50ms."
+    enforcement: governance/lease.py
+    tested_by: tests/test_lease/test_halt_override.py (21 tests)
+    sprint: S47
+
+  INV-NO-SESSION-OVERLAP:
+    rule: "One lease per session, no concurrent execution"
+    enforcement: governance/lease.py, governance/insertion.py
+    tested_by: tests/test_lease/test_state_machine.py
+    sprint: S46
+
+  INV-LEASE-CEILING:
+    rule: "Lease bounds = ceiling, Cartridge = floor"
+    enforcement: governance/lease.py, governance/insertion.py
+    tested_by: tests/test_lease/test_bounds.py (23 tests)
+    sprint: S46
+
+  INV-STATE-LOCK:
+    rule: "State transition guard prevents race conditions"
+    enforcement: governance/lease.py
+    tested_by: tests/test_lease/test_state_machine.py, chaos/test_bunny_s47.py
+    sprint: S46
+
+  INV-EXPIRY-BUFFER:
+    rule: "60-second buffer before lease expiry triggers MARKET_CLOSE"
+    enforcement: governance/lease.py
+    tested_by: tests/test_lease/test_expiry.py (17 tests)
+    sprint: S46
+
+  INV-NO-CORE-REWRITES-POST-S44:
+    rule: "No architectural rewrites after foundation validated"
+    enforcement: Process (CTO + G gate)
+    tested_by: N/A (process invariant, not code invariant)
+    sprint: S44
+
+  INV-HARNESS-1:
+    rule: "CSO outputs gate status only, never grades"
+    enforcement: cso/
+    tested_by: tests/test_cso/
+    sprint: S36
+
+  INV-SCALAR-BAN:
+    rule: "No composite scores (0-100)"
+    enforcement: slm/slm_boundary.py, schemas/slm_io.yaml
+    tested_by: tests/test_slm_boundary.py
+    sprint: S35
+
+  INV-CABINET-COMPLETE:
+    rule: "Every cartridge must provide all 5 canonical drawers, non-empty"
+    enforcement: governance/lease_types.py (DrawerConfig model_validator)
+    tested_by: tests/test_lease/test_cabinet_validation.py
+    sprint: S50
+
+  INV-CABINET-STRICT:
+    rule: "DrawerConfig rejects unknown drawer keys (extra='forbid')"
+    enforcement: governance/lease_types.py (ConfigDict extra='forbid')
+    tested_by: tests/test_lease/test_cabinet_validation.py (test_extra_drawer_key_rejects)
+    sprint: S50
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# TIER 2: SUBSYSTEM INVARIANTS — "Enforced in code, proven by test suite"
+# Frozen by commit hash. 90 test files enforce. Full enumeration post-v0.1.
+# ═══════════════════════════════════════════════════════════════════════════════
+
+tier_2_subsystem:
+  freeze_method: "All INV-* identifiers in codebase as of SEAL commit are frozen"
+  test_proof: "90 test files reference and enforce INV-* identifiers"
+  total_passing: "1618+ tests (28 xfailed, 0 failures)"
+  chaos_vectors: "240/240 PASS"
+
+  module_coverage:
+    governance_core: "INV-GOV-*, INV-T2-*, INV-CIRCUIT-*, INV-BACKOFF-*, INV-HEALTH-*, INV-STALE-*, INV-HOOK-*"
+    broker_ibkr: "INV-IBKR-*, INV-SUPERVISOR-*"
+    cso_harness: "INV-CSO-*, INV-HARNESS-*, INV-BITVECTOR-*, INV-DRAWER-*, INV-BIAS-*, INV-DYNASTY-*"
+    memory_athena: "INV-BEAD-*, INV-ATHENA-*, INV-D3-*"
+    narrator: "INV-NARRATOR-*, INV-SLM-*"
+    execution: "INV-POSITION-*, INV-EXEC-*"
+    notification: "INV-ALERT-TAXONOMY-*"
+    state: "INV-HUD-*, INV-STATE-ANCHOR-*, INV-OBSERVE-*"
+    schemas: "INV-CSE-*, INV-HUNT-*, INV-STRUCTURE-*"
+
+  invariant_not_individually_enumerated: true
+  reason: "Tests ARE the registry. 90 files, 1618+ assertions. Enumeration is post-v0.1 polish."
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# TIER 3: METHODOLOGY INVARIANTS — "Olya domain, CSO authority"
+# ═══════════════════════════════════════════════════════════════════════════════
+
+tier_3_methodology:
+  source: "cso/knowledge/foundation.yaml"
+  authority: "Olya (CSO) — sovereign over methodology"
+  count: 21
+  identifiers: "INV-001 through INV-021"
+  freeze_method: "Frozen under CSO authority. Changes require Olya approval."
+  cto_note: "Methodology invariants are Olya's domain. CTO does not audit content."
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# TIER 4: MISSION CONTROL INVARIANTS — "Coordination layer"
+# ═══════════════════════════════════════════════════════════════════════════════
+
+tier_4_mission_control:
+  source: "phoenix-swarm/"
+  count: 13+
+
+  enumerated:
+    INV-SOVEREIGN-1: "(cross-ref Tier 1)"
+    INV-SOVEREIGN-2: "(cross-ref Tier 1)"
+    INV-NO-CORE-REWRITES-POST-S44: "(cross-ref Tier 1)"
+    INV-SINGLE-WRITER-LOG: "Single writer per log file"
+    INV-ATOMIC-CLAIM: "Claims are atomic units"
+    INV-DEXTER-ALWAYS-CLAIM: "Dexter output is always CLAIM, never FACT"
+    INV-DEXTER-NO-AUTO-PROMOTE: "No automatic CLAIM→FACT promotion"
+    INV-DEXTER-NO-AUTO-PROMOTE-TO-LIVE: "No auto-promotion to live trading"
+    INV-DEXTER-EVIDENCE-NOT-ADVICE: "Dexter provides evidence, not trading advice"
+    INV-DEXTER-ICT-NATIVE: "Dexter outputs use ICT terminology"
+    INV-DEXTER-SOURCE-LINK: "Every extraction links to source material"
+    INV-DEXTER-CROSS-FAMILY: "Extraction and audit use different model families"
+    INV-VARIANT-PROVENANCE: "Every variant traces to source"
+    INV-SUBAGENT-TURN-CAP: "Subagents have turn limits"
+    INV-SUBAGENT-HEARTBEAT: "Subagents emit heartbeats"
+    INV-RUNAWAY-CAP: "Runaway process caps enforced"
+    INV-CALIBRATION-FOILS: "Calibration includes foil/negative examples"
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# FREEZE CEREMONY
+# ═══════════════════════════════════════════════════════════════════════════════
+
+freeze_ceremony:
+  rule: |
+    Post-SEAL, any new invariant requires:
+    1. G approval
+    2. Automated test that can fail it
+    3. Enforcement point in code
+    4. Changelog entry in this registry
+    No exceptions.
+
+  addition_template:
+    invariant: "INV-NEW-NAME"
+    rule: "Human-readable rule"
+    enforcement: "file:function"
+    tested_by: "test_file.py"
+    added_by: "who"
+    date: "when"
+    reason: "why"
+
+# ═══════════════════════════════════════════════════════════════════════════════
+# SUMMARY
+# ═══════════════════════════════════════════════════════════════════════════════
+
+summary:
+  tier_1_constitutional: 18 (enumerated, enforcement mapped)
+  tier_2_subsystem: "~95+ (frozen by commit, enforced by 90 test files)"
+  tier_3_methodology: 21 (frozen under CSO authority)
+  tier_4_mission_control: 17 (enumerated from phoenix-swarm/)
+  total: "150+ invariants frozen"
+  proof: "1618+ tests, 240 chaos vectors, 90 INV-enforcing test files"

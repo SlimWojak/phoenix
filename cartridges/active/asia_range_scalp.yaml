@@ -1,0 +1,113 @@
+# Asia Range Scalp — Cartridge Manifest v1.1 (Cabinet Model)
+# Strategy: Mean-reversion scalp on Asia session range sweeps
+# Author: Olya
+# Design Spec: CARTRIDGE_AND_LEASE_DESIGN v1.1
+
+identity:
+  name: ASIA_RANGE_SCALP
+  version: "1.0.0"
+  author: Olya
+  description: |
+    Mean-reversion scalp on Asia session range sweeps.
+    Requires FVG entry + re-acceptance confirmation.
+  created_at: "2026-01-31T00:00:00Z"
+
+scope:
+  pairs: [EURUSD]
+  session_windows:
+    - name: asia_definition
+      start: "19:00"
+      end: "00:00"
+      timezone: America/New_York
+      utc_offset_winter: "-05:00"
+      utc_offset_summer: "-04:00"
+    - name: sweep_window
+      start: "00:00"
+      end: "04:00"
+      timezone: America/New_York
+      utc_offset_winter: "-05:00"
+      utc_offset_summer: "-04:00"
+  regime_affinity: ANY
+
+risk_defaults:
+  per_trade_pct: 1.0
+  min_rr: 1.5
+  max_trades_per_session: 1
+  max_daily_trades: 1
+
+cso_integration:
+  drawer_config:
+    HTF_BIAS:
+      weekly_bias_required: false
+      daily_bias_required: false
+      session_bias: asia_sweep_direction
+      htf_alignment_minimum: 0
+
+    MARKET_STRUCTURE:
+      asia_range_method: wick_to_wick
+      asia_range_start: "19:00"
+      asia_range_end: "00:00"
+      asia_range_timezone: America/New_York
+      asia_range_max_pips: 30
+      mss_required: false
+
+    PREMIUM_DISCOUNT:
+      sweep_required: true
+      sweep_extension_min_pips: 1
+      sweep_extension_max_pips: 20
+      sweep_direction: [high, low]
+      sweep_extension_high_pips: null
+      sweep_extension_low_pips: null
+      pd_zone_required: false
+
+    ENTRY_MODEL:
+      fvg_required: true
+      fvg_timeframe: 5min
+      re_acceptance_required: true
+      re_acceptance_candle: 5min_close_inside
+      limit_order: true
+      entry_type: fvg_retrace
+
+    CONFIRMATION:
+      sl_placement: beyond_sweep_extreme
+      sl_buffer_pips: 2
+      tp_placement: opposite_asia_extreme
+      max_trades_per_session: 1
+      trail_stop: false
+
+  gate_requirements:
+    - GATE_ASIA_RANGE_FORMED
+    - GATE_SWEEP_DETECTED
+    - GATE_FVG_VALID
+    - GATE_RE_ACCEPTANCE
+
+  primitive_set: [FVG, SWEEP, RE_ACCEPTANCE, KZ_TIMING]
+
+research_hooks:
+  hunt_grid_enabled: true
+  cfp_lens_presets:
+    - "P&L when sweep_extension_pips BETWEEN 1 AND 10"
+    - "P&L when sweep_extension_pips BETWEEN 11 AND 20"
+    - "P&L by sweep_direction"
+  calibration_threshold_pct: 5.0
+
+narrator_overrides:
+  templates:
+    sweep_detected: |
+      Asia {{direction}} swept {{extension_pips}} pips
+      Re-acceptance: {{re_acceptance_status}}
+      FVG: {{fvg_status}}
+
+constitutional:
+  invariants_required:
+    - INV-NO-UNSOLICITED
+    - INV-ATTR-CAUSAL-BAN
+    - INV-HALT-1
+    - INV-HARNESS-1
+    - INV-NARRATOR-1
+  forbidden_patterns:
+    - "grade"
+    - "score"
+    - "recommend"
+    - "edge concentrates"
+  guard_dog_scan: true

@@ -2,6 +2,11 @@
 # VERSION: DRAFT v0
 # PURPOSE: Range selection, alignment, location, confluence scoring
 # RULE: Answers "Should I be looking for a trade here?"
+#
+# NOTE (S50.T1): This file is the CSO gate definition for Drawer 3.
+# For the 5-drawer cabinet template used in cartridge authoring,
+# see methodology_template.yaml. Cartridges carry self-contained
+# cabinets and do NOT merge against this file.
 
 schema_version: "1.1.0"
 created: "2026-01-23"
@@ -18,7 +23,7 @@ bias_input:
   name: "Trade Bias Input"
   source: "context.bias_framework"
   note: "Bias calculated in Context (Drawer 2), consumed here for permission logic"
-  
+
   inputs:
     - {col: trade_bias, source: "context.bias_synthesis.trade_bias", values: [long_only, short_only, both, none]}
     - {col: bias_note, source: "context.bias_synthesis.bias_note"}
@@ -27,11 +32,11 @@ bias_input:
     - {col: position_pct, source: "context.Q1_location.position_pct"}
     - {col: dol_primary, source: "context.Q2_objective.dol_primary"}
     - {col: dol_secondary, source: "context.Q2_objective.dol_secondary"}
-  
+
   validation:
     - {check: "trade_bias IN [long_only, short_only, both, none]"}
     - {check: "IF trade_bias == none THEN permission = NO_TRADE"}
-  
+
   ref: "CSO:filing_blurs_fixes_v1.yaml:BLUR-001"
 
 # =============================================================================
@@ -45,20 +50,20 @@ signals:
     name: "Premium/Discount Gate"
     source: "context.structural_pd_state"
     note: "Read-only reference — NO calculation here (BLUR-002)"
-    
+
     inputs:
       - {col: pd_state, source: "context.structural_pd_state.pd_state", values: [premium, discount, equilibrium]}
       - {col: position_pct, source: "context.structural_pd_state.position_pct"}
-    
+
     validation:
       - {check: "pd_state IN [premium, discount, equilibrium]"}
       - {check: "IF pd_state == equilibrium THEN permission = NO_TRADE"}
-    
+
     alignment_logic:
       long_valid: "pd_state == discount"
       short_valid: "pd_state == premium"
       no_trade: "pd_state == equilibrium"
-    
+
     ref: "CSO:filing_blurs_fixes_v1.yaml:BLUR-002"
 
   structural_position:
@@ -121,9 +126,9 @@ signals:
     name: "PDA Status Evaluation"
     source: "context.pda_detection (immutable registry)"
     note: "Evaluates current status, gates trades (BLUR-003)"
-    
+
     inputs: [pda_id, pda_type, price_levels, timeframe, timestamp]  # From context registry
-    
+
     status_evaluation:
       untouched:
         condition: "No price interaction yet"
@@ -137,17 +142,17 @@ signals:
       violated:
         condition: "Price accepted through level (broke structure)"
         trade_permission: "INVALID - do not use"
-    
+
     tracking_columns:
       - {col: pda_age_bars, type: int, desc: "Bars since detection"}
       - {col: pda_touch_count, type: int, desc: "Number of touches"}
       - {col: pda_fill_pct, type: float, desc: "How much filled (for FVGs)"}
       - {col: pda_status, values: [untouched, tapped, respected, violated]}
       - {col: pda_freshness_score, type: float, range: [0, 10]}
-    
+
     trade_gate:
       rule: "IF pda_status == violated THEN permission = NO_TRADE"
-    
+
     ref: "CSO:filing_blurs_fixes_v1.yaml:BLUR-003"
 
   fvg_status:
@@ -226,11 +231,11 @@ composite_gates:
     requires:
       - "in_structural_discount"
       - "entry_matches_htf_long"
-    
+
     evaluator_inputs:
       - {col: freshness_score, type: float}
       - {col: touch_count, type: int}
-    
+
     note: "Thresholds (freshness >= 6, touches <= 2) applied by evaluator"
     output: "GRADE_A_LONG"
     ref: "NEX:L11"
@@ -241,11 +246,11 @@ composite_gates:
     requires:
       - "in_structural_premium"
       - "entry_matches_htf_short"
-    
+
     evaluator_inputs:
       - {col: freshness_score, type: float}
       - {col: touch_count, type: int}
-    
+
     note: "Thresholds (freshness >= 6, touches <= 2) applied by evaluator"
     output: "GRADE_A_SHORT"
     ref: "NEX:L11"
@@ -271,7 +276,7 @@ conflicts:
     desc: "L8 uses structural P/D, L11 uses daily P/D"
     recommendation: "Align L11 to structural"
     refs: ["NEX:L8:73-82", "NEX:L11:110-111"]
-  
+
   - id: "CONFLICT-COND-002"
     desc: "✅ RESOLVED: Thresholds moved to evaluator, Conditions outputs counts only"
     recommendation: "N/A - resolved"
@@ -285,11 +290,11 @@ layer_dependencies:
   layer_8_premium_discount:
     depends_on: [L0_dealing_range, L2_pdh_pdl]
     ref: "NEX:L8"
-  
+
   layer_10_timing:
     depends_on: [L3_sweeps, L5_fvg, L7_structure, L9_ob]
     ref: "NEX:L10"
-  
+
   layer_11_alignment:
     depends_on: [L0.5_htf_bias, L5_fvg, L7_order_flow, L8_pd, L9_ob]
     runs: "LAST"

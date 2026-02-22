@@ -1,0 +1,111 @@
+# METHODOLOGY TEMPLATE — Reference for drawer structure and gate definitions
+# Cartridges do NOT merge against this. They carry their own complete cabinet.
+# This serves as: (a) documentation of the 5-drawer structure,
+# (b) reference for gate naming conventions, (c) template for new cartridge authoring.
+#
+# Canonical drawer names (from Bead Field Spec):
+#   HTF_BIAS         — formerly "foundation"
+#   MARKET_STRUCTURE  — formerly "context"
+#   PREMIUM_DISCOUNT  — formerly "conditions"
+#   ENTRY_MODEL       — formerly "entry"
+#   CONFIRMATION      — formerly "management"
+#
+# Created: 2026-02-22 (S50.T1 CABINET_REFACTOR)
+# Origin: Olya (CSO) identified methodology/strategy blending.
+#         Three-way approval: G + CTO + Olya.
+
+schema_version: "1.1.0"
+created: "2026-02-22"
+purpose: "Reference template for cartridge 5-drawer cabinet authoring"
+
+# =============================================================================
+# DRAWER 1: HTF_BIAS (formerly "foundation")
+# =============================================================================
+# Higher-timeframe bias configuration.
+# Answers: "What is the macro direction?"
+
+HTF_BIAS:
+  description: "HTF bias and macro direction assessment"
+  example_gates:
+    - weekly_bias_required      # Does strategy require weekly alignment?
+    - daily_bias_required       # Does strategy require daily alignment?
+    - session_bias              # Session-derived bias method
+    - htf_alignment_minimum     # Min HTF timeframes in agreement
+  notes: |
+    Strategies that don't require HTF bias (e.g. Asia scalps driven by
+    sweep direction) should set bias gates to permissive values.
+
+# =============================================================================
+# DRAWER 2: MARKET_STRUCTURE (formerly "context")
+# =============================================================================
+# Market structure definitions — ranges, sessions, structural context.
+# Answers: "What is the structural context?"
+
+MARKET_STRUCTURE:
+  description: "Market structure, ranges, and session definitions"
+  example_gates:
+    - asia_range_method         # wick_to_wick | body_to_body
+    - asia_range_start          # HH:MM
+    - asia_range_end            # HH:MM
+    - asia_range_timezone       # IANA timezone
+    - asia_range_max_pips       # Max valid range size
+    - mss_required              # Market Structure Shift needed?
+  notes: |
+    Session-specific strategies define their range parameters here.
+    MSS-based strategies set mss_required: true.
+
+# =============================================================================
+# DRAWER 3: PREMIUM_DISCOUNT (formerly "conditions")
+# =============================================================================
+# Premium/discount zones, sweep detection, setup conditions.
+# Answers: "Is this setup valid?"
+
+PREMIUM_DISCOUNT:
+  description: "Premium/discount evaluation, sweeps, setup conditions"
+  example_gates:
+    - sweep_required            # Liquidity sweep needed?
+    - sweep_extension_min_pips  # Min sweep extension
+    - sweep_extension_max_pips  # Max sweep extension
+    - sweep_direction           # [high, low] or specific
+    - pd_zone_required          # P/D zone filter active?
+  notes: |
+    Sweep-based strategies configure sweep parameters.
+    Zone-based strategies configure P/D requirements.
+    Reference: conditions.yaml for detailed gate definitions.
+
+# =============================================================================
+# DRAWER 4: ENTRY_MODEL (formerly "entry")
+# =============================================================================
+# Entry trigger rules — what fires the trade.
+# Answers: "When do I enter?"
+
+ENTRY_MODEL:
+  description: "Entry trigger configuration"
+  example_gates:
+    - fvg_required              # FVG entry needed?
+    - fvg_timeframe             # FVG detection timeframe
+    - re_acceptance_required    # Re-acceptance candle needed?
+    - re_acceptance_candle      # Candle type for re-acceptance
+    - limit_order               # Limit vs market entry
+    - entry_type                # fvg_retrace | displacement | ob_touch
+  notes: |
+    Each strategy must define its complete entry model.
+    No inheritance from a base — strategy owns its entry rules.
+
+# =============================================================================
+# DRAWER 5: CONFIRMATION (formerly "management")
+# =============================================================================
+# Position management — SL, TP, trailing, session limits.
+# Answers: "How do I manage the position?"
+
+CONFIRMATION:
+  description: "Confirmation and position management configuration"
+  example_gates:
+    - sl_placement              # Stop-loss method
+    - sl_buffer_pips            # SL buffer
+    - tp_placement              # Take-profit method
+    - max_trades_per_session    # Session trade cap
+    - trail_stop                # Trailing stop enabled?
+  notes: |
+    Every strategy must define complete exit rules.
+    No partial management — the cabinet must be self-sufficient.

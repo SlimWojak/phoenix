@@ -2,13 +2,24 @@
 
 ```yaml
 document: CARTRIDGE_AND_LEASE_DESIGN
-version: 1.0
-date: 2026-01-31
-status: CANONICAL_FINAL
+version: 1.1
+date: 2026-02-22
+status: v1.1_CANONICAL
 authors: CTO_CLAUDE + G
 reviewed_by: [GPT_ARCHITECT, GROK_CHAOS, GEMINI_PANEL]
 specimen: Olya's Asia Range Scalp Strategy
-synthesized_from: v0.1_CANONICAL + ADVISOR_SYNTHESIS_ADDENDUM
+synthesized_from: v1.0_CANONICAL + S50.T1 CABINET_REFACTOR
+changelog:
+  v1.1 (2026-02-22): Cabinet model refactor.
+    - drawer_deltas → drawer_config (complete self-contained cabinet per strategy)
+    - conditions.yaml → methodology_template.yaml (reference, not merge base)
+    - Insertion step_4: merge logic → cabinet validation
+    - D1_DELTA_NOT_REPLACE → D1_SELF_CONTAINED_CABINET
+    - Section 5.1 Drawer Merge Algorithm: DELETED (no longer applicable)
+    - Drawer names: foundation/context/conditions/entry/management →
+      HTF_BIAS/MARKET_STRUCTURE/PREMIUM_DISCOUNT/ENTRY_MODEL/CONFIRMATION
+    - Origin: Olya (CSO) identified methodology/strategy blending.
+      Three-way approval: G + CTO + Olya.
 ```
 
 ---
@@ -22,12 +33,12 @@ current_state:
     - Soak started: 2026-01-31T01:47:34 UTC
     - Soak ends: 2026-02-02T01:47:34 UTC
     - Status: 48h boring test in progress
-    
+
   S46_DESIGN: CANONICAL_COMPLETE
     - Advisor review: COMPLETE
     - Amendments merged: v1.0
     - Ready for S47 implementation
-    
+
   test_specimen:
     - Olya's Asia Range Scalp Strategy (real, not abstract)
     - Simple but ICT-flavored (FVG, sweep detection, re-acceptance)
@@ -99,16 +110,16 @@ cartridge_defines:
   HOW: Entry conditions, exit rules, position management
   WHERE: Pairs, sessions, timeframes
   FLOOR: Minimum risk bounds (lease can only tighten)
-  
+
 lease_defines:
   CEILING: Max drawdown, streak limits, position caps
   DURATION: Start, expiry, perish-by-default
   GOVERNANCE: Weekly ceremony, attestation requirement
-  
+
 relationship: |
   INV-LEASE-CEILING: Lease defines HARD CEILING; Cartridge defines LOWER FLOOR.
   Lease can only be STRICTER than cartridge, never looser.
-  
+
 neither_defines:
   - Execution mechanics (Phoenix core)
   - Market data (River)
@@ -120,7 +131,7 @@ neither_defines:
 ```yaml
 cartridge_principles:
   P1_DECLARATIVE: "Strategy is data, not code"
-  P2_DELTA_NOT_REPLACE: "Modifies drawers, doesn't overwrite them"
+  P2_SELF_CONTAINED_CABINET: "Each cartridge carries complete 5-drawer cabinet"
   P3_INVARIANTS_REQUIRED: "Must declare constitutional compliance"
   P4_TIMEZONE_EXPLICIT: "All times include TZ + UTC offset"
   P5_SLOT_OR_PERISH: "Conflicts = rejection, not silent merge"
@@ -147,14 +158,14 @@ invariants_governing_design:
   INV-HALT-OVERRIDES-LEASE: "Halt always wins (<50ms)"
   INV-NO-CORE-REWRITES-POST-S44: "No architecture changes after soak"
   INV-HARNESS-1: "Gate status only, never grades"
-  
+
   # New from advisor review
   INV-NO-SESSION-OVERLAP: "Session windows cannot overlap unless explicitly declared"
   INV-LEASE-CEILING: "Lease defines HARD CEILING; Cartridge defines LOWER FLOOR"
   INV-BEAD-COMPLETENESS: "Calibration bead MUST link to lease_id immutably"
   INV-EXPIRY-BUFFER: "Software halt governance_buffer_seconds BEFORE legal expiry"
   INV-STATE-LOCK: "Renew/revoke operations must hash-check prior state"
-  
+
 lease_invariants:
   PERISH_BY_DEFAULT: "No auto-renew, ever"
   BOUNDS_ONLY_TIGHTEN: "Lease constrains, cannot loosen strategy"
@@ -225,7 +236,7 @@ scope:
       type: array[string]
       min_items: 1
       example: ["EURUSD"]
-      
+
     session_windows:
       type: array
       invariant: INV-NO-SESSION-OVERLAP
@@ -255,7 +266,7 @@ scope:
           utc_offset_summer:
             type: string
             example: "-04:00"
-            
+
     regime_affinity:
       type: enum
       values: [VOLATILITY_HIGH, VOLATILITY_LOW, TRENDING, RANGING, ANY]
@@ -291,37 +302,42 @@ risk_defaults:
 # CSO INTEGRATION
 # ========================================
 cso_integration:
-  description: "How strategy modifies CSO evaluation"
+  description: "How strategy defines CSO evaluation (self-contained cabinet)"
   properties:
-    drawer_deltas:
-      description: "Modifications to CSO drawers (MERGE, not replace)"
+    drawer_config:
+      description: "Complete 5-drawer cabinet (self-contained, no merge)"
+      required: true
       properties:
-        foundation:
+        HTF_BIAS:
           type: object
-          optional: true
-          description: "Market structure definitions"
-        context:
+          required: true
+          description: "HTF bias configuration"
+        MARKET_STRUCTURE:
           type: object
-          optional: true
-          description: "HTF context requirements"
-        conditions:
+          required: true
+          description: "Market structure configuration"
+        PREMIUM_DISCOUNT:
           type: object
-          optional: true
-          description: "Setup conditions / gates"
-        entry:
+          required: true
+          description: "Premium/discount zone configuration"
+        ENTRY_MODEL:
           type: object
-          optional: true
-          description: "Entry trigger rules"
-        management:
+          required: true
+          description: "Entry model configuration"
+        CONFIRMATION:
           type: object
-          optional: true
-          description: "SL/TP/position management"
-          
+          required: true
+          description: "Confirmation/management configuration"
+      validation:
+        - "All 5 drawers present (KeyError if missing)"
+        - "Each drawer is non-empty dict"
+        - "Drawer names match DrawerName enum exactly"
+
     gate_requirements:
       type: array[string]
       description: "Gates that must pass for valid setup"
       example: ["GATE_SWEEP_DETECTED", "GATE_FVG_VALID"]
-      
+
     primitive_set:
       type: array[enum]
       values: [FVG, SWEEP, RE_ACCEPTANCE, MSS, PD_ARRAY, DISPLACEMENT, KZ_TIMING]
@@ -389,36 +405,38 @@ constitutional:
 
 ```yaml
 decisions:
-  D1_DELTA_NOT_REPLACE:
-    rule: "drawer_deltas merge INTO existing drawers"
-    rationale: "Preserves base CSO; strategy adds, doesn't destroy"
-    guard: "Merge tool rejects conflicts"
-    
+  D1_SELF_CONTAINED_CABINET:
+    rule: "Each cartridge carries complete 5-drawer cabinet"
+    rationale: "No merge, no conflicts, each strategy owns its full configuration"
+    guard: "Pydantic model + CartridgeLinter enforce completeness"
+    origin: "Olya (CSO) identified methodology/strategy blending (S50.T1)"
+    consensus: "G + CTO + Olya (three-way approval)"
+
   D2_EXPLICIT_TIMEZONE:
     rule: "tz name + winter offset + summer offset required"
     rationale: "DST transitions cause silent bugs"
     guard: "Schema rejects ambiguous times"
-    
+
   D3_INVARIANTS_MANDATORY:
     rule: "constitutional.invariants_required is REQUIRED field"
     rationale: "No strategy can bypass constitution"
     minimum: [INV-NO-UNSOLICITED, INV-HALT-1]
-    
+
   D4_SEMVER_REQUIRED:
     rule: "Version must be semver (X.Y.Z)"
     rationale: "Lease references exact version; upgrades need new lease"
     consensus: UNANIMOUS — new lease for ANY version change
-    
+
   D5_METHODOLOGY_HASH:
     rule: "SHA256 hash of normalized strategy logic stored in manifest"
     normalization: "Sort keys → remove whitespace → UTF-8 → SHA256"
     rationale: "Integrity verification; lease binds to exact manifest"
-    
+
   D6_PRIMITIVE_SET:
     rule: "Must declare which ICT primitives strategy uses"
     rationale: "Guard dog can verify strategy does what it claims"
     source: GEMINI
-    
+
   D7_SINGLE_ACTIVE_CARTRIDGE:
     rule: "Only one cartridge active at a time (v1.0)"
     rationale: "Start simple; complexity earned by operator friction"
@@ -641,12 +659,12 @@ decisions:
     rationale: "No auto-renew prevents forgotten autonomy"
     enforcement: "Enum schema, no other values"
     consensus: UNANIMOUS
-    
+
   D2_HALT_ALWAYS_WINS:
     rule: "halt_overrides_lease is CONST true"
     rationale: "INV-HALT-OVERRIDES-LEASE, <50ms"
     enforcement: "Schema const, not configurable"
-    
+
   D3_BOUNDS_ONLY_TIGHTEN:
     rule: "Lease bounds must be stricter than strategy (INV-LEASE-CEILING)"
     rationale: "Cannot use lease to bypass strategy limits"
@@ -654,34 +672,34 @@ decisions:
       strategy.per_trade_pct = 1.0
       lease.position_size_cap = 0.5  ✓ (tighter)
       lease.position_size_cap = 2.0  ✗ (looser)
-      
+
   D4_STRATEGY_HASH:
     rule: "Lease captures SHA256 of manifest at creation"
     rationale: "Manifest evolves; lease bound to EXACT version"
     enforcement: "Hash mismatch → lease invalid"
     consensus: UNANIMOUS — new lease required for ANY version change
-    
+
   D5_MAX_30_DAYS:
     rule: "Maximum lease duration = 30 days"
     rationale: "Forces regular governance review"
     typical: "7 days (weekly ceremony)"
-    
+
   D6_NEXT_REVIEW_DUE:
     rule: "Calculated field tracking when review is required"
     rationale: "Enables execution blocking when overdue"
     enforcement: "Overdue attestation → execution blocked"
-    
+
   D7_GOVERNANCE_BUFFER:
     rule: "Software halt 60s before legal expiry"
     rationale: "Prevents zombie lease race condition (INV-EXPIRY-BUFFER)"
     default: 60 seconds
     source: GEMINI
-    
+
   D8_OR_BOUNDS_LOGIC:
     rule: "Any bound breach triggers halt (OR logic)"
     rationale: "AND logic invites tail-risk bleed"
     consensus: UNANIMOUS
-    
+
   D9_SESSION_LEVEL_ONLY:
     rule: "Lease restricts at session level, not partial time windows"
     rationale: "Push precision into cartridge; keep lease simple"
@@ -701,19 +719,19 @@ transitions:
     requires: [cartridge_active, attestation_bead]
     creates: LEASE_ACTIVATION_BEAD
     guard: "state_lock_hash verified"
-    
+
   ACTIVE → EXPIRED:
     trigger: "expires_at - governance_buffer_seconds reached"
     automatic: true
     creates: LEASE_EXPIRY_BEAD
     behavior: "expiry_behavior determines position handling"
-    
+
   ACTIVE → REVOKED:
     trigger: "Human revocation"
     creates: LEASE_REVOCATION_BEAD
     behavior: "No new trades; exits per expiry_behavior"
     guard: "state_lock_hash verified"
-    
+
   ACTIVE → HALTED:
     trigger: "Bounds exceeded OR global halt"
     automatic: true
@@ -740,7 +758,7 @@ state_transition_guard: |
   Concurrent operations that fail hash check = REJECT.
   Creates STATE_LOCK_BEAD for audit trail.
   # GROK: INV-STATE-LOCK — prevents race conditions
-  
+
 invariant: |
   Only ACTIVE state allows strategy execution.
   All other states = blocked.
@@ -759,20 +777,20 @@ insertion_steps:
     action: "Validate manifest against schema"
     guard: "schema_validator.validate(manifest)"
     on_fail: "REJECT with specific errors"
-    
+
   step_2_constitutional_check:
     action: "Verify invariants_required is non-empty"
     guard: "len(manifest.constitutional.invariants_required) > 0"
     required: [INV-NO-UNSOLICITED, INV-HALT-1]
     on_fail: "REJECT — missing required invariants"
-    
+
   step_2b_dependency_check:
     action: "Verify all imports/dependencies are Phoenix-approved"
     guard: "Environment hash validation"
     on_fail: "REJECT — unapproved dependency"
     # GEMINI: Prevents "missing DLL" failure
     # GROK: Banteg zero-jank dep check
-    
+
   step_3_forbidden_patterns:
     action: "Scan narrator templates for forbidden patterns"
     guard: "guard_dog.scan(manifest.narrator_overrides)"
@@ -782,23 +800,27 @@ insertion_steps:
       - /\b(grade|score|rating)\b/i
       - /\bedge concentrates\b/i
     on_fail: "REJECT with pattern matches"
-    
-  step_4_drawer_merge:
-    action: "Check drawer_deltas for conflicts"
-    guard: "merger.merge(base_drawers, manifest.drawer_deltas)"
-    conflict_resolution: PERISH (no silent merge)
-    on_conflict: "REJECT — drawer conflict (explicit)"
-    
+
+  step_4_cabinet_validation:
+    action: "Validate drawer_config is complete and methodology-compliant"
+    guards:
+      - "All 5 drawers present in cartridge.drawer_config"
+      - "Each drawer is non-empty"
+      - "Drawer names match canonical enum (HTF_BIAS, MARKET_STRUCTURE, PREMIUM_DISCOUNT, ENTRY_MODEL, CONFIRMATION)"
+      - "No forbidden patterns in drawer values (delegate to guard_dog)"
+    on_fail: "REJECT — cabinet incomplete or non-compliant"
+    on_pass: "Cabinet validated, proceed to step_5"
+
   step_5_index_update:
     action: "Update index.yaml with new cartridge"
     result: "CSO can now reference cartridge gates"
-    
+
   step_6_guard_dog_final:
-    action: "Full guard dog scan on merged drawers"
-    guard: "guard_dog.full_scan()"
+    action: "Full guard dog scan on cartridge.drawer_config directly"
+    guard: "guard_dog.full_scan(cartridge.drawer_config)"
     primitive_verification: "Verify primitive_set matches actual usage"
     on_fail: "ROLLBACK insertion"
-    
+
   step_7_calibration_smoke:
     action: "Auto-shadow 1 session"
     purpose: "Detect drift from expected behavior"
@@ -813,7 +835,7 @@ insertion_steps:
         calibration_status = DEFERRED
         reason = "Regime mismatch — recalibrate when affinity matches"
     # GEMINI: Prevents irrelevant calibration
-    
+
   step_8_ready:
     action: "Cartridge available for lease"
     bead: CARTRIDGE_INSERTION_BEAD with manifest_hash
@@ -828,21 +850,24 @@ removal_steps:
   - CARTRIDGE_REMOVAL_BEAD with reason
 ```
 
-### 5.1 Drawer Merge Algorithm
+### 5.1 Cabinet Validation
 
 ```yaml
-merge_algorithm:
-  1: Load base drawer (e.g., conditions.yaml)
-  2: Load cartridge delta (drawer_deltas.conditions)
-  3: For each key in delta:
-     - Key not in base → ADD
-     - Key in base, values match → SKIP
-     - Key in base, values conflict → CONFLICT
-  4: Any CONFLICT → PERISH cartridge
-  
-conflict_resolution: NONE
-  rule: "No silent overwrite"
-  human_action: "Modify cartridge or base drawer explicitly"
+# v1.1: Replaces Drawer Merge Algorithm (deleted — no longer applicable)
+# Each cartridge carries a self-contained 5-drawer cabinet.
+# No merge against methodology base.
+
+cabinet_validation:
+  1: Verify all 5 canonical drawers present in drawer_config
+     required: [HTF_BIAS, MARKET_STRUCTURE, PREMIUM_DISCOUNT, ENTRY_MODEL, CONFIRMATION]
+  2: Verify each drawer is non-empty dict
+  3: Run guard_dog.full_scan on drawer_config directly
+  4: Any missing/empty drawer → REJECT cartridge
+
+methodology_reference:
+  file: "cso/knowledge/methodology_template.yaml"
+  purpose: "Reference for drawer structure and gate naming — NOT merge base"
+  usage: "Template for new cartridge authoring. Cartridges do NOT merge against this."
 ```
 
 ---
@@ -888,38 +913,56 @@ risk_defaults:
   max_daily_trades: 1
 
 cso_integration:
-  drawer_deltas:
-    foundation:
+  drawer_config:
+    HTF_BIAS:
+      weekly_bias_required: false
+      daily_bias_required: false
+      session_bias: asia_sweep_direction
+      htf_alignment_minimum: 0
+
+    MARKET_STRUCTURE:
       asia_range_method: wick_to_wick
-    conditions:
+      asia_range_start: "19:00"
+      asia_range_end: "00:00"
+      asia_range_timezone: America/New_York
+      asia_range_max_pips: 30
+      mss_required: false
+
+    PREMIUM_DISCOUNT:
       sweep_required: true
       sweep_extension_min_pips: 1
       sweep_extension_max_pips: 20
-      sweep_direction: [high, low]  # track both (Q6 resolved)
-      sweep_extension_high_pips: null  # per-direction tracking
-      sweep_extension_low_pips: null   # per-direction tracking
-    entry:
+      sweep_direction: [high, low]
+      sweep_extension_high_pips: null
+      sweep_extension_low_pips: null
+      pd_zone_required: false
+
+    ENTRY_MODEL:
       fvg_required: true
       fvg_timeframe: 5min
       re_acceptance_required: true
       re_acceptance_candle: 5min_close_inside
-    management:
+      limit_order: true
+      entry_type: fvg_retrace
+
+    CONFIRMATION:
       sl_placement: beyond_sweep_extreme
       sl_buffer_pips: 2
       tp_placement: opposite_asia_extreme
-      
+      max_trades_per_session: 1
+      trail_stop: false
+
   gate_requirements:
-    - GATE_ASIA_RANGE_VALID
+    - GATE_ASIA_RANGE_FORMED
     - GATE_SWEEP_DETECTED
-    - GATE_SWEEP_EXTENSION_VALID
-    - GATE_FVG_PRESENT
-    - GATE_RE_ACCEPTANCE_CONFIRMED
-    - GATE_RR_MINIMUM_MET
-    
+    - GATE_FVG_VALID
+    - GATE_RE_ACCEPTANCE
+
   primitive_set:
     - FVG
     - SWEEP
     - RE_ACCEPTANCE
+    - KZ_TIMING
 
 research_hooks:
   hunt_grid_enabled: true
@@ -1019,20 +1062,20 @@ steps:
       - P&L
       - Max drawdown reached
       - Gates passed/failed distribution
-      
+
   2_olya_autopsy:
     tool: TradingView (external)
     purpose: "Validate every trade against methodology"
     findings: "Would I have taken these trades?"
-    
+
   3_drift_check:
     source: CALIBRATION_BEAD
     threshold: ">5% = concern; >10% = block renewal"
-    
+
   4_bounds_review:
     question: "Are bounds still appropriate?"
     options: [keep, tighten, loosen_if_warranted]
-    
+
   5_olya_checklist:
     description: "Physical checklist Olya must complete"
     items:
@@ -1043,7 +1086,7 @@ steps:
       All checkboxes must be TRUE for attestation.
       UI/CLI enforces this before ATTESTATION_BEAD creation.
     # GEMINI: Human accountability mechanism
-    
+
   6_renewal_decision:
     options:
       RENEW: "Create new lease (fresh start)"
@@ -1068,7 +1111,7 @@ human_discipline_note: |
   This ceremony is HUMAN-ENFORCED.
   Phoenix reminds; cannot force.
   G's 20+ years operating rhythm = real enforcement.
-  
+
   The governance works because G + Olya
   have the discipline to execute it.
 ```
@@ -1084,12 +1127,12 @@ checks:
   schema_valid:
     test: "Validate against strategy_manifest.schema.yaml"
     on_fail: REJECT
-    
+
   invariants_present:
     test: "invariants_required not empty"
     required: [INV-NO-UNSOLICITED, INV-HALT-1]
     on_fail: REJECT
-    
+
   narrator_clean:
     test: "Regex scan narrator templates"
     forbidden:
@@ -1098,11 +1141,11 @@ checks:
       - /\b(grade|score|rating)\b/i
       - /\bedge concentrates\b/i
     on_fail: REJECT
-    
+
   timezone_complete:
     test: "All session_windows have tz + both UTC offsets"
     on_fail: REJECT
-    
+
   primitive_set_valid:
     test: "primitive_set uses only allowed enum values"
     on_fail: REJECT
@@ -1113,7 +1156,7 @@ checks:
 | # | Failure Mode | Likelihood | Guard |
 |---|--------------|------------|-------|
 | F1 | Invariants forgotten → heresy slips | MEDIUM | Pre-slot linter REJECTS |
-| F2 | Drawer key conflicts → CSO confused | MEDIUM | Merge tool perishes cart |
+| F2 | Incomplete cabinet → CSO confused | MEDIUM | Pydantic + linter reject incomplete cabinet |
 | F3 | Context bloat (complex cart) | LOW | Index caching, delta-only |
 | F4 | No drift detection → slow bleed | HIGH | Auto-shadow → CALIBRATION_BEAD |
 | F5 | DST flip → wrong session | MEDIUM | Explicit UTC offsets required |
@@ -1139,16 +1182,16 @@ cartridge_beads:
   CARTRIDGE_INSERTION_BEAD:
     trigger: Cartridge slotted
     fields: [cartridge_ref, hash, linter_result]
-    
+
   CARTRIDGE_REMOVAL_BEAD:
     trigger: Cartridge removed
     fields: [cartridge_ref, removed_by, reason]
-    
+
   CALIBRATION_BEAD:
     trigger: Auto-shadow complete
     fields: [cartridge_ref, lease_id, drift_pct, verdict]
     # GEMINI: INV-BEAD-COMPLETENESS — must link to lease_id
-    
+
   STRATEGY_DEPRECATION_BEAD:
     trigger: Cartridge removed for non-technical reasons
     fields:
@@ -1162,23 +1205,23 @@ lease_beads:
   LEASE_ACTIVATION_BEAD:
     trigger: Lease → ACTIVE
     fields: [lease_id, strategy_ref, bounds_snapshot]
-    
+
   LEASE_EXPIRY_BEAD:
     trigger: Lease expires (automatic)
     fields: [lease_id, final_stats]
-    
+
   LEASE_REVOCATION_BEAD:
     trigger: Human revokes
     fields: [lease_id, revoked_by, reason]
-    
+
   LEASE_HALT_BEAD:
     trigger: Auto-halt from bounds
     fields: [lease_id, trigger, bound_exceeded, value]
-    
+
   ATTESTATION_BEAD:
     trigger: Weekly ceremony
     fields: [lease_id, decision, new_lease_id]
-    
+
   CEREMONY_BEAD:
     trigger: Ceremony complete
     fields: [participants, summary, decisions]
@@ -1253,6 +1296,13 @@ Q6_EXTENSION_TRACKING:
     - sweep_extension_high_pips
     - sweep_extension_low_pips
   rationale: "Over 20 pips invalidates THAT side only"
+
+Q7_CABINET_MODEL:
+  resolution: "Self-contained cabinet per strategy (not deltas from shared base)"
+  consensus: "G + CTO + Olya (three-way approval)"
+  rationale: "Base was first strategy wearing methodology's clothes"
+  origin: "Olya (CSO) identified methodology/strategy blending"
+  date: 2026-02-22
 ```
 
 ---
@@ -1294,8 +1344,8 @@ overall_verdict: [READY / NEEDS_WORK / MAJOR_ISSUES]
 ## 11. SUMMARY
 
 ```yaml
-document_status: v1.0_CANONICAL
-purpose: "Final design for S47 implementation"
+document_status: v1.1_CANONICAL
+purpose: "Final design for S47 implementation + S50.T1 cabinet refactor"
 
 what_this_defines:
   - Cartridge manifest schema (what IS a strategy)

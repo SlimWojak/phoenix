@@ -55,10 +55,6 @@ def enriched_df():
 class TestSchemaLockdown:
     """Tests for schema lockdown verification."""
 
-    @pytest.mark.xfail(
-        reason="S42: Schema drift - expected behavior during evolution",
-        strict=True,
-    )
     def test_schema_hash_matches(self, enriched_df):
         """Verify enriched parquet matches locked schema hash."""
         actual_hash = calculate_schema_hash(enriched_df)

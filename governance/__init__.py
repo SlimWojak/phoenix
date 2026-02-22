@@ -14,6 +14,34 @@ CONSTITUTIONAL:
 """
 
 # Errors
+from .backoff import (
+    ExponentialBackoff,
+    RetryExhaustedError,
+    retry_with_backoff,
+    retry_with_backoff_async,
+)
+from .cartridge import (
+    CartridgeConflictError,
+    CartridgeHashMismatchError,
+    CartridgeInvariantError,
+    CartridgeLinter,
+    CartridgeLoader,
+    CartridgeRegistry,
+    CartridgeSchemaError,
+    CartridgeValidationError,
+    create_minimal_cartridge,
+)
+
+# Self-Healing (S40 Track A)
+from .circuit_breaker import (
+    CircuitBreaker,
+    CircuitBreakerRegistry,
+    CircuitHalfOpenError,
+    CircuitOpenError,
+    CircuitState,
+    get_all_circuit_metrics,
+    get_circuit_breaker,
+)
 from .errors import (
     ApprovalTokenError,
     DependencyError,
@@ -32,46 +60,6 @@ from .errors import (
 
 # Halt mechanism
 from .halt import HaltManager, HaltMesh, HaltSignal
-
-# Interface
-from .interface import GovernanceInterface
-
-# Stale gate
-from .stale_gate import StaleCheckResult, StaleGate
-
-# T2 workflow
-from .t2 import EvidenceBundle, T2Workflow, Token, TokenStatus
-
-# Telemetry
-from .telemetry import (
-    AggregatedTelemetry,
-    BoundsViolationTelemetry,
-    CascadeTimingTelemetry,
-    ExtendedTelemetryEmitter,
-    SignalGenerationTelemetry,
-    TelemetryAggregator,
-    TelemetryEmitter,
-)
-
-# Tokens
-from .tokens import ApprovalToken, TokenIssuer, TokenValidator
-
-# Self-Healing (S40 Track A)
-from .circuit_breaker import (
-    CircuitBreaker,
-    CircuitBreakerRegistry,
-    CircuitHalfOpenError,
-    CircuitOpenError,
-    CircuitState,
-    get_all_circuit_metrics,
-    get_circuit_breaker,
-)
-from .backoff import (
-    ExponentialBackoff,
-    RetryExhaustedError,
-    retry_with_backoff,
-    retry_with_backoff_async,
-)
 from .health_fsm import (
     HealthConfig,
     HealthRegistry,
@@ -79,6 +67,37 @@ from .health_fsm import (
     any_system_critical,
     get_all_health_status,
     get_health_fsm,
+)
+from .insertion import (
+    InsertionProtocol,
+    InsertionResult,
+    quick_insert,
+    validate_bounds_ceiling,
+)
+
+# Interface
+from .interface import GovernanceInterface
+from .lease import (
+    BoundsBreachError,
+    LeaseInterpreter,
+    LeaseManager,
+    LeaseStateMachine,
+    NullBeadEmitter,
+    create_lease_from_cartridge,
+)
+
+# Lease System (S47)
+from .lease_types import (
+    AllowedMode,
+    CartridgeManifest,
+    DrawerConfig,
+    DrawerName,
+    ExpiryBehavior,
+    Lease,
+    LeaseBounds,
+    LeaseState,
+    RenewalType,
+    TransitionResult,
 )
 
 # Runtime Assertions (S40 Track C)
@@ -99,6 +118,26 @@ from .runtime_assertions import (
     hunt_output,
     validate_output,
 )
+
+# Stale gate
+from .stale_gate import StaleCheckResult, StaleGate
+
+# T2 workflow
+from .t2 import EvidenceBundle, T2Workflow, Token, TokenStatus
+
+# Telemetry
+from .telemetry import (
+    AggregatedTelemetry,
+    BoundsViolationTelemetry,
+    CascadeTimingTelemetry,
+    ExtendedTelemetryEmitter,
+    SignalGenerationTelemetry,
+    TelemetryAggregator,
+    TelemetryEmitter,
+)
+
+# Tokens
+from .tokens import ApprovalToken, TokenIssuer, TokenValidator
 
 # Types
 from .types import (
@@ -222,4 +261,34 @@ __all__ = [
     "cfp_output",
     "hunt_output",
     "RuntimeConstitutionalChecker",
+    # Lease System (S47)
+    "AllowedMode",
+    "BoundsBreachError",
+    "DrawerConfig",
+    "DrawerName",
+    "CartridgeConflictError",
+    "CartridgeHashMismatchError",
+    "CartridgeInvariantError",
+    "CartridgeLinter",
+    "CartridgeLoader",
+    "CartridgeManifest",
+    "CartridgeRegistry",
+    "CartridgeSchemaError",
+    "CartridgeValidationError",
+    "create_lease_from_cartridge",
+    "create_minimal_cartridge",
+    "ExpiryBehavior",
+    "InsertionProtocol",
+    "InsertionResult",
+    "Lease",
+    "LeaseBounds",
+    "LeaseInterpreter",
+    "LeaseManager",
+    "LeaseState",
+    "LeaseStateMachine",
+    "NullBeadEmitter",
+    "quick_insert",
+    "RenewalType",
+    "TransitionResult",
+    "validate_bounds_ceiling",
 ]
