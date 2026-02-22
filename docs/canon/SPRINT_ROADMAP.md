@@ -3,9 +3,9 @@
 
 ```yaml
 document: SPRINT_ROADMAP.md
-version: 2.5
-date: 2026-02-09
-status: CANONICAL
+version: 2.6
+date: 2026-02-22
+status: CANONICAL — updated post v0.1 SEAL
 brand: a8ra (Phoenix is internal codename — see docs/canon/BRAND_IDENTITY.md)
 format: M2M_DENSE
 audience: Advisors (GPT, GROK, OWL, Opus)
@@ -16,9 +16,9 @@ audience: Advisors (GPT, GROK, OWL, Opus)
 ## CURRENT STATE
 
 ```yaml
-current_sprint: S49_PENDING (Bootstrap & Deploy)
-status: S44_COMPLETE | S46_DESIGN_LOCKED | S47_COMPLETE | S48_HUD_COMPLETE | MISSION_CONTROL_v0.2_LOCKED
-s33_p2: BLOCKED (Olya CSO calibration) — unblock via COE model
+current_sprint: NONE — v0.1 SEALED (2026-02-22)
+status: S50_COMPLETE | v0.1_SEALED | BEAD_FIELD_GATE_1_PASS
+s33_p2: BLOCKED (Olya CSO calibration) — CoE model accepted, not required for v0.1
 
 recent_completions:
   s43_completion_date: 2026-01-31
@@ -33,17 +33,22 @@ recent_completions:
   phoenix_swarm_repo: 2026-02-09    # Coordination scaffold built (30 files)
   office_identities: 2026-02-09     # CLAUDE.md authored for Phoenix, Dexter, Oracle
   brand_identity: 2026-02-09        # a8ra BRAND_IDENTITY.md + website operational
+  s49_completion_date: 2026-02-20   # Bootstrap & Deploy
+  s50_completion_date: 2026-02-22   # SEAL — a8ra v0.1
+  bead_field_gate_1: 2026-02-22     # 274 tests, 789 Genesis beads
+  dgx_spark_arrived: 2026-02-21
 
-certification: WARBOAR_CERTIFIED | LIVE_GATEWAY_VALIDATED | CSO_PRODUCTION_READY | S46_CANONICAL | HUD_INTEGRATED | S44_FOUNDATION_VALIDATED | S47_LEASE_PROVEN | MC_v0.2_LOCKED
+certification: v0.1_SEALED | WARBOAR_CERTIFIED | LIVE_GATEWAY_VALIDATED | CSO_PRODUCTION_READY | S46_CANONICAL | HUD_INTEGRATED | S44_FOUNDATION_VALIDATED | S47_LEASE_PROVEN | MC_v0.2_LOCKED | BEAD_FIELD_GATE_1
 cumulative:
-  sprints_complete: 19 (S28-S44, S46-S48)
-  tests_passing: 1618+
-  xfailed: 28 (documented, strict)
-  chaos_vectors: 240/240 PASS
-  invariants_proven: 124+ (111 Phoenix + 13 Mission Control)
-  bead_types: 17
+  sprints_complete: 20 (S28-S44, S46-S50)
+  tests_passing: 1615
+  xfailed: 22 (documented, strict)
+  chaos_vectors: 264/264 PASS
+  invariants_frozen: 150+ (INVARIANT_REGISTRY.yaml)
+  bead_types: 17+
   runbooks: 8
   gate_glossary: 48 gates mapped
+  seal_tag: v0.1
 
 s44_soak_final:
   completed: 2026-02-04
@@ -932,6 +937,43 @@ GATE_S47_8: "HUD manifest includes lease state" ✅
 
 ---
 
+## S50: SEAL (a8ra v0.1)
+
+```yaml
+status: COMPLETE — SEALED 2026-02-22
+tag: v0.1
+commit: d9de8d5
+
+tracks:
+  T1_CABINET_REFACTOR: COMPLETE (6/6 gates, drawer_deltas→drawer_config)
+  T1.1_GPT_HARDENING: COMPLETE (4/4 gates, extra='forbid', guard dog cabinet scan)
+  T2_INVARIANT_FREEZE: COMPLETE (150+ frozen, tiered registry)
+  T3_FULL_SUITE_REPLAY: COMPLETE (1615 pass, 264 chaos, 0 failures)
+  T4_ESCALATION_LADDER: COMPLETE (4-tier, G signed)
+  T5_ACCEPTANCE_CHECKLIST: COMPLETE (20/20 sprint gates, G signed)
+  T6_SEAL: COMPLETE (tagged, pushed)
+
+origin: Olya (CSO) identified methodology/strategy blending in conditions.yaml
+resolution: 5-drawer cabinet model — each cartridge self-contained
+advisory: GPT lint (10 flags, 5 fixed pre-SEAL)
+parallel: Bead Field Gate 1 PASS (same day)
+
+new_invariants:
+  INV-CABINET-COMPLETE: "Every cartridge must provide all 5 canonical drawers, non-empty"
+  INV-CABINET-STRICT: "DrawerConfig rejects unknown drawer keys"
+
+deliverables:
+  - INVARIANT_REGISTRY.yaml
+  - ACCEPTANCE_CHECKLIST_v0.1.md
+  - ESCALATION_LADDER.md
+  - SEAL_v0.1.md
+```
+
+### Exit Gate
+"a8ra v0.1 SEALED. 20 sprints complete. 150+ invariants frozen. 1615 tests. 264 chaos vectors. Zero failures. Both economies shipped same day."
+
+---
+
 ## PARALLEL TRACKS (Independent of Phoenix Sprint Cadence)
 
 ```yaml
@@ -1034,8 +1076,8 @@ revision_note: |
 | **S46** | CARTRIDGE_LEASE_DESIGN | Cartridge + Lease schema, insertion protocol, state machine, attestation | ✅ COMPLETE (CANONICAL) |
 | **S47** | LEASE_IMPLEMENTATION | Lease interpreter + expiry, revoke path, evidence, halt integration | ✅ COMPLETE (118 tests, 16 BUNNY) |
 | **S48** | HUD_SURFACE | WarBoar HUD SwiftUI panel, manifest_writer bridge, file seam integration | ✅ COMPLETE |
-| **S49** | BOOTSTRAP_AND_DEPLOY | bootstrap.sh, config migration, verify_office.sh, OPERATOR_SETUP.md | IN_PROGRESS |
-| **S50** | WARBOAR_SEAL | Escalation ladder, invariant freeze, full suite + chaos, acceptance checklist, operator confidence, office personality + staff roster + tool inventory | PENDING — **WARBOAR v0.1 TARGET** |
+| **S49** | BOOTSTRAP_AND_DEPLOY | One command + secrets = operational, verify_office.sh, API-first | ✅ COMPLETE |
+| **S50** | **SEAL** | **Cabinet model v1.1, GPT hardening, invariant freeze, full suite, acceptance, SEAL** | **✅ v0.1 SEALED** |
 
 ### Killed Sprints (2026-02-09 decision)
 ```yaml
@@ -1458,9 +1500,9 @@ RATIONALE: "Binary states. Rich metadata. GPT wins on state machine, OWL wins on
 ### S43-S50 (Path to v0.1)
 - INV-RESEARCH-RAW-DEFAULT (S45)
 
-**Total: 124+ invariants proven (111 Phoenix + 13 Mission Control)**
-**Tests: 1618+ passing (28 xfailed)**
-**Chaos vectors: 240 handled**
+**Total: 150+ invariants frozen (INVARIANT_REGISTRY.yaml)**
+**Tests: 1615 passing (22 xfailed)**
+**Chaos vectors: 264 handled**
 
 ---
 
@@ -1519,11 +1561,11 @@ s46_design_locked: 2026-01-31
 s47_completion_date: 2026-02-04
 s48_completion_date: 2026-01-31
 
-current_sprint: S49_IN_PROGRESS (Bootstrap & Deploy) | S45 blocked (Olya)
+current_sprint: NONE — v0.1 SEALED (2026-02-22)
 
-total_tests: 1618+ (28 xfailed)
-total_bunny_vectors: 240
-total_invariants: 111+
+total_tests: 1615 (22 xfailed)
+total_bunny_vectors: 264
+total_invariants: 150+ frozen
 total_gates_mapped: 48
 
 s35_s39_theme: "CONSTITUTIONAL CEILING"
@@ -1667,4 +1709,4 @@ parallel_systems: |
   - INV-NO-CORE-REWRITES-POST-S44: ACTIVE
 ```
 
-*S35-S44, S46-S48 COMPLETE. FOUNDATION_VALIDATED. LEASE_PROVEN. S49 IN PROGRESS (Bootstrap & Deploy). S50 WARBOAR_SEAL → v0.1. Dexter parallel. COE accepted. 🐗🔥*
+*S28-S44, S46-S50 COMPLETE. v0.1 SEALED. BEAD_FIELD_GATE_1 PASS. 1615 tests. 264 chaos vectors. 150+ invariants frozen. Both economies shipped same day. 🐗🔥*
