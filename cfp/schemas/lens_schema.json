@@ -1,0 +1,132 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://phoenix.trading/schemas/lens_query.json",
+  "title": "LensQuery",
+  "description": "Constitutional boundary schema for CFP queries — S35",
+  "type": "object",
+  "required": ["source", "aggregate", "strategy_config_hash"],
+  "properties": {
+    "source": {
+      "type": "string",
+      "enum": ["river", "beads", "positions"],
+      "description": "Data source to query"
+    },
+    "strategy_config_hash": {
+      "type": "string",
+      "pattern": "^[a-fA-F0-9]+$",
+      "minLength": 8,
+      "description": "Hash of operator's active strategy config — anchors fact to specific version"
+    },
+    "group_by": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": ["session", "kill_zone", "pair", "regime", "direction", "day_of_week", "hour"]
+      },
+      "maxItems": 4,
+      "uniqueItems": true,
+      "default": [],
+      "description": "Dimensions to group by (max 4)"
+    },
+    "filter": {
+      "type": "object",
+      "properties": {
+        "conditions": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/predicate"
+          },
+          "maxItems": 10
+        },
+        "time_range": {
+          "$ref": "#/definitions/time_range"
+        }
+      }
+    },
+    "aggregate": {
+      "type": "object",
+      "required": ["metrics"],
+      "properties": {
+        "metrics": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": ["sharpe", "win_rate", "pnl", "profit_factor", "max_drawdown", "trade_count"]
+          },
+          "minItems": 1,
+          "maxItems": 5,
+          "uniqueItems": true
+        }
+      }
+    },
+    "output": {
+      "type": "object",
+      "properties": {
+        "format": {
+          "type": "string",
+          "enum": ["table", "single_value"],
+          "default": "table"
+        },
+        "include_provenance": {
+          "type": "boolean",
+          "const": true,
+          "default": true,
+          "description": "Provenance is MANDATORY — cannot be disabled"
+        }
+      }
+    },
+    "max_groups": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 1000,
+      "default": 100,
+      "description": "Maximum groups to return (T2 required for > 100)"
+    }
+  },
+  "definitions": {
+    "predicate": {
+      "type": "object",
+      "required": ["field", "op", "value"],
+      "properties": {
+        "field": {
+          "type": "string",
+          "enum": [
+            "session", "kill_zone", "day_of_week", "entry_hour", "exit_hour",
+            "pair", "direction",
+            "gates_passed_count", "gates_failed_count",
+            "regime", "trade_bias", "htf_direction",
+            "composite_gates.alignment_gate", "composite_gates.freshness_gate",
+            "composite_gates.high_quality_long", "composite_gates.high_quality_short",
+            "result", "zone", "in_fvg", "in_ob", "htf_unanimous"
+          ]
+        },
+        "op": {
+          "type": "string",
+          "enum": ["==", "!=", ">", "<", ">=", "<=", "in", "not_in"]
+        },
+        "value": {
+          "oneOf": [
+            {"type": "string"},
+            {"type": "number"},
+            {"type": "boolean"},
+            {"type": "array", "items": {"type": "string"}}
+          ]
+        }
+      }
+    },
+    "time_range": {
+      "type": "object",
+      "required": ["start", "end"],
+      "properties": {
+        "start": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "end": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    }
+  }
+}

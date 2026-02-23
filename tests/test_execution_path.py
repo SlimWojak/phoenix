@@ -23,12 +23,16 @@ sys.path.insert(0, str(phoenix_root))
 
 from execution.broker_stub import BrokerHaltedError, PaperBrokerStub, PnLCalculator
 from execution.intent import Direction, IntentFactory
-from execution.position import (
+from execution.positions.paper import (
     VALID_TRANSITIONS,
     InvalidTransitionError,
-    Position,
-    PositionState,
     validate_transition,
+)
+from execution.positions.paper import (
+    PaperPosition as Position,
+)
+from execution.positions.paper import (
+    PaperPositionState as PositionState,
 )
 from execution.replay import (
     DeterminismVerifier,

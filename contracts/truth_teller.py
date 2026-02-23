@@ -374,7 +374,7 @@ def verify_river_integrity(
             ts_key = str(row["timestamp"]) if "timestamp" in row.index else str(idx)
             ref_hashes[ts_key] = teller.compute_bar_hash(row)
 
-        return teller.verify_integrity(df, reference_hashes)
+        return teller.verify_integrity(df, ref_hashes)
     else:
         return teller.verify_integrity(df)
 

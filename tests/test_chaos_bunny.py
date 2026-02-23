@@ -37,6 +37,8 @@ from dataclasses import asdict, dataclass
 from datetime import UTC, datetime
 from pathlib import Path
 
+import pytest
+
 # Paths
 PHOENIX_ROOT = Path.home() / "phoenix"
 NEX_ROOT = Path.home() / "nex"

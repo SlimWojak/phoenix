@@ -1,8 +1,24 @@
 ---
 type: cso_briefing
-generated: 2026-01-27T11:43:06.275890+00:00
-expires: 2026-01-27T12:13:06.275890+00:00
+generated: 2026-02-23T13:31:31.421703+00:00
+expires: 2026-02-23T14:01:31.421703+00:00
 ttl_minutes: 30
+ready_count: 1
+forming_count: 1
 ---
 
-Response 4
+# CSO Briefing
+
+**Generated:** 2026-02-23 13:31 UTC
+
+## Scan Results
+
+Test scan
+
+## Ready Setups
+
+- **EURUSD** — Ready for entry
+
+## Forming Setups
+
+- GBPUSD — Watch list

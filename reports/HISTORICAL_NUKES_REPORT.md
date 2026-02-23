@@ -1,7 +1,7 @@
 # HISTORICAL NUKES REPORT
 
 **SPRINT:** 26.TRACK_A.DAY_2.5
-**DATE:** 2026-01-27 11:42 UTC
+**DATE:** 2026-02-23 13:32 UTC
 **SOURCE:** BOAR_AUDIT vector 6_REGIME_NUKE
 
 ---
@@ -43,7 +43,7 @@ quality_after: 0.983
 quality_reflects_chaos: True
 recovery_observed: True
 anomalies_detected: 43
-health_states: ['HEALTHY', 'HALT']
+health_states: ['HALT', 'HEALTHY']
 bars_tested: 1440
 ```
 
@@ -61,7 +61,7 @@ quality_after: 0.983
 quality_reflects_chaos: True
 recovery_observed: True
 anomalies_detected: 4436
-health_states: ['HEALTHY', 'HALT']
+health_states: ['HALT', 'HEALTHY']
 bars_tested: 10080
 event_window: 2024-08-01 00:00:00+00:00 → 2024-08-09 23:59:00+00:00
 ```
@@ -80,7 +80,7 @@ quality_after: 0.983
 quality_reflects_chaos: True
 recovery_observed: True
 anomalies_detected: 14
-health_states: ['HEALTHY', 'HALT']
+health_states: ['HALT', 'HEALTHY']
 bars_tested: 1440
 ```
 

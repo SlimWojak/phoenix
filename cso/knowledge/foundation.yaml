@@ -5,7 +5,7 @@
 
 schema_version: "1.0.0"
 created: "2026-01-23"
-label: "DRAFT v0 — 5-drawer extraction, pending Olya validation"
+label: "v1.0 — Updated with GAP 7 (liquidity status) + GAP 9 (PDH/PDL definition)"
 
 # =============================================================================
 # CONCEPT DEFINITIONS
@@ -118,12 +118,42 @@ definitions:
 
   liquidity_status:
     name: "Liquidity Level Status"
+    principle: "Liquidity is defined by IMPACT, not by TIME."
+    one_line_rule: "LIQUIDITY_UNDELIVERED is the destination. LIQUIDITY_SWEEP is the trigger."
     states:
-      NOT_DELIVERED: {quality: highest, valid_target: true, desc: "Never touched"}
-      LIQUIDITY_RUN: {quality: valid, valid_target: true, desc: "Touched, no consequence"}
-      DELIVERED_WITH_CONSEQUENCE: {quality: invalid, valid_target: false, desc: "Consequence at level"}
-    consequence_types: [displacement, mss, fvg, structure_change]
-    ref: "L0:920-1000"
+      LIQUIDITY_UNDELIVERED:
+        quality: "⭐ PRIMARY TARGET"
+        valid_target: true
+        priority: 1
+        desc: "Price has not touched/exceeded level — liquidity still resting"
+        note: "The destination — market is drawn to untaken liquidity"
+      LIQUIDITY_SWEEP:
+        quality: "transitional"
+        valid_target: false
+        priority: 2
+        desc: "Price traded through level — liquidity was TAKEN"
+        note: "The trigger — identifies liquidity removal, NOT a trading objective"
+        next_states: "Evolves to BREAK or REJECTED"
+      REJECTED:
+        quality: "bias_confirmation"
+        valid_target: false
+        priority: 3
+        desc: "Liquidity swept then rejected back"
+        note: "Used for BIAS confirmation only, not as trading objective"
+      BREAK:
+        quality: "invalid"
+        valid_target: false
+        priority: 4
+        desc: "Close beyond level + consequence detected"
+        note: "Level broken with structural impact — no longer valid"
+    consequence_types: [displacement, mss, fvg, liquidity_sweep]
+    deprecated_terms:
+      - {old: "NOT_DELIVERED", new: "LIQUIDITY_UNDELIVERED"}
+      - {old: "LIQUIDITY_RUN", new: "LIQUIDITY_SWEEP"}
+      - {old: "DELIVERED_WITH_CONSEQUENCE", new: "BREAK"}
+      - {old: "defended", new: "REJECTED"}
+      - {old: "weakly defended", new: "LIQUIDITY_UNDELIVERED"}
+    ref: "L0:GAP-7, CSO:layer_0_gaps_7_to_11_RESOLVED_v2.yaml"
 
   sweep:
     name: "Liquidity Sweep"
@@ -135,6 +165,29 @@ definitions:
       displacement: ">20 pips (not sweep, momentum)"
     ref: "NEX:L3"
 
+  inducement:
+    name: "Inducement"
+    definition: "Price action designed to trap traders into wrong-side positions before reversal"
+    distinct_from_manipulation:
+      manipulation: "Active displacement showing institutional intent — the SWITCH"
+      inducement: "Passive trap setup, looks like breakout/breakdown, fails — the BAIT"
+    recognition:
+      - "Price exceeds obvious level (high/low/trendline/round number)"
+      - "Lacks displacement characteristics (weak move, no conviction, small bodies)"
+      - "Quickly reverses, trapping breakout traders"
+      - "Often occurs during manipulation hour (first hour of session)"
+    olya_note: "Inducement is the bait. Manipulation is the switch."
+    common_locations:
+      - "Equal highs/lows (retail magnets)"
+      - "Round numbers (psychological levels)"
+      - "Trendlines (technical trader traps)"
+      - "Previous session highs/lows"
+    how_to_use:
+      - "Recognize inducement as trap, NOT as signal"
+      - "Wait for manipulation (displacement) to confirm direction"
+      - "Trade AWAY from inducement level after confirmation"
+    ref: "L0:manipulation_hour, NEX:L3"
+
   # --- RANGES ---
   IPDA:
     name: "Interbank Price Delivery Algorithm"
@@ -145,6 +198,35 @@ definitions:
       ipda_60: {lookback: 60, type: long_term}
     usage: [bootstrap_context, external_liquidity, structure_bounds]
     ref: "L0:703-735"
+
+  # --- PDH/PDL/PWH/PWL (GAP 9) ---
+  pdh_pdl:
+    name: "Previous Day High/Low"
+    forex_day:
+      start: "17:00 NY"
+      end: "17:00 NY next day"
+      note: "Forex Trading Day, NOT midnight"
+    pdh: "Highest WICK in prior completed Forex day"
+    pdl: "Lowest WICK in prior completed Forex day"
+    measurement: "Wicks only (not closes) — liquidity sits at wick extremes"
+    dst_handling: "Always NY local time (America/New_York), auto-adjusts EDT/EST"
+    critical_rules:
+      - "⛔ Do NOT use midnight (00:00) boundaries"
+      - "⛔ Do NOT use candle closes"
+      - "⛔ Do NOT hardcode UTC offsets"
+      - "✅ Always use 17:00 NY boundaries"
+      - "✅ Always use wicks (extremes)"
+    ref: "L0:GAP-9, CSO:layer_0_gaps_7_to_11_RESOLVED_v2.yaml"
+
+  pwh_pwl:
+    name: "Previous Week High/Low"
+    forex_week:
+      start: "Sunday 17:00 NY"
+      end: "Sunday 17:00 NY next week"
+    pwh: "Highest WICK in prior completed Forex week"
+    pwl: "Lowest WICK in prior completed Forex week"
+    same_rules_as: "pdh_pdl (wicks, 17:00 boundaries, NY local time)"
+    ref: "L0:GAP-9, CSO:layer_0_gaps_7_to_11_RESOLVED_v2.yaml"
 
   dealing_range:
     name: "Dealing Range"
@@ -219,7 +301,7 @@ invariants:
     - {id: "INV-010", rule: "FVG respect uses 5 conditions (all required)", violation: "Partial FVG respect check", ref: "L0:262-270"}
 
   liquidity:
-    - {id: "INV-011", rule: "Only NOT_DELIVERED or LIQUIDITY_RUN are valid targets", violation: "Targeting DELIVERED_WITH_CONSEQUENCE level", ref: "L0:GAP-7"}
+    - {id: "INV-011", rule: "Only LIQUIDITY_UNDELIVERED is a valid target (SWEEP/REJECTED/BREAK are NOT targets)", violation: "Targeting LIQUIDITY_SWEEP, REJECTED, or BREAK level", ref: "L0:GAP-7"}
 
   bias:
     - {id: "INV-012", rule: "Bias set at 00:00 NY, frozen until next day", violation: "Intraday bias change", ref: "L0:24-30"}

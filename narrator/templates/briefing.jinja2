@@ -1,0 +1,42 @@
+OINK OINK MOTHERFUCKER! 🐗🔥
+FACTS_ONLY — NO INTERPRETATION
+
+═══════════════════════════════════════
+         MORNING BRIEFING
+═══════════════════════════════════════
+{{ timestamp_str }}
+
+SYSTEM
+─────────────────────────────────────
+  {{ orientation.health_status | health_emoji }} {{ orientation.health_status }}
+  MODE:  {{ orientation.mode }}
+  PHASE: {{ orientation.execution_phase }}
+{% if orientation.kill_flags %}  KILLS: {{ orientation.kill_flags | join(', ') }}{% endif %}
+
+POSITIONS
+─────────────────────────────────────
+  OPEN: {{ trades.open_positions }}
+  P&L:  {{ trades.daily_pnl | format_pnl }}
+
+{% if cso.gates_per_pair %}
+ACTIVE PAIRS
+─────────────────────────────────────
+{% for pair, gates in cso.gates_per_pair.items() %}
+  {{ pair }}: {{ gates | gate_facts }}
+{% endfor %}
+{% endif %}
+
+HUNT QUEUE
+─────────────────────────────────────
+  {{ hunt.pending_hypotheses }} hypothesis(es) pending
+
+{% if tests.passed %}
+TESTS
+─────────────────────────────────────
+  {{ tests.passed }} of {{ tests.collected }} passed
+{% if tests.failed %}  {{ tests.failed }} failed{% endif %}
+{% endif %}
+
+═══════════════════════════════════════
+The boar watches. The floor holds.
+═══════════════════════════════════════

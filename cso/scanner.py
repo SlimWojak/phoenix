@@ -82,6 +82,11 @@ class CSESignal:
     parameters: dict[str, float]
     evidence_hash: str
 
+    # S52 T3 — River provenance (REQUIRED per INV-CSE-PROVENANCE-1)
+    river_latest_bar_timestamp: str | None = None
+    river_knowledge_time: str | None = None
+    river_bar_hash_sample: str | None = None
+
     def to_dict(self) -> dict[str, Any]:
         return {
             "signal_id": self.signal_id,
@@ -92,6 +97,9 @@ class CSESignal:
             "confidence": self.confidence,
             "parameters": self.parameters,
             "evidence_hash": self.evidence_hash,
+            "river_latest_bar_timestamp": self.river_latest_bar_timestamp,
+            "river_knowledge_time": self.river_knowledge_time,
+            "river_bar_hash_sample": self.river_bar_hash_sample,
         }
 
 

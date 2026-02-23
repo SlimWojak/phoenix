@@ -206,33 +206,117 @@ delivery_classification:
 gaps:
   - id: "GAP-MGMT-001"
     area: "Partial exit rules"
-    question: "What % at 1R? What % at equilibrium?"
-    status: "requires_olya"
+    status: "RESOLVED"
+    decision: "NO PARTIALS"
+    rule:
+      partial_exits: NO
+      position_management: "Full position held to TP or SL"
+      style: "Set & forget"
+      scope: "ALL strategies (D15MB, Asia Scalp, future)"
+      rationale: "Simplicity, no mid-trade decisions, maximum profit if target hit"
+      exits_only_by:
+        - "TP (objective reached)"
+        - "SL (invalidation)"
 
   - id: "GAP-MGMT-002"
     area: "Trailing stop logic"
-    question: "Trail behind swings? PDAs? Fixed distance?"
-    status: "requires_olya"
+    status: "RESOLVED"
+    decision: "TRAIL TO BREAKEVEN ONLY"
+    rule:
+      trailing_stops: YES
+      type: "Breakeven only (no further trailing)"
+      
+      triggers:
+        trigger_1:
+          name: "New 15m High/Low break"
+          condition_long: "current_price > highest_15m_high_since_entry"
+          condition_short: "current_price < lowest_15m_low_since_entry"
+        
+        trigger_2:
+          name: "Floating profit ≥ +1R"
+          condition: "abs(current_price - entry) >= abs(entry - original_sl)"
+          note: "Price moved favorable distance equal to initial risk distance"
+          measurement: "Risk multiple (NOT % of account equity)"
+      
+      action:
+        when: "EITHER trigger met (OR logic)"
+        move_sl_to: "entry_price"
+        result: "Zero risk (breakeven)"
+      
+      after_breakeven:
+        rule: "SL locked at entry, no further trailing"
+        exits: "Only TP or BE-SL"
+      
+      scope: "ALL strategies"
+      rationale: "Protect capital once profitable, preserve set & forget simplicity"
 
   - id: "GAP-MGMT-003"
     area: "Re-entry criteria"
-    question: "When to re-enter after stop? Max attempts?"
-    status: "requires_olya"
+    status: "RESOLVED"
+    decision: "NO RE-ENTRY"
+    rule:
+      re_entry: NO
+      logic: "One attempt per setup/narrative"
+      invalidation: "If SL hit → trade finished for that narrative"
+      
+      exception:
+        condition: "New MSS occurs"
+        rationale: "New MSS = new narrative = new opportunity"
+        allowed: "Fresh entry on new narrative structure"
+      
+      scope: "ALL strategies"
+      rationale: "Prevents revenge trading, respects invalidation signal"
 
   - id: "GAP-MGMT-004"
     area: "Position scaling"
-    question: "Scale in rules? Scale out percentages?"
-    status: "requires_olya"
+    status: "RESOLVED"
+    decision: "NO SCALING"
+    rule:
+      position_scaling: NO
+      entry: "Full position at single entry point"
+      exit: "Full position at single exit (TP or SL or BE-SL)"
+      no_scaling_in: "Do not add to position"
+      no_scaling_out: "Do not partial exit"
+      
+      scope: "ALL strategies"
+      rationale: "Single entry, single exit - maximum simplicity and clarity"
+      note: "Aligns with GAP-001 (no partials)"
 
   - id: "GAP-MGMT-005"
     area: "Time-based exits"
-    question: "Exit before session end? Hold overnight?"
-    status: "requires_olya"
+    status: "RESOLVED"
+    decision: "NO TIME EXITS"
+    rule:
+      time_based_exits: NO
+      exit_logic: "Price-based only (TP or SL or BE-SL)"
+      overnight_holds: "Allowed"
+      no_forced_close: "No session end exits, no time limits"
+      
+      exits_only_by:
+        - "TP (objective reached)"
+        - "SL (invalidation)"
+        - "BE-SL (after trigger, see GAP-002)"
+      
+      scope: "ALL strategies"
+      rationale: "Let price reach objective or invalidation naturally, no artificial time constraints"
 
   - id: "GAP-MGMT-006"
     area: "Risk per trade"
-    question: "Fixed risk % or variable by grade?"
-    status: "requires_olya"
+    status: "RESOLVED"
+    decision: "FIXED RISK"
+    rule:
+      risk_per_trade: FIXED
+      percentage: 1.0  # 1% account equity per trade
+      no_variability: "Same risk regardless of setup quality"
+      no_grading: "No A/B/C/F quality scaling"
+      
+      calculation:
+        formula: "position_size = (account_equity × 0.01) / (risk_distance_pips × pip_value)"
+        defined_once: "Risk calculated at entry, never adjusted"
+        constant: "Every trade risks exactly 1% account equity"
+      
+      scope: "ALL strategies"
+      rationale: "Simplicity, consistency, no subjective quality judgments required"
 
 # =============================================================================
 # SCOPE BOUNDARIES

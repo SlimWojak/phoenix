@@ -1,0 +1,20 @@
+{
+	"folders": [
+		{
+			"path": "../phoenix-swarm"
+		},
+		{
+			"path": "../oracle"
+		},
+		{
+			"path": "."
+		},
+		{
+			"path": "../dexter/dexter"
+		},
+		{
+			"path": "../nex"
+		}
+	],
+	"settings": {}
+}

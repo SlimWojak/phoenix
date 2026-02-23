@@ -70,7 +70,7 @@ class TestTelegramAlertE2E:
 
     def test_aggregator_batches_alerts(self) -> None:
         """Aggregator batches multiple alerts."""
-        from notification import Alert, AlertAggregator
+        from notification import LegacyAlert as Alert, AlertAggregator
 
         aggregator = AlertAggregator(window_seconds=60, max_batch_size=10)
 
@@ -93,7 +93,7 @@ class TestTelegramAlertE2E:
 
     def test_critical_immediate_flush(self) -> None:
         """CRITICAL alert triggers immediate flush."""
-        from notification import Alert, AlertAggregator
+        from notification import LegacyAlert as Alert, AlertAggregator
 
         aggregator = AlertAggregator()
 

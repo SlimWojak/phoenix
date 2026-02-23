@@ -1,0 +1,36 @@
+# Phoenix Configuration — Paper Trading Profile
+# Usage: load_config("config/profiles/paper.yaml")
+#
+# Safe for development and testing. Uses IBKR paper trading gateway.
+# All secrets come from macOS Keychain (INV-NO-SECRETS-IN-FILES).
+
+ibkr:
+  host: "127.0.0.1"
+  port: 4002          # TWS paper trading port (4002 for Gateway, 7497 for TWS)
+  paper_mode: true     # INV-IBKR-PAPER-GUARD-1: enforced
+  timeout_seconds: 30
+  client_id: 1
+  # account_id: loaded at runtime from Keychain (a8ra-ibkr-dev)
+
+river:
+  data_path: "~/nex/river.db"
+  refresh_interval_seconds: 60
+  stale_threshold_hours: 1.0
+
+governance:
+  halt_timeout_ms: 50        # INV-HALT-1
+  alert_cooldown_seconds: 60
+  circuit_breaker_threshold: 5
+  circuit_breaker_timeout_seconds: 60
+
+notification:
+  bundle_window_seconds: 1800  # 30 min
+  telegram_enabled: false      # Disabled in paper mode
+
+narrator:
+  templates_path: "narrator/templates"
+  emit_receipts: false
+
+cso:
+  knowledge_path: "cso/knowledge"
+  refresh_on_startup: true

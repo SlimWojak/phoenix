@@ -1,0 +1,137 @@
+# =============================================================================
+# 5-DRAWER SCHEMA — Olya's Methodology Structure
+# =============================================================================
+# S36 TRACK A DELIVERABLE
+# Created: 2026-01-29
+#
+# Each drawer contains gates. Gates are predicates. Predicates return boolean.
+# NO GRADES. NO SCORES. NO WEIGHTS. EVER.
+#
+# INVARIANTS:
+#   - INV-HARNESS-1: Gate status only, never grades
+#   - INV-DRAWER-RULE-EXPLICIT: Rules declared here, not runtime configurable
+# =============================================================================
+
+schema_version: "1.0.0"
+created: "2026-01-29"
+status: "S36_ACTIVE"
+
+# =============================================================================
+# FORBIDDEN FIELDS — Schema rejects these
+# =============================================================================
+
+forbidden_fields:
+  - quality_score
+  - confidence
+  - grade
+  - rank
+  - weight
+  - priority
+  - quality_threshold
+  - score
+  - rating
+
+# =============================================================================
+# DRAWER DEFINITIONS
+# =============================================================================
+
+drawers:
+  drawer_1_foundation:
+    id: 1
+    name: "HTF Bias"
+    description: "Higher timeframe directional context"
+    gates:
+      - htf_structure_bullish
+      - htf_structure_bearish
+      - htf_poi_identified
+    evaluation:
+      type: EXPLICIT_BOOLEAN_RULE
+      rule: "at_least_one_directional"
+      logic: "(htf_structure_bullish OR htf_structure_bearish) AND htf_poi_identified"
+      runtime_configurable: false
+
+  drawer_2_context:
+    id: 2
+    name: "Session Context"
+    description: "Kill zone and session alignment"
+    gates:
+      - kill_zone_active
+      - asia_range_defined
+      - session_bias_aligned
+    evaluation:
+      type: EXPLICIT_BOOLEAN_RULE
+      rule: "all_gates_independent"
+      logic: "Each gate evaluated independently — no rollup required"
+      runtime_configurable: false
+
+  drawer_3_conditions:
+    id: 3
+    name: "Entry Conditions"
+    description: "PDA presence and displacement"
+    gates:
+      - fvg_present
+      - displacement_sufficient
+      - liquidity_swept
+    evaluation:
+      type: EXPLICIT_BOOLEAN_RULE
+      rule: "minimum_2_of_3"
+      logic: "count([fvg_present, displacement_sufficient, liquidity_swept]) >= 2"
+      runtime_configurable: false
+
+  drawer_4_entry:
+    id: 4
+    name: "Entry Trigger"
+    description: "LTF confirmation and entry model"
+    gates:
+      - ltf_confirmation
+      - entry_model_valid
+      - stop_defined
+    evaluation:
+      type: EXPLICIT_BOOLEAN_RULE
+      rule: "all_required"
+      logic: "ltf_confirmation AND entry_model_valid AND stop_defined"
+      runtime_configurable: false
+
+  drawer_5_management:
+    id: 5
+    name: "Trade Management"
+    description: "Target and risk management"
+    gates:
+      - target_defined
+      - rr_acceptable
+      - partials_planned
+    evaluation:
+      type: EXPLICIT_BOOLEAN_RULE
+      rule: "all_required"
+      logic: "target_defined AND rr_acceptable AND partials_planned"
+      runtime_configurable: false
+
+# =============================================================================
+# GATE OUTPUT SCHEMA
+# =============================================================================
+
+gate_evaluation_output:
+  gate_id: str
+  passed: bool
+  predicate_delta:
+    description: "Distance from threshold on failure"
+    type: "str | null"
+    examples:
+      numeric: "delta: 1.2 pips from threshold"
+      boolean: null
+      enum: "actual: tokyo"
+  timestamp: datetime
+  data_hash: str
+
+# =============================================================================
+# DRAWER EVALUATION OUTPUT
+# =============================================================================
+
+drawer_evaluation_output:
+  drawer_id: int
+  drawer_name: str
+  passed: bool
+  gates_passed: list[str]
+  gates_failed: list[str]
+  gates_skipped: list[str]
+  rule_applied: str

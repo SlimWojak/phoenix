@@ -1,0 +1,20 @@
+🚨 ALERT 🚨
+FACTS_ONLY — NO INTERPRETATION
+═══════════════════════════════════════
+
+{% if severity == 'CRITICAL' %}🔴{% elif severity == 'WARNING' %}🟡{% else %}🟢{% endif %} {{ severity }}  {{ component | upper }}
+
+{{ event }}
+
+{% if message %}
+{{ message }}
+{% endif %}
+
+Action: {{ action_taken }}
+{% if degradation_level and degradation_level != 'NONE' %}
+Degradation: {{ degradation_level }}
+{% endif %}
+
+═══════════════════════════════════════
+Human attention required.
+═══════════════════════════════════════

@@ -1,19 +1,19 @@
 # CHAOS BUNNY REPORT
 
 **SPRINT:** 26.TRACK_A.DAY_2
-**DATE:** 2026-01-27 11:42 UTC
+**DATE:** 2026-02-23 13:42 UTC
 **ADVISOR:** BOAR (post-execution audit requested)
 
 ---
 
-## VERDICT: PASS
+## VERDICT: FAIL
 
 | Metric | Value |
 |--------|-------|
-| **vectors_passed** | 6/6 |
-| **vectors_failed** | 0 |
-| **silent_failures** | 0 |
-| **boar_confidence** | 100% |
+| **vectors_passed** | 5/6 |
+| **vectors_failed** | 1 |
+| **silent_failures** | 1 |
+| **boar_confidence** | 83% |
 | **boar_target** | 85% |
 
 ---
@@ -22,12 +22,12 @@
 
 | Vector | Status | Health | Quality | Silent |
 |--------|--------|--------|---------|--------|
-| GAPS | PASS ✓ | HALT | 0.978 | False |
-| LATENCY | PASS ✓ | HEALTHY | 0.998 | False |
-| SPIKE | PASS ✓ | HALT | 0.996 | False |
-| SEQUENCE | PASS ✓ | HALT | 0.990 | False |
-| CORRELATED_CHAOS | PASS ✓ | HALT | 0.992 | False |
-| RECOVERY_LAG | PASS ✓ | HEALTHY | 0.998 | False |
+| GAPS | PASS ✓ | HALT | 0.967 | False |
+| LATENCY | PASS ✓ | HALT | 0.996 | False |
+| SPIKE | PASS ✓ | HALT | 0.994 | False |
+| SEQUENCE | PASS ✓ | HALT | 0.988 | False |
+| CORRELATED_CHAOS | PASS ✓ | HALT | 0.990 | False |
+| RECOVERY_LAG | FAIL ✗ | HALT | 0.996 | True |
 
 ---
 
@@ -37,8 +37,8 @@
 ```yaml
 detected: True
 gaps_injected: 10
-gaps_detected: 6
-bars_removed: 184
+gaps_detected: 10
+bars_removed: 166
 ```
 
 ### 2. LATENCY
@@ -73,10 +73,10 @@ escalated_to: HALT
 
 ### 7. RECOVERY_LAG
 ```yaml
-detected: True
-cycles_to_recovery: 2
+detected: False
+cycles_to_recovery: 10
 threshold_cycles: 5
-within_threshold: True
+within_threshold: False
 ```
 
 ---
@@ -105,7 +105,7 @@ rationale:
 ```yaml
 symbol: EURUSD
 total_bars: 500
-test_window: 2026-01-26 04:40:00+00:00 → 2026-01-26 12:59:00+00:00
+test_window: 2026-02-20 20:55:00+00:00 → 2026-02-23 05:29:00+00:00
 test_isolation_acknowledged: True
 mitigation_deferred: live_shadow_mode (S27+)
 ```
@@ -116,7 +116,7 @@ mitigation_deferred: live_shadow_mode (S27+)
 
 > "System degrades gracefully, never lies about health"
 
-**STATUS:** PROVEN
+**STATUS:** VIOLATED
 
 ---
 
@@ -124,13 +124,13 @@ mitigation_deferred: live_shadow_mode (S27+)
 
 | Condition | Status |
 |-----------|--------|
-| all_vectors_detected | TRUE ✓ |
+| all_vectors_detected | FALSE ✗ |
 | quality_telemetry_accurate | TRUE ✓ |
-| no_silent_failures | TRUE ✓ |
+| no_silent_failures | FALSE ✗ |
 | correlated_chaos_escalated | TRUE ✓ |
-| recovery_lag < 5 cycles | TRUE ✓ |
+| recovery_lag < 5 cycles | FALSE ✗ |
 
-**NEXT:** HISTORICAL_NUKES (Day 2.5)
+**NEXT:** HALT — fix detection
 
 ---
 
@@ -145,7 +145,7 @@ Questions for BOAR:
 3. Is the correlated chaos escalation logic sound?
 4. What additional edge cases should we test?
 
-**CONFIDENCE:** 100% (target: 85%)
+**CONFIDENCE:** 83% (target: 85%)
 
 ---
 

@@ -1,0 +1,36 @@
+OINK! HEALTH CHECK 🐗
+FACTS_ONLY — NO INTERPRETATION
+═══════════════════════════════════════
+{{ timestamp_str }}
+
+DATA STREAM
+─────────────────────────────────────
+  {{ river.health_status | health_emoji }} {{ river.health_status }}
+  Updated {{ river.staleness_seconds | format_staleness }}
+{% if river.is_stale %}  ⚠️ Stale — check connection{% endif %}
+
+BROKER
+─────────────────────────────────────
+  {{ supervisor.state | health_emoji }} {{ supervisor.state }}
+{% if supervisor.ibkr_connected %}  Connected{% else %}  Disconnected{% endif %}
+{% if supervisor.heartbeat_ok %}  Heartbeat OK{% else %}  ⚠️ Heartbeat missed{% endif %}
+{% if supervisor.degradation_level and supervisor.degradation_level != 'NONE' %}  {{ supervisor.degradation_level }}{% endif %}
+
+CIRCUITS
+─────────────────────────────────────
+  {{ supervisor.circuit_breakers_closed | circuit_status(supervisor.circuit_breakers_total) }}
+
+{% if tests.collected %}
+TEST SUITE
+─────────────────────────────────────
+  {{ tests.passed }} of {{ tests.collected }} passed
+{% if tests.failed %}  {{ tests.failed }} failed{% endif %}
+{% endif %}
+
+═══════════════════════════════════════
+{% if river.health_status == 'HEALTHY' and supervisor.state == 'RUNNING' %}
+All systems nominal.
+{% else %}
+⚠️ Attention required — review above.
+{% endif %}
+═══════════════════════════════════════

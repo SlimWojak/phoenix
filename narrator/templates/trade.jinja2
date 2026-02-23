@@ -1,0 +1,26 @@
+OINK! TRADE EVENT 🐗
+FACTS_ONLY — NO INTERPRETATION
+═══════════════════════════════════════
+
+{{ action | upper }}  {{ pair }}  {{ direction | upper }}
+
+LEVELS
+─────────────────────────────────────
+  Entry:  {{ entry }}
+  Stop:   {{ stop }}
+  Target: {{ target }}
+  Risk:   {{ risk_pct }}%
+
+EVIDENCE
+─────────────────────────────────────
+  {{ gates_passed | gate_facts }}
+
+{% if show_receipts and evidence_bead %}
+─── RECEIPTS ───
+  BEAD: {{ evidence_bead }}
+────────────────
+{% endif %}
+
+═══════════════════════════════════════
+Human approved. Boar recorded.
+═══════════════════════════════════════

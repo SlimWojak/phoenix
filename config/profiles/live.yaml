@@ -1,0 +1,43 @@
+# Phoenix Configuration — Live Trading Profile
+# Usage: load_config("config/profiles/live.yaml")
+#
+# ┌─────────────────────────────────────────────────────────────┐
+# │ DANGER: This profile connects to LIVE IBKR with REAL money │
+# │ Review INV-IBKR-PAPER-GUARD-1 before enabling              │
+# └─────────────────────────────────────────────────────────────┘
+#
+# PLACEHOLDER — Do NOT use until S50 acceptance gate.
+# All secrets come from macOS Keychain (INV-NO-SECRETS-IN-FILES).
+
+ibkr:
+  host: "127.0.0.1"
+  port: 4001          # TWS live trading port (4001 for Gateway, 7496 for TWS)
+  paper_mode: false    # DANGER: live trading
+  timeout_seconds: 30
+  client_id: 1
+  # account_id: loaded at runtime from Keychain (a8ra-ibkr-live)
+
+river:
+  data_path: "~/nex/river.db"
+  refresh_interval_seconds: 30   # Faster refresh for live
+  stale_threshold_hours: 0.5     # Stricter staleness for live
+
+governance:
+  halt_timeout_ms: 50        # INV-HALT-1 (same as paper — non-negotiable)
+  alert_cooldown_seconds: 30 # Faster alerts for live
+  circuit_breaker_threshold: 3  # Lower threshold for live
+  circuit_breaker_timeout_seconds: 120
+
+notification:
+  bundle_window_seconds: 300  # 5 min for live (faster alerts)
+  telegram_enabled: true
+  # telegram_chat_id: set in environment
+  # telegram_bot_token: set in environment (Keychain)
+
+narrator:
+  templates_path: "narrator/templates"
+  emit_receipts: true  # Receipts enabled for live audit trail
+
+cso:
+  knowledge_path: "cso/knowledge"
+  refresh_on_startup: true

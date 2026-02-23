@@ -155,23 +155,29 @@ triggers:
     formula: "Liquidity taken + swept INTO PDA + reversal confirmation"
     components:
       - {name: liquidity_pool, desc: "PDH/PDL/session/swing"}
-      - {name: extension, desc: "5-20 pips (ideal)"}
+      - {name: extension, desc: "Qualitative sweep (ref: foundation.sweep, GAP-7)"}
       - {name: pda_destination, desc: "Swept into HTF PDA"}
       - {name: confirmation, desc: "MSS or displacement"}
-    quality_score:
-      extension: {sweep: 3, tap: 1, displacement: 0}
-      timing: {kz: 3, session: 2, off_session: 1}
-      pda: {premium: 2, standard: 1, none: 0}
-      confirmation: {mss_fvg: 2, mss: 1.5, displacement: 1}
-    grade: {A: ">=8", B: ">=6", C: ">=4", F: "<4"}
+    note: "Quality assessment performed by evaluator based on component presence"
+    components_required:
+      - liquidity_pool
+      - extension (qualitative)
+      - pda_destination
+      - confirmation
     ref: "NEX:L3"
 
   displacement_entry:
     id: "SIG-ENTRY-031"
     name: "Displacement Entry"
-    trigger: "10+ pips in 3-5 bars, bodies >70%, FVG created"
+    trigger: "Qualitative displacement (ref: foundation.displacement)"
+    components:
+      - forceful_exit
+      - structure_removal
+      - fvg_created
+      - one_sided_intent
+      - no_rotation
     validation: "is_valid_displacement == True"
-    ref: "NEX:L6, L0:162-220"
+    ref: "foundation.displacement, L0:162-220"
 
   ltf_mss_entry:
     id: "SIG-ENTRY-032"

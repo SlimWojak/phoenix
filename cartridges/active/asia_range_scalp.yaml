@@ -1,0 +1,129 @@
+# Asia Range Scalp — Cartridge Manifest v2.0 (S51 DRIVESHAFT)
+# Strategy: Mean-reversion scalp on Asia session range sweeps
+# Author: Olya
+# Source: ~/dexter/docs/olya_canon_docs/asia_range_scalp_strategy_FINAL(1).md
+# Overrides: S46 stale values replaced with Olya-validated canonical spec
+
+identity:
+  name: ASIA_RANGE_SCALP
+  version: "2.0.0"
+  author: Olya
+  description: |
+    Mean-reversion scalp on Asia session range sweeps.
+    Pure mean reversion. No daily bias needed.
+    Entry at Candle C close (market order). Set-and-forget.
+  created_at: "2026-02-22T00:00:00Z"
+  methodology_hash: null
+
+scope:
+  pairs: [EURUSD]
+  session_windows:
+    - name: asia_range_definition
+      start: "19:00"
+      end: "00:00"
+      timezone: America/New_York
+      utc_offset_winter: "-05:00"
+      utc_offset_summer: "-04:00"
+    - name: sweep_window
+      start: "00:00"
+      end: "04:00"
+      timezone: America/New_York
+      utc_offset_winter: "-05:00"
+      utc_offset_summer: "-04:00"
+  regime_affinity: ANY
+
+risk_defaults:
+  per_trade_pct: 1.0
+  min_rr: 1.5
+  max_trades_per_session: 1
+  max_daily_trades: 1
+
+cso_integration:
+  drawer_config:
+    # Using S51 Olya-proposed strategy-agnostic aliases
+    # INV-ALIAS-PARSER-BOUNDARY: normalized to canonical at load time
+
+    CONTEXT:
+      htf_bias_required: false
+      daily_bias_required: false
+      asia_range_method: wick_to_wick
+      asia_range_start: "19:00"
+      asia_range_end: "00:00"
+      asia_range_timezone: America/New_York
+      asia_range_max_pips: 30
+      no_trade_if_range_exceeded: true
+
+    MONITORING:
+      sweep_window_start: "00:00"
+      sweep_window_end: "04:00"
+      sweep_window_timezone: America/New_York
+      track_extensions_per_direction: true
+      extension_invalidation_pips: 20
+
+    SETUP:
+      sweep_required: true
+      sweep_extension_min_pips: 1
+      sweep_extension_max_pips: 20
+      sweep_measurement: wick_extreme
+      re_acceptance_required: true
+      re_acceptance_candle: 5min_close_strictly_inside
+      fvg_required: true
+      fvg_timeframe: 5min
+      fvg_min_untouched_pips: 1.0
+      candle_c_strictly_inside: true
+
+    EXECUTION:
+      entry_type: market_order_at_candle_c_close
+      sl_placement: sweep_extreme_plus_buffer
+      sl_buffer_pips: 0.5
+      tp_placement: opposite_asia_boundary_wick
+      rr_pre_validation: true
+      rr_minimum: 1.5
+      position_sizing: fixed_pct_equity
+      risk_pct: 1.0
+
+    MANAGEMENT:
+      management_style: set_and_forget
+      trail_stop: false
+      partial_exits: false
+      re_entry: false
+      scaling: false
+      max_trades_per_session: 1
+      daily_loss_limit_trades: 1
+      session_id_format: "ASIA_{date}"
+
+  gate_requirements:
+    - GATE_ASIA_RANGE_VALID
+    - GATE_SWEEP_DETECTED
+    - GATE_SWEEP_EXTENSION_VALID
+    - GATE_RE_ACCEPTANCE
+    - GATE_FVG_VALID
+    - GATE_CANDLE_C_INSIDE
+    - GATE_RR_VALID
+    - GATE_SESSION_LIMIT
+
+  primitive_set: [FVG, SWEEP, RE_ACCEPTANCE, KZ_TIMING]
+
+research_hooks:
+  hunt_grid_enabled: true
+  cfp_lens_presets:
+    - "P&L when sweep_extension_pips BETWEEN 1 AND 10"
+    - "P&L when sweep_extension_pips BETWEEN 11 AND 20"
+    - "P&L by sweep_direction"
+  calibration_threshold_pct: 5.0
+
+constitutional:
+  invariants_required:
+    - INV-NO-UNSOLICITED
+    - INV-ATTR-CAUSAL-BAN
+    - INV-HALT-1
+    - INV-HARNESS-1
+    - INV-NO-FORMING-CANDLE
+    - INV-BUILDER-PURE-ADAPTER
+    - INV-ALIAS-PARSER-BOUNDARY
+  forbidden_patterns:
+    - "grade"
+    - "score"
+    - "recommend"
+    - "edge concentrates"
+  guard_dog_scan: true

@@ -35,6 +35,9 @@ htmlcov/
 *.swp
 *.swo
 
+# Claude Code local settings (hooks config with paths)
+.claude/settings.local.json
+
 # OS
 .DS_Store
 Thumbs.db
@@ -54,3 +57,19 @@ hive/next_check_note.txt
 logs/*.log
 logs/*.json
 !logs/.gitkeep
+
+# Generated responses (transient, regeneratable)
+responses/
+
+# SLM model files (too large for git)
+slm/models/
+
+# HUD build artifacts
+surfaces/hud/WarBoarHUD/DerivedData/
+surfaces/hud/WarBoarHUD/*.xcuserdata/
+surfaces/hud/WarBoarHUD/build/
+surfaces/hud/state/
+
+# Manifest writer state (generated)
+state/.manifest_seq
+state/manifest.json

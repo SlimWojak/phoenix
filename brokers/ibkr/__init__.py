@@ -21,10 +21,13 @@ IMPORTS: Only within this module (zero leakage)
 from .account import AccountState
 from .config import IBKRConfig, IBKRMode, ReconnectConfig, ReconnectState, ReconnectTracker
 from .connector import ConnectionConfig, IBKRConnector
+from .degradation import DegradationLevel, DegradationManager, TierBlockedError
+from .heartbeat import HeartbeatEmitter, HeartbeatMonitor
 from .mock_client import ChaosMode, MockIBKRClient
 from .orders import Order, OrderResult, OrderStatus, OrderType
 from .positions import Position, PositionQuery
 from .session_bead import SessionBeadData, SessionBeadEmitter, SessionEvent
+from .supervisor import IBKRSupervisor, SupervisorWatchdog
 
 __all__ = [
     # Connector
@@ -53,4 +56,12 @@ __all__ = [
     "SessionBeadData",
     "SessionBeadEmitter",
     "SessionEvent",
+    # S40 Track B: IBKR Resilience
+    "HeartbeatMonitor",
+    "HeartbeatEmitter",
+    "DegradationManager",
+    "DegradationLevel",
+    "TierBlockedError",
+    "IBKRSupervisor",
+    "SupervisorWatchdog",
 ]

@@ -1,0 +1,28 @@
+{# S43: Hunt Result Template — INV-NARRATOR-FACTS-ONLY #}
+{# INV-HUNT-EXHAUSTIVE: All variants shown, no selection #}
+{# MANDATORY_FACTS_BANNER #}
+{% include 'facts_banner.jinja2' %}
+
+## Hunt Result: {{ hypothesis_id }}
+
+**Variants computed:** {{ variant_count }}
+{% if budget_used %}**Budget used:** {{ budget_used }} / {{ budget_max }}{% endif %}
+
+{% if variants %}
+### Variant Results
+
+| Parameters | Result |
+|------------|--------|
+{% for variant in variants %}
+| {{ variant.params }} | {{ variant.result }} |
+{% endfor %}
+{% else %}
+*No variants computed.*
+{% endif %}
+
+{% if receipts_link %}
+📎 [Receipts]({{ receipts_link }})
+{% endif %}
+
+---
+*All variants shown. No selection. You interpret.*

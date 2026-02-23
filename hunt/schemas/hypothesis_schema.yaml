@@ -1,0 +1,160 @@
+# =============================================================================
+# HYPOTHESIS SCHEMA — Human-Framed Questions
+# =============================================================================
+# S38 TRACK A DELIVERABLE
+# Created: 2026-01-29
+#
+# Hypotheses are QUESTIONS, not answers. The system tests, never proposes.
+# Human frames. Machine computes. Human interprets.
+#
+# INVARIANTS:
+#   - INV-NO-UNSOLICITED: Human frames only
+#   - INV-HUNT-METRICS-DECLARED: Metrics mandatory, no defaults
+#   - INV-GRID-DIMENSION-CAP: Max 3 dimensions
+#   - INV-HUNT-DIM-CARDINALITY-CAP: Per-dim soft 100, hard 1000
+# =============================================================================
+
+schema_version: "1.0.0"
+created: "2026-01-29"
+status: "S38_ACTIVE"
+
+# =============================================================================
+# HYPOTHESIS STRUCTURE
+# =============================================================================
+
+hypothesis:
+  hypothesis_id:
+    type: str
+    required: true
+    
+  timestamp:
+    type: datetime
+    required: true
+    
+  # Framing (Human Only)
+  framing:
+    question:
+      type: str
+      required: true
+      description: "The question being tested"
+      example: "Does waiting until 8:30 improve London FVG entries?"
+    source:
+      type: str
+      required: true
+      allowed_values: HUMAN_ONLY
+      description: "Who framed this hypothesis"
+    domain:
+      type: str
+      required: true
+      
+  # Parameters
+  parameters:
+    grid:
+      max_dimensions: 3  # INV-GRID-DIMENSION-CAP
+      dimensions:
+        type: list
+        items:
+          dimension:
+            type: str
+            required: true
+          values:
+            type: list
+            required: true
+          cardinality:
+            type: int
+            computed: true
+            soft_cap: 100
+            hard_cap: 1000
+            
+    fixed:
+      type: list
+      items:
+        name:
+          type: str
+        value:
+          type: any
+          
+  # Metrics (MANDATORY)
+  metrics:
+    evaluate:
+      type: list[str]
+      required: true
+      min_length: 1  # empty = INVALID
+      derived_allowed: false
+      system_additions: forbidden
+      
+  # Constraints
+  constraints:
+    time_range:
+      start:
+        type: datetime
+      end:
+        type: datetime
+    pairs:
+      type: list[str]
+      required: false
+      
+  # Budget
+  budget:
+    max_variants:
+      type: int
+      required: true
+      description: "Human-declared ceiling"
+    estimated_compute:
+      type: str
+      required: false
+      
+  # Status
+  status:
+    approved:
+      type: bool
+      required: true
+      description: "MUST be true before execution"
+    approved_by:
+      type: str
+      required: true
+      description: "Human attribution"
+    approved_at:
+      type: datetime
+      required: true
+
+# =============================================================================
+# FORBIDDEN FIELDS
+# =============================================================================
+
+forbidden_fields:
+  - proposed_by_system
+  - auto_generated
+  - confidence
+  - priority
+  - expected_outcome
+  - recommended_variants
+  - edge_score
+  - derived_metrics
+  - quality_score
+  - ranking
+  - survivors
+
+# =============================================================================
+# SOURCE VALIDATION
+# =============================================================================
+
+source_validation:
+  allowed: HUMAN_ONLY
+  forbidden_sources:
+    - "system"
+    - "athena"
+    - "hunt_engine"
+    - "auto"
+    - "generated"
+
+# =============================================================================
+# DIMENSION CAPS
+# =============================================================================
+
+dimension_caps:
+  max_dimensions: 3
+  per_dimension:
+    soft_cap: 100
+    hard_cap: 1000
+    t2_required_above: 100

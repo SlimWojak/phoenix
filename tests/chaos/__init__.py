@@ -1,1 +1,1 @@
-"""Chaos tests — BUNNY validation suite."""
+# BUNNY Chaos Tests

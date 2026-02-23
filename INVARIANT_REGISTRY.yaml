@@ -1,0 +1,305 @@
+# INVARIANT_REGISTRY.yaml — Canonical Invariant List
+# Source: FORENSIC_AUDIT.md Section 3 (2026-02-23) + S52 additions
+# Status: PROVEN = test evidence, ENFORCED = code enforces, UNTESTED = no test, DESIGNED = spec only
+# Last updated: S52 HARDENING (2026-02-23)
+
+invariants:
+
+  # =========================================================================
+  # SOVEREIGNTY
+  # =========================================================================
+
+  - id: INV-SOVEREIGN-1
+    tier: SOVEREIGNTY
+    domain: governance
+    status: ENFORCED
+    proven_by: governance/tokens.py, governance/t2/approval.py
+    test_refs:
+      - tests/test_halt_blocks_t2_action.py
+    last_verified: S52
+
+  - id: INV-SOVEREIGN-2
+    tier: SOVEREIGNTY
+    domain: governance
+    status: ENFORCED
+    proven_by: governance/t2/approval.py
+    test_refs:
+      - tests/test_halt_blocks_t2_action.py
+    last_verified: S52
+
+  - id: INV-CAPITAL-GATE
+    tier: SOVEREIGNTY
+    domain: execution
+    status: ENFORCED
+    proven_by: execution/halt_gate.py
+    test_refs:
+      - tests/test_halt_before_exec.py
+    last_verified: S52
+
+  - id: INV-SOVEREIGN-ANCHOR
+    tier: SOVEREIGNTY
+    domain: system
+    status: UNTESTED
+    proven_by: null
+    test_refs: []
+    note: "No HSM integration code. Gate 7 scope."
+    last_verified: S52
+
+  # =========================================================================
+  # HALT
+  # =========================================================================
+
+  - id: INV-HALT-1
+    tier: HALT
+    domain: governance
+    status: PROVEN
+    proven_by: governance/halt.py (0.003ms)
+    test_refs:
+      - tests/test_lease/test_halt_override.py
+    last_verified: S52
+
+  - id: INV-HALT-2
+    tier: HALT
+    domain: governance
+    status: PROVEN
+    proven_by: governance/halt.py (22.59ms cascade)
+    test_refs:
+      - tests/test_halt_propagation.py
+    last_verified: S52
+
+  - id: INV-HALT-OVERRIDES-LEASE
+    tier: HALT
+    domain: governance
+    status: PROVEN
+    proven_by: governance/lease.py
+    test_refs:
+      - tests/test_lease/test_halt_override.py
+    last_verified: S52
+
+  - id: INV-GOV-HALT-BEFORE-ACTION
+    tier: HALT
+    domain: execution
+    status: PROVEN
+    proven_by: execution/halt_gate.py
+    test_refs:
+      - tests/test_halt_before_exec.py
+      - tests/test_halt_blocks_t2_action.py
+    last_verified: S52
+
+  # =========================================================================
+  # DATA INTEGRITY
+  # =========================================================================
+
+  - id: INV-BEAD-IMMUTABLE
+    tier: DATA
+    domain: bead_field
+    status: PROVEN
+    proven_by: dexter/bead_field/store/bitemporal.py (SQLite triggers)
+    test_refs:
+      - dexter/bead_field/tests/test_invariants.py
+    last_verified: S52
+
+  - id: INV-BEAD-SIGNED
+    tier: DATA
+    domain: bead_field
+    status: PROVEN
+    proven_by: dexter/bead_field/integrity/signing.py (ML-DSA-65 + ECDSA)
+    test_refs:
+      - dexter/bead_field/tests/test_invariants.py
+    last_verified: S52
+
+  - id: INV-BEAD-TEMPORAL
+    tier: DATA
+    domain: bead_field
+    status: ENFORCED
+    proven_by: dexter/bead_field/schema/core.py (Pydantic model_validator)
+    test_refs: []
+    last_verified: S52
+
+  - id: INV-CONTRACT-1
+    tier: DATA
+    domain: execution
+    status: PROVEN
+    proven_by: execution/replay.py (DeterminismVerifier)
+    test_refs:
+      - tests/test_execution_path.py
+    last_verified: S52
+
+  - id: INV-RIVER-IMMUTABLE
+    tier: DATA
+    domain: river
+    status: ENFORCED
+    proven_by: river/writer.py (write-once parquet, no update path)
+    test_refs: []
+    last_verified: S52
+
+  - id: INV-RIVER-BITEMPORAL
+    tier: DATA
+    domain: river
+    status: ENFORCED
+    proven_by: river/schema.py (RAW_BAR_SCHEMA includes knowledge_time)
+    test_refs: []
+    last_verified: S52
+
+  - id: INV-RIVER-FRESHNESS
+    tier: DATA
+    domain: river
+    status: PROVEN
+    proven_by: cso/market_state_builder.py (RiverStalenessError)
+    test_refs:
+      - tests/test_river_freshness/test_stale_data_refused.py
+      - tests/test_river_freshness/test_cse_provenance.py
+    note: "S52 T3 shipped. Stale data refused at builder + consumer."
+    last_verified: S52
+
+  # =========================================================================
+  # OPERATIONAL
+  # =========================================================================
+
+  - id: INV-STATE-LOCK
+    tier: OPERATIONAL
+    domain: governance
+    status: PROVEN
+    proven_by: governance/lease.py (hash check on transitions)
+    test_refs:
+      - tests/test_lease/test_state_machine.py
+    last_verified: S52
+
+  - id: INV-EXEC-LIFECYCLE-1
+    tier: OPERATIONAL
+    domain: execution
+    status: PROVEN
+    proven_by: execution/positions/states.py, execution/positions/paper.py
+    test_refs:
+      - tests/test_execution_path.py
+    last_verified: S52
+
+  - id: INV-PERISH-BY-DEFAULT
+    tier: OPERATIONAL
+    domain: governance
+    status: ENFORCED
+    proven_by: governance/lease_types.py (RenewalType.PERISH only)
+    test_refs: []
+    last_verified: S52
+
+  - id: INV-NO-GRADES
+    tier: OPERATIONAL
+    domain: cso
+    status: PROVEN
+    proven_by: cso/evaluator.py (no aggregation)
+    test_refs:
+      - tests/test_cso/test_evaluator.py
+    last_verified: S52
+
+  - id: INV-SCALAR-BAN
+    tier: OPERATIONAL
+    domain: cso
+    status: PROVEN
+    proven_by: governance/runtime_assertions.py
+    test_refs:
+      - tests/test_cso/test_evaluator.py
+    last_verified: S52
+
+  # =========================================================================
+  # S52 NEW — SENTINEL / BOUNDS
+  # =========================================================================
+
+  - id: INV-BOUNDS-PASSIVE-1
+    tier: GOVERNANCE
+    domain: governance
+    status: PROVEN
+    proven_by: governance/sentinel.py (BoundsSentinel.intercept)
+    test_refs:
+      - tests/test_sentinel/test_bounds_autofeed.py
+      - tests/test_sentinel/test_sentinel_determinism.py
+    note: "S52 T2. Bounds fire on every state update, not on cron."
+    last_verified: S52
+
+  - id: INV-BOUNDS-HEARTBEAT-1
+    tier: GOVERNANCE
+    domain: governance
+    status: PROVEN
+    proven_by: governance/sentinel.py (SentinelHeartbeatMonitor)
+    test_refs:
+      - tests/test_sentinel/test_deadmans_switch.py
+      - tests/test_sentinel/test_heartbeat_liveness.py
+    note: "S52 T2. External liveness tracking. Silent > threshold → HALT."
+    last_verified: S52
+
+  - id: INV-SENTINEL-LATENCY-1
+    tier: GOVERNANCE
+    domain: governance
+    status: PROVEN
+    proven_by: governance/sentinel.py
+    test_refs:
+      - tests/test_sentinel/test_latency_ceiling.py
+    note: "S52 T2. sentinel_check_latency < 2ms. CTO addendum."
+    last_verified: S52
+
+  - id: INV-CSE-PROVENANCE-1
+    tier: DATA
+    domain: cso
+    status: PROVEN
+    proven_by: cso/consumer.py (CSEValidator provenance check)
+    test_refs:
+      - tests/test_river_freshness/test_cse_provenance.py
+    note: "S52 T3. Three mandatory fields. CTO addendum."
+    last_verified: S52
+
+  # =========================================================================
+  # UNTESTED (from forensic audit)
+  # =========================================================================
+
+  - id: INV-EXECUTION-FIDELITY
+    tier: OPERATIONAL
+    domain: execution
+    status: UNTESTED
+    proven_by: null
+    test_refs: []
+    note: "Intent vs fill delta >50bps alert. No tracking code."
+    last_verified: S52
+
+  - id: INV-BRIDGE-PROMOTION-GATE
+    tier: GOVERNANCE
+    domain: system
+    status: UNTESTED
+    proven_by: null
+    test_refs: []
+    note: "Economy 2→1 bridge not built. Gate 3+ scope."
+    last_verified: S52
+
+  - id: INV-NO-ORPHAN-INSIGHTS
+    tier: DATA
+    domain: bead_field
+    status: UNTESTED
+    proven_by: null
+    test_refs: []
+    note: "All rejections captured + routed to Dream Cycle. No test."
+    last_verified: S52
+
+  - id: INV-COMMITMENT-THRESHOLD
+    tier: DATA
+    domain: bead_field
+    status: UNTESTED
+    proven_by: null
+    test_refs: []
+    note: "commit() bright line. Conceptual only."
+    last_verified: S52
+
+  - id: INV-CHECKPOINT-BEFORE-DEATH
+    tier: OPERATIONAL
+    domain: system
+    status: UNTESTED
+    proven_by: null
+    test_refs: []
+    note: "Context-window checkpoint at 70%/90%. No enforcement."
+    last_verified: S52
+
+  - id: INV-DEPLOYMENT-AUDIT
+    tier: OPERATIONAL
+    domain: system
+    status: UNTESTED
+    proven_by: null
+    test_refs: []
+    note: "ChadBoar canary finding. No deployment config audit."
+    last_verified: S52
