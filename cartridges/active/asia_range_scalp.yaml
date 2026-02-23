@@ -1,21 +1,24 @@
-# Asia Range Scalp — Cartridge Manifest v1.1 (Cabinet Model)
+# Asia Range Scalp — Cartridge Manifest v2.0 (S51 DRIVESHAFT)
 # Strategy: Mean-reversion scalp on Asia session range sweeps
 # Author: Olya
-# Design Spec: CARTRIDGE_AND_LEASE_DESIGN v1.1
+# Source: ~/dexter/docs/olya_canon_docs/asia_range_scalp_strategy_FINAL(1).md
+# Overrides: S46 stale values replaced with Olya-validated canonical spec
 
 identity:
   name: ASIA_RANGE_SCALP
-  version: "1.0.0"
+  version: "2.0.0"
   author: Olya
   description: |
     Mean-reversion scalp on Asia session range sweeps.
-    Requires FVG entry + re-acceptance confirmation.
-  created_at: "2026-01-31T00:00:00Z"
+    Pure mean reversion. No daily bias needed.
+    Entry at Candle C close (market order). Set-and-forget.
+  created_at: "2026-02-22T00:00:00Z"
+  methodology_hash: null
 
 scope:
   pairs: [EURUSD]
   session_windows:
-    - name: asia_definition
+    - name: asia_range_definition
       start: "19:00"
       end: "00:00"
       timezone: America/New_York
@@ -37,49 +40,67 @@ risk_defaults:
 
 cso_integration:
   drawer_config:
-    HTF_BIAS:
-      weekly_bias_required: false
-      daily_bias_required: false
-      session_bias: asia_sweep_direction
-      htf_alignment_minimum: 0
+    # Using S51 Olya-proposed strategy-agnostic aliases
+    # INV-ALIAS-PARSER-BOUNDARY: normalized to canonical at load time
 
-    MARKET_STRUCTURE:
+    CONTEXT:
+      htf_bias_required: false
+      daily_bias_required: false
       asia_range_method: wick_to_wick
       asia_range_start: "19:00"
       asia_range_end: "00:00"
       asia_range_timezone: America/New_York
       asia_range_max_pips: 30
-      mss_required: false
+      no_trade_if_range_exceeded: true
 
-    PREMIUM_DISCOUNT:
+    MONITORING:
+      sweep_window_start: "00:00"
+      sweep_window_end: "04:00"
+      sweep_window_timezone: America/New_York
+      track_extensions_per_direction: true
+      extension_invalidation_pips: 20
+
+    SETUP:
       sweep_required: true
       sweep_extension_min_pips: 1
       sweep_extension_max_pips: 20
-      sweep_direction: [high, low]
-      sweep_extension_high_pips: null
-      sweep_extension_low_pips: null
-      pd_zone_required: false
-
-    ENTRY_MODEL:
+      sweep_measurement: wick_extreme
+      re_acceptance_required: true
+      re_acceptance_candle: 5min_close_strictly_inside
       fvg_required: true
       fvg_timeframe: 5min
-      re_acceptance_required: true
-      re_acceptance_candle: 5min_close_inside
-      limit_order: true
-      entry_type: fvg_retrace
+      fvg_min_untouched_pips: 1.0
+      candle_c_strictly_inside: true
 
-    CONFIRMATION:
-      sl_placement: beyond_sweep_extreme
-      sl_buffer_pips: 2
-      tp_placement: opposite_asia_extreme
-      max_trades_per_session: 1
+    EXECUTION:
+      entry_type: market_order_at_candle_c_close
+      sl_placement: sweep_extreme_plus_buffer
+      sl_buffer_pips: 0.5
+      tp_placement: opposite_asia_boundary_wick
+      rr_pre_validation: true
+      rr_minimum: 1.5
+      position_sizing: fixed_pct_equity
+      risk_pct: 1.0
+
+    MANAGEMENT:
+      management_style: set_and_forget
       trail_stop: false
+      partial_exits: false
+      re_entry: false
+      scaling: false
+      max_trades_per_session: 1
+      daily_loss_limit_trades: 1
+      session_id_format: "ASIA_{date}"
 
   gate_requirements:
-    - GATE_ASIA_RANGE_FORMED
+    - GATE_ASIA_RANGE_VALID
     - GATE_SWEEP_DETECTED
-    - GATE_FVG_VALID
+    - GATE_SWEEP_EXTENSION_VALID
     - GATE_RE_ACCEPTANCE
+    - GATE_FVG_VALID
+    - GATE_CANDLE_C_INSIDE
+    - GATE_RR_VALID
+    - GATE_SESSION_LIMIT
 
   primitive_set: [FVG, SWEEP, RE_ACCEPTANCE, KZ_TIMING]
 
@@ -91,20 +112,15 @@ research_hooks:
     - "P&L by sweep_direction"
   calibration_threshold_pct: 5.0
 
-narrator_overrides:
-  templates:
-    sweep_detected: |
-      Asia {{direction}} swept {{extension_pips}} pips
-      Re-acceptance: {{re_acceptance_status}}
-      FVG: {{fvg_status}}
-
 constitutional:
   invariants_required:
     - INV-NO-UNSOLICITED
     - INV-ATTR-CAUSAL-BAN
     - INV-HALT-1
     - INV-HARNESS-1
-    - INV-NARRATOR-1
+    - INV-NO-FORMING-CANDLE
+    - INV-BUILDER-PURE-ADAPTER
+    - INV-ALIAS-PARSER-BOUNDARY
   forbidden_patterns:
     - "grade"
     - "score"

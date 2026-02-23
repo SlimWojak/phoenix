@@ -5,13 +5,13 @@ River Reader — Read-Only Data Access Layer
 CANONICAL SOURCE OF TRUTH
 Location: phoenix/data/river_reader.py
 Created: 2026-01-27 (PRE-S30)
+S51 AMENDED: Now delegates to DuckDB parquet reader (RIVER_SOURCE=parquet).
+  Legacy SQLite path preserved as fallback (RIVER_SOURCE=legacy).
 
 This module provides READ-ONLY access to River data.
-ROADMAP lines 342-356 are now HISTORICAL REFERENCE.
 
 CRITICAL CONSTRAINTS (GPT + GROK mandate):
-- Physically read-only: Uses read-only database connection
-- No INSERT/UPDATE/DELETE methods exist in this module
+- Physically read-only: No write methods exist in this module
 - Pre-commit hook should verify no write methods added
 
 ALLOWED CALLERS:
@@ -19,6 +19,7 @@ ALLOWED CALLERS:
 - CSO
 - Briefing
 - Shadow
+- Athena
 
 DENIED CALLERS:
 - Execution (uses separate path with T2 gates)
@@ -28,6 +29,7 @@ INVARIANT: INV-RIVER-RO-1 "River reader cannot modify data"
 
 from __future__ import annotations
 
+import os
 import sqlite3
 from datetime import UTC, datetime
 from pathlib import Path
@@ -41,7 +43,10 @@ if TYPE_CHECKING:
 # CONSTANTS
 # =============================================================================
 
-# Default River database location (can be overridden)
+# S51: RIVER_SOURCE controls backend. 'parquet' (default) or 'legacy' (SQLite).
+RIVER_SOURCE = os.environ.get("RIVER_SOURCE", "parquet")
+
+# Legacy SQLite database location
 DEFAULT_RIVER_PATH = Path.home() / "nex" / "river.db"
 
 # Allowed callers for access control
@@ -97,12 +102,11 @@ class RiverReader:
 
         Args:
             caller: Identifier of calling module (for access control)
-            river_path: Path to River database (default: ~/nex/river.db)
+            river_path: Path to River database (default depends on RIVER_SOURCE)
 
         Raises:
             RiverAccessDeniedError: If caller is in DENIED_CALLERS
         """
-        # Access control check
         caller_lower = caller.lower()
         if caller_lower in DENIED_CALLERS:
             raise RiverAccessDeniedError(
@@ -113,6 +117,13 @@ class RiverReader:
         self._caller = caller_lower
         self._river_path = river_path or DEFAULT_RIVER_PATH
         self._conn: sqlite3.Connection | None = None
+
+        # S51: DuckDB parquet reader (new default)
+        self._parquet_reader = None
+        if RIVER_SOURCE == "parquet":
+            from river.reader import RiverReader as ParquetReader
+
+            self._parquet_reader = ParquetReader()
 
     def _get_connection(self) -> sqlite3.Connection:
         """
@@ -166,24 +177,38 @@ class RiverReader:
 
         Returns:
             DataFrame with columns: timestamp, open, high, low, close, volume
+            S51+: Also includes source, knowledge_time, bar_hash, is_ghost
 
         Raises:
             RiverReadError: If query fails
         """
+        # S51: Delegate to DuckDB parquet reader
+        if self._parquet_reader is not None:
+            try:
+                return self._parquet_reader.get_bars(pair, timeframe, start, end)
+            except Exception as e:
+                raise RiverReadError(f"Parquet reader failed: {e}") from e
+
+        # Legacy SQLite path
+        return self._get_bars_legacy(pair, timeframe, start, end)
+
+    def _get_bars_legacy(
+        self,
+        pair: str,
+        timeframe: str,
+        start: datetime,
+        end: datetime,
+    ) -> pd.DataFrame:
+        """Legacy SQLite reader (RIVER_SOURCE=legacy fallback)."""
         import pandas as pd
 
         conn = self._get_connection()
-
-        # Table name convention: pair_timeframe (e.g., EURUSD_1H)
         table_name = f"{pair}_{timeframe}"
 
         try:
-            # SQLite doesn't support parameterized table names
-            # We validate table_name format to prevent injection
             if not self._validate_table_name(table_name):
                 raise RiverReadError(f"Invalid table name format: {table_name}")
 
-            # Table name validated above, SQL injection not possible
             safe_query = f"""
                 SELECT timestamp, open, high, low, close, volume
                 FROM "{table_name}"

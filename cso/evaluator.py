@@ -48,34 +48,66 @@ CONDITIONS_PATH = CSO_ROOT / "knowledge" / "conditions.yaml"
 # =============================================================================
 
 
-@dataclass
+@dataclass(frozen=True)
 class MarketState:
-    """Snapshot of market state for evaluation."""
+    """
+    Immutable snapshot of market state for gate evaluation.
+
+    INV-BUILDER-PURE-ADAPTER: Populated by market_state_builder only.
+    INV-NO-FORMING-CANDLE: All data from closed bars only.
+
+    Fields added in S51 (Asia Scalp) are optional with defaults
+    to maintain backward compatibility with existing evaluator gates.
+    """
 
     pair: str
     timestamp: datetime
-    htf_bias: str | None = None  # "bullish" | "bearish" | "neutral"
+
+    # Drawer 1 / CONTEXT
+    htf_bias: str | None = None
     poi_distance_pips: float | None = None
     current_session: str | None = None
     asia_high: float | None = None
     asia_low: float | None = None
     session_bias: str | None = None
+
+    # Drawer 3 / SETUP
     fvg_count: int = 0
     fvg_direction: str | None = None
     displacement_pips: float | None = None
     recent_sweep: bool = False
     sweep_age_bars: int | None = None
+
+    # Drawer 4 / EXECUTION
     ltf_confirmation: bool = False
     ltf_direction: str | None = None
     entry_model: str | None = None
+
+    # Drawer 5 / MANAGEMENT
     stop_distance_pips: float | None = None
     target_defined: bool = False
     rr_ratio: float | None = None
     partials_defined: bool = False
 
+    # S51 additions — Asia Range Scalp support
+    asia_range_pips: float | None = None
+    asia_range_valid: bool | None = None
+    sweep_direction: str | None = None
+    sweep_extension_pips: float | None = None
+    sweep_target_type: str | None = None
+    asia_high_max_extension_pips: float | None = None
+    asia_low_max_extension_pips: float | None = None
+    re_acceptance: bool | None = None
+    fvg_bull_present: bool = False
+    fvg_bear_present: bool = False
+    fvg_untouched_pips: float | None = None
+    candle_c_inside_range: bool | None = None
+    evaluation_time: datetime | None = None
+    invalid_reason: str | None = None
+
     def compute_hash(self) -> str:
-        """Compute hash of market state."""
-        data = str(self.__dict__).encode("utf-8")
+        """Compute deterministic hash of market state."""
+        data = str(sorted(self.__dict__.items())).encode("utf-8")
         return hashlib.sha256(data).hexdigest()
 
 

@@ -1,6 +1,1 @@
-"""
-Chaos Tests — Phoenix
-=====================
-
-BUNNY adversarial testing.
-"""
+# BUNNY Chaos Tests

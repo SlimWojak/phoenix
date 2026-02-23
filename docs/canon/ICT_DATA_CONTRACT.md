@@ -1,10 +1,10 @@
 # ICT DATA CONTRACT v1.0
 
-**Document:** ICT_DATA_CONTRACT.md  
-**Version:** 1.0.0  
-**Date:** 2026-01-23  
-**Status:** SCHEMA LOCKDOWN — Prerequisite for Mirror Test  
-**Author:** CTO (Opus) via Cursor  
+**Document:** ICT_DATA_CONTRACT.md
+**Version:** 1.0.0
+**Date:** 2026-01-23
+**Status:** SCHEMA LOCKDOWN — Prerequisite for Mirror Test
+**Author:** CTO (Opus) via Cursor
 **Sprint:** 26 Track A Day 0.5
 
 ---
@@ -68,8 +68,8 @@ This means:
 
 ### 3.1 Dukascopy (Historical Backdata)
 
-**Source:** CSV files from Dukascopy tick data, aggregated to 1-minute bars  
-**Coverage:** 2020-11-23 to 2025-11-21 (5 years)  
+**Source:** CSV files from Dukascopy tick data, aggregated to 1-minute bars
+**Coverage:** 2020-11-23 to 2025-11-21 (5 years)
 **Pairs:** EURUSD, GBPUSD, USDJPY, AUDUSD, USDCAD, USDCHF
 
 | Column | Type | Semantics |
@@ -91,8 +91,8 @@ This means:
 
 ### 3.2 IBKR (Live Data)
 
-**Source:** Interactive Brokers Gateway API (`reqHistoricalData`)  
-**Coverage:** 2025-11-22 onwards (real-time append)  
+**Source:** Interactive Brokers Gateway API (`reqHistoricalData`)
+**Coverage:** 2025-11-22 onwards (real-time append)
 **Connection:** Port 4002 (Paper) / 4001 (Live)
 
 | Column | Type | Semantics |
@@ -128,7 +128,7 @@ volume_semantics:
     unit: "ticks"
     reliable: false
     notes: "Negative values are sentinel for 'no data'. Not comparable to traded volume."
-    
+
   ibkr:
     type: "null"
     definition: "IBKR FX historical API does not provide volume for OTC forex"
@@ -244,15 +244,15 @@ mirror_marker_columns = [
     "dealing_range_premium", "dealing_range_discount",
     "ipda_20d_premium", "ipda_20d_discount", "ipda_20d_consolidating",
     "ipda_40d_premium",
-    
+
     # Layer 0.5: HTF Bias
     "in_ote_bull", "in_ote_bear", "in_htf_pda", "counter_trend_allowed",
-    
+
     # Layer 1: Time Sessions
     "is_dst_us", "is_asia_session", "is_london_session", "is_ny_session",
     "is_session_overlap", "is_kz_asia", "is_kz_lokz", "is_kz_nykz",
     "kz_active", "is_manipulation_hour", "is_how_low_day", "is_trading_hours",
-    
+
     # Layer 2: Reference Levels
     "above_weekly_open", "above_midnight_open",
     "above_asia_range", "below_asia_range", "inside_asia_range",
@@ -263,12 +263,12 @@ mirror_marker_columns = [
     "above_pwh", "below_pwl",
     "above_london_high", "below_london_low",
     "above_ny_high", "below_ny_low",
-    
+
     # Layer 3: Sweeps
     "sweep_detected", "sweep_is_valid", "sweep_during_kz", "sweep_during_session",
     "sweep_into_pda", "sweep_mss_confirmed", "sweep_displacement_confirmed",
     "sweep_fvg_created", "sweep_is_setup",
-    
+
     # Layer 5: FVG (all timeframes)
     "in_5m_fvg_up", "in_5m_fvg_down", "5m_fvg_up_created", "5m_fvg_down_created",
     "in_15m_fvg_up", "in_15m_fvg_down", "15m_fvg_up_created", "15m_fvg_down_created",
@@ -278,30 +278,30 @@ mirror_marker_columns = [
     "in_weekly_fvg_up", "in_weekly_fvg_down", "weekly_fvg_up_created", "weekly_fvg_down_created",
     "in_monthly_fvg_up", "in_monthly_fvg_down", "monthly_fvg_up_created", "monthly_fvg_down_created",
     "entry_fvg_present", "htf_fvg_present",
-    
+
     # Layer 6: Displacement
     "displacement_up", "displacement_down", "is_displacement",
-    
+
     # Layer 7: Structure
     "is_higher_high", "is_lower_high", "is_higher_low", "is_lower_low",
     "structure_break_up", "structure_break_down",
-    
+
     # Layer 7B: DXY/SMT
     "smt_bullish", "smt_bearish",
-    
+
     # Layer 8: Premium/Discount
     "in_premium", "in_discount", "in_ote",
-    
+
     # Layer 9: Order Blocks
     "in_15m_ob_bull", "in_15m_ob_bear",
     "in_1h_ob_bull", "in_1h_ob_bear",
     "in_ob_bull", "in_ob_bear",
-    
+
     # Layer 11: Alignment
     "htf_unanimous", "entry_direction_unanimous", "conflicting_signals",
     "htf_supports_long", "htf_supports_short",
     "entry_matches_htf_long", "entry_matches_htf_short",
-    
+
     # Layer 12: MMM
     "mmm_htf_aligned",
 ]
@@ -348,34 +348,80 @@ small_gaps = (time_diffs > pd.Timedelta(minutes=1)) & (
 ### 7.2 Required Phoenix Policy
 
 ```yaml
-gap_policy: FLAG_ONLY
+gap_policy:
+  raw_storage: FLAG_ONLY
+  materialized_view: GHOST_FILL
+  gate_evaluation: SKIP
 
-# Canonical pipeline MUST NOT forward-fill
-# Any gap must produce:
-filled_bar_requirements:
-  is_synthetic: true
-  quality_score: "<1.0"
-  gap_count: "increment"
-  
-# Silent fill of OHLC or markers: PROHIBITED
+# ═══════════════════════════════════════════════════════════════
+# AMENDMENT: S51 RIVER BUILD (2026-02-22)
+# Authorized: G (Sovereign Call S2_GHOST_BAR_HYBRID)
+# Rationale: OWL advisory finding S6 — enrichment pipeline
+#   (asof_merge, L2 groupby, L3 sweep detection) assumes
+#   continuous 1m time series. Missing bars cause SILENT
+#   failures in Asia range calculation, sweep detection,
+#   and swing point computation.
+# ═══════════════════════════════════════════════════════════════
+#
+# RAW STORAGE (parquet files):
+#   Gaps remain gaps. No synthetic bars written.
+#   INV-RIVER-IMMUTABLE: Raw files are write-once, never modified.
+#
+# MATERIALIZED VIEW (RiverReader output):
+#   Ghost bars injected at query time for missing 1m slots:
+#     - close = previous bar's close (carry forward)
+#     - open = high = low = close (flat bar)
+#     - volume = 0 (explicit zero, distinct from IBKR's -1)
+#     - source = 'ghost'
+#     - is_ghost = True (10th column, MATERIALIZED_BAR_SCHEMA only)
+#     - knowledge_time = query execution time
+#     - bar_hash = computed normally (ghost bars are hashable)
+#
+# GATE EVALUATION:
+#   Ghost bars → SKIP (neither PASS nor FAIL).
+#   No gate may trigger a trade signal based on ghost bar data.
+#
+# VOLUME SEMANTICS (cross-reference §4):
+#   Dukascopy: positive tick count (vendor-specific, non-comparable)
+#   IBKR MIDPOINT: -1 (no volume data for MIDPOINT forex)
+#   Ghost bar: 0 (explicit zero — synthetic continuity)
+#   Rule: volume == 0 → ghost bar. volume == -1 → IBKR no-data.
+#         volume > 0 → real tick count. Do NOT compare across vendors.
 ```
 
 ### 7.3 Gap Detection Statistics (Current Data)
 
-From EURUSD raw parquet analysis:
-- Total bars: 1,933,937
-- Gaps > 5 minutes: 303
-- Expected gaps (weekends): ~260 (5 years × 52 weeks)
-- Unexpected gaps: ~43 (require investigation)
+From NEX audit (2026-02-22, all 6 canonical pairs):
+
+| Pair | Total Bars | Gaps >5m | Gaps >1h | Max Gap |
+|------|-----------|----------|----------|---------|
+| EURUSD | 1,960,251 | 323 | 297 | 2d 00:16:00 |
+| GBPUSD | 1,959,793 | 323 | 298 | 2d 00:16:00 |
+| USDJPY | 1,961,417 | 323 | 296 | 2d 00:16:00 |
+| USDCHF | 1,961,257 | 323 | 295 | 2d 00:16:00 |
+| AUDUSD | 1,961,116 | 323 | 296 | 2d 00:16:00 |
+| USDCAD | 1,961,212 | 323 | 297 | 2d 00:16:00 |
+
+All gaps >5m are weekend/holiday gaps. Zero unexpected intra-session gaps detected.
 
 ### 7.4 Gap Handling for Phoenix
 
-| Gap Type | Action |
-|----------|--------|
-| **Weekend** | Expected, no action required |
-| **≤3 bars** | Flag as gap, emit `quality_score < 1.0`, do NOT fill |
-| **>3 bars** | Flag as gap, emit `quality_score = 0.0`, HALT entries |
-| **>1 hour** | CRITICAL — investigate before trading |
+| Gap Type | Raw Storage | Materialized View | Gate Evaluation |
+|----------|------------|-------------------|-----------------|
+| **Weekend** | Gap remains | Ghost bars injected (is_ghost=True) | SKIP |
+| **≤3 bars** | Gap remains | Ghost bars injected (is_ghost=True) | SKIP |
+| **>3 bars** | Gap remains | Ghost bars injected (is_ghost=True) | SKIP |
+| **>1 hour** | Gap remains | Ghost bars injected (is_ghost=True) | SKIP + ALERT |
+
+### 7.5 River Invariants (S51 Addition)
+
+```yaml
+INV-RIVER-BITEMPORAL: "Every bar carries world_time (timestamp) + knowledge_time"
+INV-RIVER-IMMUTABLE: "Raw parquet files are write-once, never modified"
+INV-RIVER-CONTINUOUS: "No gaps in materialized 1m series during trading hours (ghosts flagged)"
+INV-RIVER-SOURCE-TAG: "Every bar carries source provenance forever (dukascopy|ibkr|ghost)"
+INV-RIVER-IBKR-PRIMACY: "Execution venue = data authority for live trading"
+```
 
 ---
 
@@ -466,11 +512,11 @@ EXPECTED_COLUMNS = 472
 def test_schema_hash_matches():
     """Verify enriched parquet matches locked schema."""
     df = pd.read_parquet("nex_lab/data/features/EURUSD_1m_enriched.parquet")
-    
+
     schema = [(col, str(df[col].dtype)) for col in df.columns]
     schema_str = json.dumps(schema, sort_keys=True)
     actual_hash = hashlib.sha256(schema_str.encode()).hexdigest()[:16]
-    
+
     assert actual_hash == EXPECTED_SCHEMA_HASH, \
         f"Schema drift detected! Expected {EXPECTED_SCHEMA_HASH}, got {actual_hash}"
 
@@ -483,10 +529,10 @@ def test_column_count():
 def test_boolean_markers_exist():
     """Verify all mirror markers exist in schema."""
     from phoenix.contracts.mirror_markers import MIRROR_MARKER_COLUMNS
-    
+
     df = pd.read_parquet("nex_lab/data/features/EURUSD_1m_enriched.parquet")
     missing = [col for col in MIRROR_MARKER_COLUMNS if col not in df.columns]
-    
+
     assert not missing, f"Missing mirror markers: {missing}"
 
 def test_timestamp_is_utc():
@@ -529,8 +575,8 @@ def test_timestamp_is_utc():
 
 ---
 
-**Contract Status:** LOCKED  
-**Schema Hash:** `b848ffe506fd3fff`  
+**Contract Status:** LOCKED
+**Schema Hash:** `b848ffe506fd3fff`
 **Mirror Test:** READY TO PROCEED
 
 ---

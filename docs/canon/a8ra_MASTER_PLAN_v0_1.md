@@ -60,7 +60,7 @@ This is the core architectural insight. Everything else follows from it.
 ECONOMY_1 — GOVERNANCE (The Law):
   question: "Is this signed, within the lease, and approved?"
   characteristics: Deterministic, binary, state-machine-driven, permanent
-  substrate: Phoenix governance beads (17+ types, 1618 tests, 240 chaos vectors)
+  substrate: Phoenix governance beads (17+ types, 1716 tests, 264 chaos vectors)
   hardware: M4 Max (current), M3 Ultra control plane (future)
   examples:
     - LEASE_ACTIVATION_BEAD → lease goes live
@@ -274,7 +274,7 @@ THE_DELTA_PRINCIPLE: |
 PHOENIX:
   what: Constitutional trading system (Governance Economy engine)
   status: v0.1 SEALED (2026-02-22)
-  proven: 1615 tests, 150+ invariants frozen, 264 chaos vectors, 20 sprints
+  proven: 1716 tests, 154+ invariants frozen, 264 chaos vectors, 21 sprints (S28-S44, S46-S51)
   architecture:
     governance: Lease/Cartridge system (strategy templating + risk governance)
     execution: 9-state position lifecycle, T2 human gate, IBKR integration
@@ -471,7 +471,7 @@ PHASE_0 — SHIP_PHOENIX_v0.1 ✅ COMPLETE:
   S49: Bootstrap & Deploy — COMPLETE
   S50: SEAL — COMPLETE (2026-02-22, tag v0.1)
   deliverable: Proven governance engine, operational on M4 Max
-  metrics: 1615 tests, 264 chaos vectors, 150+ invariants, 0 failures
+  metrics: 1716 tests, 264 chaos vectors, 154+ invariants, 0 failures
 
 PHASE_1 — BEAD_FIELD_GATE_1 ✅ COMPLETE:
   what: Substrate Ready

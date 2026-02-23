@@ -1,0 +1,262 @@
+# ═══════════════════════════════════════════════════════════════════════════════
+# Enrichment → MarketState Field Mapping
+# S51 DRIVESHAFT — T1 WIRING
+# ═══════════════════════════════════════════════════════════════════════════════
+#
+# INV-BUILDER-PURE-ADAPTER: This file defines the ONLY mapping logic.
+# INV-PIT-JOIN-ONLY: All reads use data indexed < evaluation_time.
+# INV-NO-FORMING-CANDLE: evaluation_time = t_close of latest closed bar.
+
+metadata:
+  version: "1.0.0"
+  primary_timeframe: 5m
+  evaluation_rule: "t_close of latest closed bar on primary_timeframe"
+
+fields:
+
+  # ─── Core Identity ─────────────────────────────────────────────────────────
+
+  pair:
+    source: "runtime_argument"
+    nan_policy: REQUIRED
+
+  timestamp:
+    source: "runtime_argument"
+    nan_policy: REQUIRED
+
+  evaluation_time:
+    source: "computed"
+    rule: "t_close of latest closed 5m bar <= now"
+    nan_policy: REQUIRED
+
+  # ─── HTF Context (Drawer 1 / CONTEXT) ─────────────────────────────────────
+
+  htf_bias:
+    source_columns: [order_flow]
+    source_layer: L4
+    source_timeframe: 5m
+    reduce_function: latest
+    nan_policy: OPTIONAL
+    note: "Latest order_flow value: bullish|bearish|mixed|neutral"
+
+  current_session:
+    source_columns: [session_name]
+    source_layer: L1
+    source_timeframe: 5m
+    reduce_function: latest
+    nan_policy: REQUIRED
+
+  session_bias:
+    source_columns: [order_flow]
+    source_layer: L4
+    source_timeframe: 5m
+    reduce_function: latest
+    nan_policy: OPTIONAL
+
+  # ─── Asia Range (Drawer 1-2 / CONTEXT-MONITORING) ─────────────────────────
+
+  asia_high:
+    source_columns: [asia_high]
+    source_layer: L2
+    source_timeframe: 5m
+    reduce_function: latest
+    nan_policy: REQUIRED
+    note: "Locks at 00:00 NY. Terminal Anchor = 23:55-00:00 bar."
+
+  asia_low:
+    source_columns: [asia_low]
+    source_layer: L2
+    source_timeframe: 5m
+    reduce_function: latest
+    nan_policy: REQUIRED
+
+  asia_range_pips:
+    source_columns: [asia_range_pips]
+    source_layer: L2
+    source_timeframe: 5m
+    reduce_function: latest
+    nan_policy: REQUIRED
+
+  asia_range_valid:
+    source_columns: [asia_range_pips]
+    source_layer: L2
+    source_timeframe: 5m
+    reduce_function: "latest <= 30.0"
+    nan_policy: COMPUTED
+
+  # ─── Sweep Detection (Drawer 2-3 / MONITORING-SETUP) ──────────────────────
+
+  recent_sweep:
+    source_columns: [sweep_detected]
+    source_layer: L3
+    source_timeframe: 5m
+    reduce_function: any_in_window
+    window: 48  # bars (4 hours at 5m)
+    nan_policy: COMPUTED
+
+  sweep_direction:
+    source_columns: [sweep_direction]
+    source_layer: L3
+    source_timeframe: 5m
+    reduce_function: latest_where_true
+    filter_column: sweep_detected
+    nan_policy: OPTIONAL
+
+  sweep_extension_pips:
+    source_columns: [sweep_extension_pips]
+    source_layer: L3
+    source_timeframe: 5m
+    reduce_function: latest_where_true
+    filter_column: sweep_detected
+    nan_policy: OPTIONAL
+
+  sweep_target_type:
+    source_columns: [sweep_target_type]
+    source_layer: L3
+    source_timeframe: 5m
+    reduce_function: latest_where_true
+    filter_column: sweep_detected
+    nan_policy: OPTIONAL
+
+  sweep_age_bars:
+    source_columns: [sweep_detected]
+    source_layer: L3
+    source_timeframe: 5m
+    reduce_function: bars_since_last_true
+    nan_policy: COMPUTED
+
+  # ─── Asia-specific sweep tracking ─────────────────────────────────────────
+
+  asia_high_max_extension_pips:
+    source_columns: [sweep_extension_pips, sweep_target_type]
+    source_layer: L3
+    source_timeframe: 5m
+    reduce_function: "max where sweep_target_type == asia_high in sweep_window"
+    nan_policy: COMPUTED
+
+  asia_low_max_extension_pips:
+    source_columns: [sweep_extension_pips, sweep_target_type]
+    source_layer: L3
+    source_timeframe: 5m
+    reduce_function: "max where sweep_target_type == asia_low in sweep_window"
+    nan_policy: COMPUTED
+
+  # ─── FVG Detection (Drawer 3 / SETUP) ─────────────────────────────────────
+
+  fvg_count:
+    source_columns: [fvg_bull, fvg_bear]
+    source_layer: L6
+    source_timeframe: 5m
+    reduce_function: "sum(fvg_bull | fvg_bear) in recent window"
+    window: 12
+    nan_policy: COMPUTED
+
+  fvg_direction:
+    source_columns: [fvg_bull, fvg_bear]
+    source_layer: L6
+    source_timeframe: 5m
+    reduce_function: latest_fvg_direction
+    nan_policy: OPTIONAL
+
+  fvg_bull_present:
+    source_columns: [fvg_bull]
+    source_layer: L6
+    source_timeframe: 5m
+    reduce_function: any_in_window
+    window: 12
+    nan_policy: COMPUTED
+
+  fvg_bear_present:
+    source_columns: [fvg_bear]
+    source_layer: L6
+    source_timeframe: 5m
+    reduce_function: any_in_window
+    window: 12
+    nan_policy: COMPUTED
+
+  fvg_untouched_pips:
+    source_columns: [fvg_bull_high, fvg_bull_low, fvg_bear_high, fvg_bear_low]
+    source_layer: L6
+    source_timeframe: 5m
+    reduce_function: latest_fvg_gap_size
+    nan_policy: COMPUTED
+
+  # ─── Displacement (Drawer 3 / SETUP) ──────────────────────────────────────
+
+  displacement_pips:
+    source_columns: [displacement_pips]
+    source_layer: L6
+    source_timeframe: 5m
+    reduce_function: latest_where_nonzero
+    nan_policy: OPTIONAL
+
+  # ─── Structure (Drawer 3 / SETUP) ─────────────────────────────────────────
+
+  poi_distance_pips:
+    source_columns: []
+    source_layer: N/A
+    source_timeframe: N/A
+    reduce_function: N/A
+    nan_policy: OPTIONAL
+    note: "Not computed in enrichment. Strategy-specific."
+
+  # ─── Entry (Drawer 4 / EXECUTION) ─────────────────────────────────────────
+
+  ltf_confirmation:
+    source_columns: [structure_confirmed]
+    source_layer: L4
+    source_timeframe: 5m
+    reduce_function: any_in_window
+    window: 6
+    nan_policy: COMPUTED
+
+  ltf_direction:
+    source_columns: [structure_trend]
+    source_layer: L4
+    source_timeframe: 5m
+    reduce_function: latest
+    nan_policy: OPTIONAL
+
+  entry_model:
+    source_columns: []
+    source_layer: N/A
+    reduce_function: N/A
+    nan_policy: OPTIONAL
+    note: "Set by strategy engine, not enrichment."
+
+  # ─── Management (Drawer 5 / MANAGEMENT) ───────────────────────────────────
+
+  stop_distance_pips:
+    source_columns: []
+    source_layer: N/A
+    reduce_function: N/A
+    nan_policy: OPTIONAL
+    note: "Computed by strategy engine from sweep extreme + buffer."
+
+  target_defined:
+    source_columns: []
+    source_layer: N/A
+    reduce_function: N/A
+    nan_policy: OPTIONAL
+    note: "Set by strategy engine."
+
+  rr_ratio:
+    source_columns: []
+    source_layer: N/A
+    reduce_function: N/A
+    nan_policy: OPTIONAL
+    note: "Computed by strategy engine from entry/SL/TP."
+
+  partials_defined:
+    source_columns: []
+    source_layer: N/A
+    reduce_function: N/A
+    nan_policy: OPTIONAL
+    note: "Set by strategy engine. Asia Scalp = False always."
+
+  # ─── Observability ────────────────────────────────────────────────────────
+
+  invalid_reason:
+    source: "computed"
+    rule: "Set when any REQUIRED field is NaN"
+    nan_policy: COMPUTED

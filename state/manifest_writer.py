@@ -3,12 +3,13 @@
 Manifest Writer — HUD Integration Bridge
 =========================================
 
-Sprint: S48 INTEGRATION
+Sprint: S48 INTEGRATION (updated S47 for lease)
 Purpose: Transform Phoenix state files into HUD-readable manifest.json
 
 Reads:
   - state/health.yaml     (system health from health_writer.py)
   - state/orientation.yaml (execution context)
+  - governance.LeaseManager (live lease state)
 
 Writes:
   - state/manifest.json   (HUD v1.1 schema)
@@ -278,11 +279,12 @@ def map_health_to_hud(health_data: dict[str, Any]) -> dict[str, Any]:
 
     # Build HUD-compatible components dict
     # HUD expects exactly: ibkr, river, halt_state, lease, decay
+    lease_color = _get_lease_component_color()
     components = {
         "ibkr": get_comp_color("ibkr"),
         "river": get_comp_color("river"),
         "halt_state": get_comp_color("halt"),
-        "lease": "GREEN",  # Stub - no lease system yet
+        "lease": lease_color,
         "decay": "GREEN",  # Stub - no decay tracking yet
     }
 
@@ -312,6 +314,40 @@ def map_health_to_hud(health_data: dict[str, Any]) -> dict[str, Any]:
         "components": components,
         "heartbeat_age_seconds": heartbeat_age,
     }
+
+
+def _get_lease_component_color() -> str:
+    """
+    Get HUD traffic light color for lease component.
+
+    S47 mapping:
+      ACTIVE → GREEN
+      HALTED → RED
+      EXPIRED → YELLOW
+      ABSENT → GREEN (no lease = no problem)
+    """
+    try:
+        from governance.lease import LeaseManager
+        from governance.lease_types import LeaseState
+
+        manager = LeaseManager()
+        active_sm = manager.active_lease
+
+        if active_sm is None:
+            return "GREEN"  # No lease = no problem
+
+        state = active_sm.state
+        color_map = {
+            LeaseState.DRAFT: "GREEN",
+            LeaseState.ACTIVE: "GREEN",
+            LeaseState.HALTED: "RED",
+            LeaseState.EXPIRED: "YELLOW",
+            LeaseState.REVOKED: "GREEN",
+        }
+        return color_map.get(state, "YELLOW")
+
+    except Exception:
+        return "GREEN"  # Graceful fallback
 
 
 def _calculate_age_seconds(timestamp_str: str) -> int:
@@ -352,6 +388,94 @@ def get_next_seq() -> int:
         return next_seq
     except Exception:
         return 1
+
+
+# ═══════════════════════════════════════════════════════════════════════════
+# LEASE STATE (S47)
+# ═══════════════════════════════════════════════════════════════════════════
+
+
+def get_lease_state() -> dict[str, Any]:
+    """
+    Get current lease state for HUD manifest.
+
+    Returns lease section matching HUD schema:
+      status: ACTIVE | HALTED | EXPIRED | ABSENT
+      strategy: strategy name or null
+      time_remaining: "Xh Ym" or null
+      expires_at: ISO timestamp or null
+
+    S47: INV-HALT-OVERRIDES-LEASE reflected in status
+    """
+    try:
+        from governance.lease import LeaseInterpreter, LeaseManager, LeaseStateMachine
+        from governance.lease_types import LeaseState
+
+        manager = LeaseManager()
+        active_sm = manager.active_lease
+
+        if active_sm is None:
+            return {
+                "status": "ABSENT",
+                "strategy": None,
+                "time_remaining": None,
+                "expires_at": None,
+            }
+
+        lease = active_sm.lease
+        state = active_sm.state
+        interpreter = LeaseInterpreter(active_sm)
+
+        # Map LeaseState to HUD status
+        hud_status_map = {
+            LeaseState.DRAFT: "ABSENT",  # Draft not shown as active
+            LeaseState.ACTIVE: "ACTIVE",
+            LeaseState.HALTED: "HALTED",
+            LeaseState.EXPIRED: "EXPIRED",
+            LeaseState.REVOKED: "ABSENT",  # Revoked = gone
+        }
+        hud_status = hud_status_map.get(state, "ABSENT")
+
+        # Calculate time remaining
+        time_remaining = None
+        if state == LeaseState.ACTIVE:
+            effective_expiry = interpreter.get_effective_expiry()
+            now = dt.now(UTC)
+            if effective_expiry > now:
+                delta = effective_expiry - now
+                total_minutes = int(delta.total_seconds() / 60)
+                time_remaining = _format_duration(total_minutes)
+            else:
+                time_remaining = "0m"
+
+        # Format expires_at
+        expires_at = None
+        if lease.duration.expires_at:
+            expires_at = lease.duration.expires_at.isoformat()
+
+        return {
+            "status": hud_status,
+            "strategy": lease.subject.strategy_ref if lease.subject else None,
+            "time_remaining": time_remaining,
+            "expires_at": expires_at,
+        }
+
+    except ImportError:
+        # Lease system not available (import error)
+        return {
+            "status": "ABSENT",
+            "strategy": None,
+            "time_remaining": None,
+            "expires_at": None,
+        }
+    except Exception:
+        # Graceful fallback on any error
+        return {
+            "status": "ABSENT",
+            "strategy": None,
+            "time_remaining": None,
+            "expires_at": None,
+        }
 
 
 # ═══════════════════════════════════════════════════════════════════════════
@@ -406,8 +530,8 @@ def build_manifest() -> dict[str, Any]:
 
     requires_action: list[dict[str, Any]] = []
 
-    # Build lease section (stub)
-    lease = {"status": "ABSENT", "strategy": None, "time_remaining": None, "expires_at": None}
+    # Build lease section (S47: live from LeaseManager)
+    lease = get_lease_state()
 
     return {
         "meta": meta,

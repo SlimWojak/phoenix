@@ -1,0 +1,20 @@
+{
+	"folders": [
+		{
+			"path": "../../../God_Mode"
+		},
+		{
+			"path": "../.."
+		},
+		{
+			"path": "../../../nex/meridian_gold/enrichment_specs"
+		},
+		{
+			"path": "../../../nex"
+		},
+		{
+			"path": "../../../phoenix-hud"
+		}
+	],
+	"settings": {}
+}

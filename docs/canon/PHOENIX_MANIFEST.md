@@ -23,12 +23,12 @@ status: S47_COMPLETE | POST_S44_FREEZE | CSO_PRODUCTION_READY | S33_P2_BLOCKED (
 block_complete: S35-S44, S47 (CONSTITUTIONAL_CEILING + SLEEP_SAFE + WARBOAR_AWAKENS + TRUST_CLOSURE + FOUNDATION_VALIDATED + LEASE_PROVEN)
 s44_completion_date: 2026-02-04
 s47_completion_date: 2026-02-04
-current_sprint: S49_PENDING (DMG Packaging) | S45 blocked (Olya)
+current_sprint: S51 COMPLETE — DRIVESHAFT (2026-02-22) | S45 blocked (Olya)
 certification: WARBOAR_CERTIFIED | LIVE_GATEWAY_VALIDATED | CSO_PRODUCTION_READY | S44_FOUNDATION_VALIDATED | S47_LEASE_PROVEN
 relationship: Sibling to God_Mode (forge builds tools, Phoenix protects capital)
 sibling_system: Dexter (Sovereign Evidence Refinery — ICT extraction, separate Mac Mini)
 canonical_fate: docs/DEFINITIVE_FATE.yaml
-total_tests: 1618+ (28 xfailed)
+total_tests: 1716 (25 xfailed)
 total_invariants: 111+
 total_chaos_vectors: 240
 gate_glossary: 48 gates mapped
@@ -926,7 +926,7 @@ cat state/orientation.yaml  # if exists
 - "What is current execution_phase?"
 - "Any kill_flags_active?"
 - "What's the last human action bead?"
-- "Which sprint is active?" # S49_PENDING (DMG Packaging) | S45 blocked (Olya)
+- "Which sprint is active?" # S51 COMPLETE — DRIVESHAFT (2026-02-22) | S45 blocked (Olya)
 - "What invariants must this sprint prove?"
 - "What just completed?" # S47 LEASE_IMPLEMENTATION — 118 tests, 6 invariants
 - "Where is the lease code?" # governance/{lease.py, cartridge.py, lease_types.py, insertion.py}

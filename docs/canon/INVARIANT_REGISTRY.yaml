@@ -134,8 +134,8 @@ tier_1_constitutional:
 tier_2_subsystem:
   freeze_method: "All INV-* identifiers in codebase as of SEAL commit are frozen"
   test_proof: "90 test files reference and enforce INV-* identifiers"
-  total_passing: "1618+ tests (28 xfailed, 0 failures)"
-  chaos_vectors: "240/240 PASS"
+  total_passing: "1716 tests (25 xfailed, 0 failures)"
+  chaos_vectors: "264/264 PASS"
 
   module_coverage:
     governance_core: "INV-GOV-*, INV-T2-*, INV-CIRCUIT-*, INV-BACKOFF-*, INV-HEALTH-*, INV-STALE-*, INV-HOOK-*"
@@ -149,7 +149,7 @@ tier_2_subsystem:
     schemas: "INV-CSE-*, INV-HUNT-*, INV-STRUCTURE-*"
 
   invariant_not_individually_enumerated: true
-  reason: "Tests ARE the registry. 90 files, 1618+ assertions. Enumeration is post-v0.1 polish."
+  reason: "Tests ARE the registry. 94 files, 1716 assertions. Enumeration is post-v0.1 polish."
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # TIER 3: METHODOLOGY INVARIANTS — "Olya domain, CSO authority"
@@ -221,5 +221,5 @@ summary:
   tier_2_subsystem: "~95+ (frozen by commit, enforced by 90 test files)"
   tier_3_methodology: 21 (frozen under CSO authority)
   tier_4_mission_control: 17 (enumerated from phoenix-swarm/)
-  total: "150+ invariants frozen"
-  proof: "1618+ tests, 240 chaos vectors, 90 INV-enforcing test files"
+  total: "154+ invariants frozen (150 at v0.1 SEAL + 4 S51 DRIVESHAFT)"
+  proof: "1716 tests, 264 chaos vectors, 94 INV-enforcing test files"

@@ -197,26 +197,49 @@ class DrawerConfig(BaseModel):
     @model_validator(mode="before")
     @classmethod
     def check_drawer_names(cls, data: Any) -> Any:
-        """Reject old-style drawer names with a helpful error listing canonical names."""
+        """
+        Normalize drawer name aliases to canonical enum names at parse boundary.
+
+        INV-ALIAS-PARSER-BOUNDARY: Aliases die here. Never persisted.
+
+        Accepted aliases (S51 Olya-proposed strategy-agnostic names):
+          CONTEXT     → HTF_BIAS
+          MONITORING  → MARKET_STRUCTURE
+          SETUP       → PREMIUM_DISCOUNT
+          EXECUTION   → ENTRY_MODEL
+          MANAGEMENT  → CONFIRMATION
+
+        Legacy aliases (pre-S44):
+          foundation  → HTF_BIAS
+          context     → MARKET_STRUCTURE
+          conditions  → PREMIUM_DISCOUNT
+          entry       → ENTRY_MODEL
+          management  → CONFIRMATION
+        """
         if not isinstance(data, dict):
             return data
-        old_to_new = {
+
+        alias_to_canonical = {
+            # S51 Olya-proposed aliases (strategy-agnostic)
+            "CONTEXT": "HTF_BIAS",
+            "MONITORING": "MARKET_STRUCTURE",
+            "SETUP": "PREMIUM_DISCOUNT",
+            "EXECUTION": "ENTRY_MODEL",
+            "MANAGEMENT": "CONFIRMATION",
+            # Legacy aliases (pre-S44)
             "foundation": "HTF_BIAS",
             "context": "MARKET_STRUCTURE",
             "conditions": "PREMIUM_DISCOUNT",
             "entry": "ENTRY_MODEL",
             "management": "CONFIRMATION",
         }
-        bad_keys = [k for k in data if k in old_to_new]
-        if bad_keys:
-            mapped = ", ".join(f"'{k}' → '{old_to_new[k]}'" for k in bad_keys)
-            canonical = ", ".join(d.value for d in DrawerName)
-            raise ValueError(
-                f"Invalid drawer name(s): {mapped}. "
-                f"Required drawers are: {canonical}. "
-                f"See methodology_template.yaml for reference."
-            )
-        return data
+
+        normalized = {}
+        for key, value in data.items():
+            canonical = alias_to_canonical.get(key, key)
+            normalized[canonical] = value
+
+        return normalized
 
     @model_validator(mode="after")
     def validate_non_empty_drawers(self) -> DrawerConfig:

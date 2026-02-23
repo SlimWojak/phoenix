@@ -126,21 +126,30 @@ class TestDrawerConfig:
         with pytest.raises(ValidationError, match="ENTRY_MODEL"):
             DrawerConfig(**cabinet)
 
-    def test_wrong_drawer_name_rejects(self):
-        """Old-style name 'foundation' instead of 'HTF_BIAS' → helpful error."""
-        bad_cabinet = {
+    def test_legacy_drawer_name_accepted_via_alias(self):
+        """S51: Old-style name 'foundation' now accepted via alias layer (D1)."""
+        legacy_cabinet = {
             "foundation": {"enabled": True},
+            "context": {"enabled": True},
+            "conditions": {"enabled": True},
+            "entry": {"enabled": True},
+            "management": {"enabled": True},
+        }
+        config = DrawerConfig(**legacy_cabinet)
+        assert config.HTF_BIAS == {"enabled": True}
+        assert config.MARKET_STRUCTURE == {"enabled": True}
+
+    def test_truly_invalid_drawer_name_rejects(self):
+        """A name that is NOT a known alias → rejected by extra='forbid'."""
+        bad_cabinet = {
+            "BOGUS_NAME": {"enabled": True},
             "MARKET_STRUCTURE": {"enabled": True},
             "PREMIUM_DISCOUNT": {"enabled": True},
             "ENTRY_MODEL": {"enabled": True},
             "CONFIRMATION": {"enabled": True},
         }
-        with pytest.raises(ValidationError, match="foundation.*HTF_BIAS") as exc_info:
+        with pytest.raises(ValidationError):
             DrawerConfig(**bad_cabinet)
-        error_text = str(exc_info.value)
-        for name in DrawerName:
-            assert name.value in error_text, f"Error should list canonical name {name.value}"
-        assert "methodology_template.yaml" in error_text
 
     def test_extra_drawer_key_rejects(self):
         """Extra key beyond the 5 canonical drawers is rejected (extra=forbid)."""

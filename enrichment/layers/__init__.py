@@ -1,7 +1,7 @@
 """
-Phoenix Enrichment Layers — L1-L6.
+Phoenix Enrichment Layers — L1-L7.
 
-SPRINT: S27.0
+SPRINT: S27.0 (L1-L6), S51 (L7)
 """
 
 from . import (
@@ -11,6 +11,7 @@ from . import (
     l4_structure_breaks,
     l5_order_blocks,
     l6_fvg_imbalances,
+    l7_asia_scalp,
 )
 
 __all__ = [
@@ -20,4 +21,5 @@ __all__ = [
     "l4_structure_breaks",
     "l5_order_blocks",
     "l6_fvg_imbalances",
+    "l7_asia_scalp",
 ]

@@ -1,17 +1,17 @@
 # Phoenix Health State
 # CSO read-only - system health snapshot
-# Updated: 2026-01-30T13:46:09Z
+# Updated: 2026-01-31T08:55:15Z
 
 version: "1.0"
-timestamp: 2026-01-30T13:46:09Z
+timestamp: 2026-01-31T08:55:15Z
 
 overall: DEGRADED
 
 components:
   river:
     status: STALE
-    last_update: 76.0h ago
-    detail: Data stale >76.0h
+    last_update: 95.1h ago
+    detail: Data stale >95.1h
 
   ibkr:
     status: UNKNOWN
@@ -39,7 +39,7 @@ message: "DEGRADED: river"
 
 # For CSO context - natural language OK here
 operator_summary: |
-  River data is stale (76.0h ago).
+  River data is stale (95.1h ago).
   Market scans won't work until refresh.
   IBKR connection unavailable.
   Live trading blocked..

@@ -73,21 +73,22 @@ Key patterns:
 - **File seam architecture**: Intent.yaml → response.md (no tool bloat)
 
 ## Current State
-- **Sprints complete**: 19 (S28-S44, S46-S48)
-- **Tests**: 1618+ passing, 28 xfailed (documented, strict)
-- **Chaos vectors**: 240/240 PASS
-- **Invariants proven**: 111+
+- **Sprints complete**: 21 (S28-S44, S46-S51)
+- **Tests**: 1716 passing, 25 xfailed (documented, strict)
+- **Chaos vectors**: 264/264 PASS
+- **Invariants proven**: 154+
 - **Foundation**: VALIDATED (S44 soak — 0 arch flaws)
-- **Current sprint**: S49 PENDING (DMG Packaging)
-- **Next**: S45 (Research UX — blocked on Olya CSO calibration)
+- **v0.1**: SEALED (S50, 2026-02-22)
+- **S51 DRIVESHAFT**: COMPLETE — first strategy (Asia Range Scalp) wired end-to-end
+- **Next**: S52 CSO_SURFACE (HUD gates, alerts, CSO Claude wiring)
 
-## Sprint Queue (S49-S52 → WARBOAR v0.1)
-| Sprint | Codename | Scope |
-|--------|----------|-------|
-| S49 | DMG_PACKAGING | One-command build, signed DMG, first-run wizard, config migration |
-| S50 | RUNBOOKS_CALIBRATION | Runbooks for ALL states, escalation ladder, CSO calibration prep |
-| S51 | PRO_FLOURISHES | Sound/haptics, OINK easter eggs, session summaries, drift dashboard |
-| S52 | WARBOAR_SEAL | Invariant freeze, constitutional audit, acceptance checklist, handover |
+## Post-v0.1 Sprints
+| Sprint | Codename | Scope | Status |
+|--------|----------|-------|--------|
+| S49 | BOOTSTRAP_AND_DEPLOY | One command + secrets = operational | COMPLETE |
+| S50 | SEAL | Cabinet model v1.1, GPT hardening, invariant freeze, acceptance | v0.1 SEALED |
+| S51 | DRIVESHAFT | Enrichment→evaluator wiring, Asia Scalp end-to-end, drawer aliases | COMPLETE |
+| S52 | CSO_SURFACE | HUD 5-drawer gate display, alerts, CSO Claude wiring | NEXT |
 
 ## Coordination
 - **Claim tasks** via atomic lock protocol (see `~/phoenix-swarm/claiming/README.md`)
