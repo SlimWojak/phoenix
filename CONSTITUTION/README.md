@@ -1,83 +1,53 @@
 # CONSTITUTION/
 
-**Phoenix Constitutional Architecture Graph (CAG)**
+**STATUS: SKELETON**
 
-This directory contains the machine-verifiable structure of Phoenix governance.
+This directory contains the aspirational Constitutional Architecture Graph.
+Currently <5% populated (6 invariant YAMLs, 3 role YAMLs, 1 wiring file).
+
+The canonical invariant list lives in: `/INVARIANT_REGISTRY.yaml`
+Invariants are enforced in code and proven by tests, not by YAML in this directory.
+
+Referenced scripts (`validate_constitution.py`, `blast_radius.py`) do not yet exist.
+
+See: `docs/canon/DRIFT_LOG.md` (DELTA-7) for full disposition.
 
 ---
 
-## Structure
+## What Exists
+
+| Component | Status | Count |
+|-----------|--------|-------|
+| Manifest | Skeleton | 1 file |
+| Modules | Empty (README placeholders) | 0 populated |
+| Invariants | Partial | 6 of 163+ |
+| Roles | Partial | 3 files |
+| Wiring | Minimal | 1 file |
+| Scenarios | Empty | 0 |
+| Environment | Empty | 0 |
+| Dependencies | Empty | 0 |
+| State | Empty | 0 |
+
+## Where Invariants Actually Live
+
+Invariants are **enforced in code** and **proven by tests**:
+
+- **INVARIANT_REGISTRY.yaml** (repo root) — canonical list with status and test refs
+- **governance/** — halt, lease, sentinel, runtime assertions
+- **tests/** — 1690+ tests proving invariant compliance
+- **docs/canon/DRIFT_LOG.md** — documentation vs reality tracking
+
+## Structure (Aspirational)
 
 ```
 CONSTITUTION/
-├── CONSTITUTION_MANIFEST.yaml    # Master registry
-│
-├── modules/          # Organ definitions
-│   └── (river.yaml, cso.yaml, execution.yaml)
-│
-├── seams/            # Inter-module contracts
-│   └── (river_to_cso.yaml, cso_to_execution.yaml)
-│
-├── scenarios/        # Behavioral test scenarios
-│   └── (halt_cascade.yaml, warmup_sequence.yaml)
-│
-├── environment/      # Runtime contexts
-│   └── (dev.yaml, test.yaml, prod.yaml)
-│
-├── roles/            # Agent/human definitions
-│   └── (cto.yaml, sovereign.yaml, worker.yaml)
-│
-├── dependencies/     # External contracts
-│   └── (ibkr.yaml, dukascopy.yaml)
-│
-├── wiring/           # Module topology
-│   └── (halt_propagation.yaml, data_flow.yaml)
-│
-├── invariants/       # Constitutional invariants
-│   └── (halt.yaml, governance.yaml, contract.yaml)
-│
-├── state/            # State machine definitions
-│   └── (cso_warmup.yaml, execution_lifecycle.yaml)
-│
-└── tests/            # Test → invariant mappings
-    └── (invariant_test_map.yaml)
+├── CONSTITUTION_MANIFEST.yaml
+├── invariants/   (6 of 163+ populated)
+├── roles/        (3 populated)
+├── wiring/       (1 populated)
+└── (modules/, seams/, scenarios/, environment/, dependencies/, state/ — empty)
 ```
 
 ---
 
-## Purpose
-
-> "A Constitution is invalid unless an automated test can fail it."
-
-This directory transforms `docs/CONSTITUTION_AS_CODE.md` from human-readable
-law into machine-verifiable structure.
-
----
-
-## Usage
-
-```bash
-# Validate constitution integrity
-python scripts/validate_constitution.py
-
-# Check blast radius of contract change
-python scripts/blast_radius.py --contract ICT_DATA_CONTRACT.md
-
-# Run invariant tests
-pytest tests/ -k "INV-"
-```
-
----
-
-## Status
-
-| Component | Status |
-|-----------|--------|
-| Manifest | Skeleton |
-| Modules | Pending |
-| Invariants | Registered |
-| Tests | Mapped |
-
----
-
-*Sprint 26 — Foundation Proof*
+*S52 Hardening — honest status documented. See DRIFT_LOG DELTA-7.*

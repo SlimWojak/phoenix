@@ -3,9 +3,9 @@
 
 ```yaml
 document: SPRINT_ROADMAP.md
-version: 2.6
+version: 2.8
 date: 2026-02-22
-status: CANONICAL — updated post v0.1 SEAL
+status: CANONICAL — updated post S51 RIVER FOUNDATION
 brand: a8ra (Phoenix is internal codename — see docs/canon/BRAND_IDENTITY.md)
 format: M2M_DENSE
 audience: Advisors (GPT, GROK, OWL, Opus)
@@ -16,8 +16,8 @@ audience: Advisors (GPT, GROK, OWL, Opus)
 ## CURRENT STATE
 
 ```yaml
-current_sprint: NONE — v0.1 SEALED (2026-02-22)
-status: S50_COMPLETE | v0.1_SEALED | BEAD_FIELD_GATE_1_PASS
+current_sprint: S51 COMPLETE — DRIVESHAFT + RIVER FOUNDATION (2026-02-22)
+status: S51_COMPLETE | RIVER_PHASE_1_COMPLETE | v0.1_SEALED | BEAD_FIELD_GATE_1_PASS
 s33_p2: BLOCKED (Olya CSO calibration) — CoE model accepted, not required for v0.1
 
 recent_completions:
@@ -37,14 +37,15 @@ recent_completions:
   s50_completion_date: 2026-02-22   # SEAL — a8ra v0.1
   bead_field_gate_1: 2026-02-22     # 274 tests, 789 Genesis beads
   dgx_spark_arrived: 2026-02-21
+  s51_completion_date: 2026-02-22   # DRIVESHAFT — first strategy wired end-to-end
+  river_phase_1: 2026-02-22         # River Foundation — 11.8M bars, 6 pairs, seam attested
 
-certification: v0.1_SEALED | WARBOAR_CERTIFIED | LIVE_GATEWAY_VALIDATED | CSO_PRODUCTION_READY | S46_CANONICAL | HUD_INTEGRATED | S44_FOUNDATION_VALIDATED | S47_LEASE_PROVEN | MC_v0.2_LOCKED | BEAD_FIELD_GATE_1
+certification: v0.1_SEALED | RIVER_PHASE_1_COMPLETE | WARBOAR_CERTIFIED | LIVE_GATEWAY_VALIDATED | CSO_PRODUCTION_READY | S46_CANONICAL | HUD_INTEGRATED | S44_FOUNDATION_VALIDATED | S47_LEASE_PROVEN | MC_v0.2_LOCKED | BEAD_FIELD_GATE_1 | S51_DRIVESHAFT_DELIVERED
 cumulative:
-  sprints_complete: 20 (S28-S44, S46-S50)
-  tests_passing: 1615
-  xfailed: 22 (documented, strict)
+  sprints_complete: 21 (S28-S44, S46-S51)
+  tests_passing: 1690+ (1665 confirmed, 25 xfailed)
   chaos_vectors: 264/264 PASS
-  invariants_frozen: 150+ (INVARIANT_REGISTRY.yaml)
+  invariants_frozen: 159+ (154 pre-River + 5 INV-RIVER-*)
   bead_types: 17+
   runbooks: 8
   gate_glossary: 48 gates mapped
@@ -974,6 +975,135 @@ deliverables:
 
 ---
 
+## S51: DRIVESHAFT (First Strategy End-to-End)
+
+```yaml
+status: COMPLETE ✓
+completion_date: 2026-02-22
+tests: 50 new (1716 total)
+theme: "Wire the engine to the gearbox. First strategy runs end-to-end."
+target_strategy: ASIA_RANGE_SCALP
+preceded_by: POST-SEAL.AUDIT.001 (PRIMITIVE_READINESS_AUDIT)
+
+tracks:
+  T1_WIRING: COMPLETE (market_state_builder.py — enrichment→evaluator bridge)
+  T2_PRIMITIVES: COMPLETE (l7_asia_scalp.py — RE_ACCEPTANCE, sweep ext, FVG validation)
+  T3_DRAWER_ALIASES: COMPLETE (CONTEXT/MONITORING/SETUP/EXECUTION/MANAGEMENT accepted)
+  T4_EXECUTION: COMPLETE (asia_scalp.py — entry, SL/TP, sizing, session limits)
+  T5_VALIDATION: COMPLETE (50 tests, 0 regressions across 1716 total)
+
+architecture_change: |
+  BEFORE: Enrichment pipeline (L1-L6) and CSO evaluator existed as two disconnected layers.
+  AFTER: market_state_builder.py bridges enrichment DataFrames → frozen MarketState → evaluator.
+  Asia Range Scalp runs end-to-end: IBKR data → enrichment → MarketState → evaluator → setup detection → trade proposal with SL/TP/sizing.
+
+new_files:
+  - cso/market_state_builder.py (frozen dataclass factory, pure adapter)
+  - cso/enrichment_to_state_map.yaml (per-field mapping specification)
+  - enrichment/layers/l7_asia_scalp.py (RE_ACCEPTANCE + Asia primitives + state machine)
+  - execution/asia_scalp.py (trade lifecycle engine)
+  - cartridges/active/asia_range_scalp.yaml (v2.0, rewritten from Olya canonical doc)
+  - tests/test_s51_driveshaft/ (50 tests across 4 files)
+
+modified_files:
+  - cso/evaluator.py (MarketState: frozen, S51 fields added)
+  - governance/lease_types.py (DrawerConfig alias normalization)
+  - enrichment/layers/__init__.py (L7 registration)
+  - tests/test_lease/test_cabinet_validation.py (adapted for alias compatibility)
+
+new_invariants:
+  INV-NO-FORMING-CANDLE: "Never evaluate gates on incomplete bar data"
+  INV-BUILDER-PURE-ADAPTER: "MarketState builder does no scoring, inference, or heuristic"
+  INV-PIT-JOIN-ONLY: "Point-in-time join — only data indexed < evaluation_time visible"
+  INV-ALIAS-PARSER-BOUNDARY: "Drawer name aliases die at YAML parser, never persisted"
+
+decisions_locked:
+  D1: "Compatibility layer for drawer names (NOT true rename)"
+  D6: "Entry type: Market order at Candle C close"
+  D7: "SL buffer: 0.5 pip (0.00005) beyond sweep extreme"
+  D9: "1 trade per Asia session (19:00 NY start)"
+  D10: "Min R:R 1.5"
+  D11: "FVG min 1.0 pip untouched area"
+
+next_candidates:
+  S52_CSO_SURFACE: "HUD 5-drawer gate display, ntfy/Matrix alerts, CSO Claude wiring"
+  ICT_DIRECTIONAL: "Second strategy — HTF bias, IPDA, MMXM, Middleman (proves harness is strategy-agnostic)"
+  DRAWER_TRUE_RENAME: "If aliases prove annoying, staged migration from S51 alias layer"
+```
+
+### Exit Gate
+"Asia Range Scalp runs end-to-end: IBKR data → enrichment → MarketState → evaluator → setup detection → trade proposal with correct SL/TP/sizing. 50 new tests, 0 regressions. 1716 total passing."
+
+---
+
+## S51 RIVER FOUNDATION (Phase 1)
+
+```yaml
+status: COMPLETE ✓
+completion_date: 2026-02-22
+theme: "The epistemic root of Phoenix gets constitutional-grade infrastructure."
+brief: S51_RIVER_BUILD_BRIEF_v1.1.md (CTO authored, Opus reviewed, G signed)
+doctrine: RIVER_SYNTHESIS.md (OWL + GPT + BOAR convergence)
+
+tracks:
+  T0_CAPTURE: DONE (180,840 bars, 6 pairs, IBKR overlap insurance)
+  T1_AUDIT: PASS (6/6 pairs, NEX_AUDIT_REPORT.md)
+  T1B_DUKASCOPY: DESCOPED (NEX data covers full range)
+  T2_WRITER: DONE (RiverWriter hardened, RIVER_ROOT env, volume semantics)
+  T3_BACKFILL: DONE (11.6M bars ingested from NEX, 58 seconds)
+  T4_READER: DONE (DuckDB RiverReader, ghost injection, TF derivation)
+  T5_SEAM: PASS (three-way cross-validation, G signed attestation)
+  T6_CONTRACT: DONE (ICT_DATA_CONTRACT §7.2-7.5 amended)
+  T7_WIRING: DONE (RIVER_SOURCE bridge, 1665 tests pass, zero regressions)
+  T8_STREAMING: BUILT (RiverStreamer, pending live market validation)
+
+surprise_finding: |
+  NEX data extends to Feb 20, 2026 (not Nov 2025 as expected).
+  NEX enrichment pipeline was already refreshing from IBKR.
+  Source boundary: Nov 21/22 2025 (volume flips positive→-1).
+  T1B descoped. Three-way seam validation materialized for free.
+
+new_invariants:
+  INV-RIVER-BITEMPORAL: "Every bar carries world_time + knowledge_time"
+  INV-RIVER-IMMUTABLE: "Raw parquet files are write-once, never modified"
+  INV-RIVER-CONTINUOUS: "No gaps in materialized 1m series (ghosts flagged)"
+  INV-RIVER-SOURCE-TAG: "Every bar carries source provenance forever"
+  INV-RIVER-IBKR-PRIMACY: "Execution venue = data authority for live"
+  INV-RIVER-FRESHNESS: "market_state_builder refuses stale data"
+
+new_files:
+  - river/schema.py (RAW_BAR_SCHEMA, hashing, validation)
+  - river/writer.py (RiverWriter — IBKR → daily parquet)
+  - river/reader.py (RiverReader — DuckDB, ghosts, TF derivation)
+  - river/streamer.py (live 1m → staging JSONL → daily parquet)
+  - river/nex_ingestor.py (NEX → River with source tags)
+  - river/seam.py (three-way reconciliation)
+  - scripts/nex_audit.py (reusable audit tooling)
+
+modified_files:
+  - data/river_reader.py (RIVER_SOURCE bridge)
+  - docs/canon/ICT_DATA_CONTRACT.md (ghost bar amendment)
+
+data:
+  location: "~/phoenix-river/ (RIVER_ROOT env override)"
+  pairs: [EURUSD, GBPUSD, USDJPY, USDCHF, AUDUSD, USDCAD]
+  bars_per_pair: ~1,960,000
+  total_bars: ~11,800,000
+  range: "2020-11-23 → 2026-02-20"
+  partition: "{pair}/{year}/{mm}/{dd}.parquet"
+
+estimate_vs_actual: |
+  Brief estimated 5-6 days. Delivered in 2 days.
+  8 of 8 gates passed. T8 pending live market validation (weekend).
+
+next: S52 CSO_SURFACE (HUD gates, alerts, CSO Claude wiring)
+```
+
+### Exit Gate
+"River Phase 1 operational. 11.8M bars across 6 pairs. Three-way seam validated. Ghost bar hybrid policy live. Enrichment wired to new River. 1665 tests pass, zero regressions. G signed seam attestation."
+
+---
+
 ## PARALLEL TRACKS (Independent of Phoenix Sprint Cadence)
 
 ```yaml
@@ -1500,8 +1630,8 @@ RATIONALE: "Binary states. Rich metadata. GPT wins on state machine, OWL wins on
 ### S43-S50 (Path to v0.1)
 - INV-RESEARCH-RAW-DEFAULT (S45)
 
-**Total: 150+ invariants frozen (INVARIANT_REGISTRY.yaml)**
-**Tests: 1615 passing (22 xfailed)**
+**Total: 154+ invariants frozen (INVARIANT_REGISTRY.yaml)**
+**Tests: 1716 passing (25 xfailed)**
 **Chaos vectors: 264 handled**
 
 ---
@@ -1561,9 +1691,9 @@ s46_design_locked: 2026-01-31
 s47_completion_date: 2026-02-04
 s48_completion_date: 2026-01-31
 
-current_sprint: NONE — v0.1 SEALED (2026-02-22)
+current_sprint: S51 COMPLETE — DRIVESHAFT (2026-02-22)
 
-total_tests: 1615 (22 xfailed)
+total_tests: 1716 (25 xfailed)
 total_bunny_vectors: 264
 total_invariants: 150+ frozen
 total_gates_mapped: 48
@@ -1709,4 +1839,56 @@ parallel_systems: |
   - INV-NO-CORE-REWRITES-POST-S44: ACTIVE
 ```
 
-*S28-S44, S46-S50 COMPLETE. v0.1 SEALED. BEAD_FIELD_GATE_1 PASS. 1615 tests. 264 chaos vectors. 150+ invariants frozen. Both economies shipped same day. 🐗🔥*
+*S28-S44, S46-S52 COMPLETE. v0.1 SEALED + S52 HARDENING. 264 chaos vectors. 163+ invariants. First strategy (Asia Range Scalp) wired end-to-end.*
+
+---
+
+## S52: HARDENING (Post-Audit)
+
+```yaml
+sprint: S52
+codename: HARDENING
+status: COMPLETE
+date: 2026-02-23
+mission: Post-forensic-audit hardening — fix 3 TIER_1 capital-path risks
+
+tracks:
+  T1_KILL_OLD_FSM:
+    status: COMPLETE
+    risk: "RISK-1: Dual position state machine (execution/position.py + execution/positions/)"
+    fix: "execution/position.py → ImportError guard. Paper FSM → execution/positions/paper.py"
+    tests: 4 new (deprecation guard)
+
+  T2_PASSIVE_BOUNDS:
+    status: COMPLETE
+    risk: "RISK-3: Bounds enforcement not auto-fed"
+    fix: "GovernanceSentinel ABC + BoundsSentinel + dead-man's switch"
+    tests: 36 new (autofeed, dead-man, heartbeat, latency ceiling, determinism)
+    invariants: INV-BOUNDS-PASSIVE-1, INV-BOUNDS-HEARTBEAT-1, INV-SENTINEL-LATENCY-1
+
+  T3_FRESHNESS_DEFENSE:
+    status: COMPLETE
+    risk: "RISK-7: River freshness untested"
+    fix: "Staleness tested, CSE provenance mandatory (3 fields), consumer defense-in-depth"
+    tests: 15 new (stale refused, provenance required, stale CSE rejected)
+    invariants: INV-CSE-PROVENANCE-1
+
+  T4_DOC_HONESTY:
+    status: COMPLETE
+    risk: "DELTA-1 through DELTA-12 doc drift"
+    fix: "DRIFT_LOG.md, INVARIANT_REGISTRY.yaml, genesis 981→789, spec language downgrades"
+
+new_modules:
+  - governance/sentinel.py (GovernanceSentinel, BoundsSentinel, SentinelHeartbeatMonitor)
+  - execution/positions/paper.py (relocated 5-state paper broker FSM)
+
+cto_addenda_applied:
+  - External heartbeat (sentinel can't self-report crash)
+  - 2ms latency ceiling (sentinel_check_latency proven < 2ms)
+  - Provenance REQUIRED (3 mandatory fields on every CSE)
+  - Post-fix oracle rerun exit gate
+
+new_tests: 55
+new_invariants: 4
+regressions: 0
+```

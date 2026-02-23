@@ -34,7 +34,8 @@ from datetime import UTC, datetime
 from enum import Enum
 
 from .intent import ExecutionIntent, IntentType
-from .position import Position, PositionRegistry
+from .positions.paper import PaperPosition as Position
+from .positions.paper import PaperPositionRegistry as PositionRegistry
 
 # =============================================================================
 # EXCEPTIONS

@@ -28,7 +28,7 @@ from enum import Enum
 
 from .broker_stub import PaperBrokerStub
 from .intent import Direction, IntentFactory
-from .position import PositionState
+from .positions.paper import PaperPositionState as PositionState
 
 # =============================================================================
 # REPLAY STATE

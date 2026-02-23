@@ -2,13 +2,13 @@
 
 ```yaml
 document: SYSTEM_MANIFEST
-version: 1.1
+version: 1.3
 date: 2026-02-22
-status: CANONICAL — updated post v0.1 SEAL + Bead Field Gate 1
+status: CANONICAL — updated post S51 RIVER FOUNDATION
 purpose: Single M2M orientation for every Claude instance in the a8ra ecosystem
 update_discipline: Any session making a significant decision appends a MANIFEST DELTA
 owner: G (Sovereign Operator)
-supersedes: SYSTEM_MANIFEST v0.1 (Dexter CTO draft)
+supersedes: SYSTEM_MANIFEST v1.2
 ```
 
 ---
@@ -102,19 +102,20 @@ CONNECTIVITY:
 ### 4.1 Phoenix (Constitutional Trading System)
 
 ```yaml
-status: v0.1 SEALED (2026-02-22)
+status: v0.1 SEALED + S52 HARDENING COMPLETE
 repo: phoenix/ (private, tag: v0.1)
-current_sprint: S50 COMPLETE — SEALED
+current_sprint: S52 COMPLETE — POST-AUDIT HARDENING delivered
 
 cumulative_metrics:
-  sprints_complete: 20 (S28-S44, S46-S50)
-  tests_passing: 1615
-  xfailed: 22 (documented, strict)
+  sprints_complete: 22 (S28-S44, S46-S52)
+  tests_passing: 1690+ (exact count from full suite pending confirmation, 55 new in S52)
   chaos_vectors: 264/264 PASS
-  invariants_frozen: 150+ (18 constitutional + 95+ subsystem + 21 methodology + 17 MC)
+  invariants_frozen: 163+ (159 pre-S52 + 4 new: BOUNDS-PASSIVE, BOUNDS-HEARTBEAT, SENTINEL-LATENCY, CSE-PROVENANCE)
   bead_types: 17+
   gates_mapped: 48
   seal_date: 2026-02-22
+  s52_hardening_date: 2026-02-23
+  river_phase_1: COMPLETE (2026-02-22)
 
 architecture:
   governance: |
@@ -124,16 +125,32 @@ architecture:
     Insertion: 8-step protocol with rollback.
     Ceremony: Weekly attestation, PERISH_BY_DEFAULT.
   execution: |
-    9-state position lifecycle. T2 human gate for capital.
+    9-state position lifecycle (canonical: execution/positions/). T2 human gate for capital.
+    Paper broker uses 5-state FSM (execution/positions/paper.py). S52 deprecated execution/position.py.
     IBKR integration (paper mode validated, live ready).
     Halt: <50ms local, <500ms cascade.
+    S51: Asia Range Scalp execution engine (entry, SL/TP, position sizing, session limits).
+    S52: GovernanceSentinel — passive bounds enforcement, <2ms, dead-man's switch.
   cso: |
     5-drawer gate evaluation via cabinet model v1.1 (48 gates).
     Each cartridge carries complete self-contained DrawerConfig.
     Canonical drawers: HTF_BIAS, MARKET_STRUCTURE, PREMIUM_DISCOUNT, ENTRY_MODEL, CONFIRMATION.
+    S51 drawer aliases accepted at parser: CONTEXT/MONITORING/SETUP/EXECUTION/MANAGEMENT.
     methodology_template.yaml as reference (conditions.yaml retained for imports).
     Boolean only (INV-HARNESS-1). No grades, no confidence scores.
     CSE emission with evidence. Multi-pair scan.
+    S51: market_state_builder.py bridges enrichment→evaluator (was gap).
+  river: |
+    RIVER PHASE 1 COMPLETE (S51). Epistemic root of Phoenix — all trading
+    decisions trace to data that flows through the River. Constitutional
+    grade: immutable parquet, bitemporal, source-tagged, seam-attested.
+    See river architecture section below (4.1.1) for full detail.
+  enrichment: |
+    S51: Pipeline now WIRED end-to-end via River (parquet → DuckDB → DataFrame).
+    L1-L6: Production (155 columns from OHLCV via River).
+    L7: Asia Scalp primitives (RE_ACCEPTANCE, sweep extension, FVG validation, state machine).
+    market_state_builder.py: Frozen dataclass factory, pure adapter, point-in-time join.
+    INV-RIVER-FRESHNESS: Refuses stale data (staleness gate in builder).
   monitoring: |
     Heartbeat, semantic health, HUD surface (SwiftUI, <500ms latency).
     manifest_writer.py bridges state to HUD.
@@ -143,16 +160,134 @@ architecture:
     CFP: Conditional fact projector with causal ban (S35).
     Hunt: Exhaustive grid, no survivor ranking (S38).
 
+s51_driveshaft:
+  theme: "Wire the engine to the gearbox. First strategy runs end-to-end."
+  strategy: Asia Range Scalp (mean reversion, no daily bias, set-and-forget)
+  new_components:
+    - cso/market_state_builder.py (enrichment→evaluator bridge)
+    - enrichment/layers/l7_asia_scalp.py (RE_ACCEPTANCE + Asia primitives)
+    - execution/asia_scalp.py (trade lifecycle engine)
+    - cartridges/active/asia_range_scalp.yaml (v2.0, Olya canonical)
+  new_invariants:
+    - INV-NO-FORMING-CANDLE
+    - INV-BUILDER-PURE-ADAPTER
+    - INV-PIT-JOIN-ONLY
+    - INV-ALIAS-PARSER-BOUNDARY
+  next: S52 CSO_SURFACE (HUD gates, alerts, CSO Claude wiring)
+
+river_phase_1:
+  status: COMPLETE (2026-02-22)
+  theme: "The epistemic root of Phoenix. All trading decisions trace to River data."
+  doctrine: RIVER_SYNTHESIS.md (3-advisor convergence, G-locked)
+  seam_attestation: SIGNED (G, 2026-02-22, three-way validated)
+
+  purpose: |
+    The River is Phoenix's market data foundation — immutable, bitemporal,
+    source-tagged parquet files queried via DuckDB. Every enrichment column,
+    every gate evaluation, every trade proposal traces back to River bars.
+    "River is the epistemic root of Phoenix" (GPT advisor). Pollute it,
+    Phoenix dies. Constitutional infrastructure, not plumbing.
+
+  data_flow: |
+    Dukascopy (5yr history, 2020-11 to 2025-11) ──┐
+                                                    ├──→ Daily Parquet Files
+    IBKR Historical (reqHistoricalData, ~30 days) ──┤    ~/phoenix-river/{pair}/{year}/{mm}/{dd}.parquet
+                                                    │
+    IBKR Live (reqRealTimeBars, 1m streaming) ──────┘
+        → Staging JSONL → Daily Parquet (at 17:00 NY forex day close)
+                    │
+                    ▼
+    DuckDB Query Layer (read-only, SQL over parquet glob)
+        → Ghost bar injection (is_ghost=True for gaps)
+        → Timeframe derivation (1m → 5m/15m/1H/4H/1D)
+        → Enrichment L1-L7 → MarketState → Gate Evaluation
+
+  schema:
+    RAW_BAR_SCHEMA: |
+      9 columns written to parquet (write-once, never modified):
+      timestamp (WT, UTC), open, high, low, close, volume,
+      source (dukascopy|ibkr), knowledge_time (KT, UTC), bar_hash (sha256)
+    MATERIALIZED_BAR_SCHEMA: |
+      10 columns returned by RiverReader (RAW + is_ghost):
+      Ghost bars injected at query time for missing 1m slots.
+      close=prev_close, volume=0, source='ghost', is_ghost=True.
+
+  volume_semantics: |
+    volume > 0  → real tick count (Dukascopy)
+    volume = -1 → IBKR MIDPOINT (no tick data for forex midpoint)
+    volume = 0  → ghost bar (synthetic continuity, never in raw parquet)
+    Three distinct states. Do NOT compare across vendors.
+
+  ghost_bar_policy: |
+    Raw parquet: gaps remain gaps (FLAG_ONLY, per ICT_DATA_CONTRACT §7.2)
+    Materialized view: ghost bars injected (is_ghost=True, volume=0, source='ghost')
+    Gate evaluation: ghost bars → SKIP (neither PASS nor FAIL)
+    Rationale: enrichment pipeline (asof_merge, L2 groupby) requires continuous 1m series.
+
+  bitemporal_model: |
+    Every bar carries two timestamps:
+      world_time (WT): When the bar occurred in the market (timestamp column)
+      knowledge_time (KT): When Phoenix first learned this bar existed
+    Historical ingestion: KT = script_run_timestamp
+    Live streaming: KT = IBKR callback received_timestamp
+    Prevents temporal hallucination: backfilled bars don't "exist" at T-0 in backtests.
+
+  source_boundary: |
+    Dukascopy: 2020-11-23 to 2025-11-21 (positive tick volume, Sunday open 00:00 UTC)
+    IBKR: 2025-11-22 onwards (volume=-1, Sunday open ~22:15 UTC)
+    Boundary is razor-sharp across all 6 pairs (T1 audit confirmed).
+
+  seam_attestation: |
+    Three-way cross-validation (unprecedented — wasn't in original brief):
+    1. Dukascopy→IBKR at source boundary (Nov 21/22) — price continuity PASS
+    2. NEX-IBKR vs T0-IBKR in overlap zone (Jan 18→Feb 20) — 99.3% exact match
+    3. Full River continuity — ~1.96M bars per pair, no unexpected gaps
+    G signed RIVER_SEAM_ATTESTATION 2026-02-22.
+    Report: docs/build_docs/RIVER_SEAM_REPORT.md
+
+  health_monitoring: |
+    RIVER_HEALTH_REPORT: Daily automated integrity check (gap count, ghost count,
+      staleness, hash sample verification, source distribution, seam zone)
+    Streamer heartbeat: ~/phoenix-river/.heartbeat (updated every bar, stale > 2min = alert)
+    INV-RIVER-FRESHNESS: market_state_builder refuses data older than threshold
+    Real-time gap alert: consecutive ghost-eligible gaps during trading → immediate alert
+
+  canonical_pairs: [EURUSD, GBPUSD, USDJPY, USDCHF, AUDUSD, USDCAD]
+  partition: "~/phoenix-river/{pair}/{year}/{mm}/{dd}.parquet (RIVER_ROOT env override)"
+  data_volume: "~1.96M bars per pair (5.3 years), ~11.8M bars total"
+
+  invariants:
+    INV-RIVER-BITEMPORAL: "Every bar carries world_time + knowledge_time"
+    INV-RIVER-IMMUTABLE: "Raw parquet files are write-once, never modified"
+    INV-RIVER-CONTINUOUS: "No gaps in materialized 1m series (ghosts flagged)"
+    INV-RIVER-SOURCE-TAG: "Every bar carries source provenance forever"
+    INV-RIVER-IBKR-PRIMACY: "Execution venue = data authority for live"
+    INV-RIVER-FRESHNESS: "market_state_builder refuses stale data"
+
+  code:
+    new_files:
+      - "river/schema.py (RAW_BAR_SCHEMA, hashing, validation, get_river_root)"
+      - "river/writer.py (RiverWriter — IBKR → daily parquet)"
+      - "river/reader.py (RiverReader — DuckDB, ghost injection, TF derivation)"
+      - "river/streamer.py (RiverStreamer — live 1m → staging → daily)"
+      - "river/nex_ingestor.py (NEX → River migration with source tags)"
+      - "river/seam.py (three-way seam reconciliation)"
+    modified_files:
+      - "data/river_reader.py (RIVER_SOURCE bridge — parquet default, legacy fallback)"
+      - "docs/canon/ICT_DATA_CONTRACT.md (§7.2-7.5 ghost bar amendment + invariants)"
+
 key_blockers:
   s45: BLOCKED (Olya CSO calibration — CoE model accepted, not required for v0.1)
   rule: INV-NO-CORE-REWRITES-POST-S44 ACTIVE
   note: v0.1 shipped without S45. S45 is post-v0.1 enhancement.
 
 integration_with_bead_field:
-  pattern: Projection, not participation (proven in S48 HUD)
+  status: DESIGNED_NOT_BUILT (Gate 3+)
+  pattern: Projection, not participation (proven in S48 HUD for state projection)
   mechanism: Phoenix governance events → Bridge → FACT beads in analytical store
   phoenix_change: Minimal (emit, bridge enriches)
   timeline: Post Phoenix v0.1, post Bead Field Gate 1
+  note: "Bridge code does not exist. Phoenix and Dexter are currently isolated. See DRIFT_LOG DELTA-9."
 ```
 
 ### 4.2 Dexter (Sovereign Evidence Refinery)
@@ -220,6 +355,16 @@ INV-CAPITAL-GATE: "No live execution without human T2 approval"
 ```yaml
 INV-BRIDGE-PROMOTION-GATE: "Economy 2→1 only via validated SKILL beads"
 INV-DEXTER-ALWAYS-CLAIM: "All Dexter output enters Phoenix as CLAIM, never FACT"
+```
+
+### River
+```yaml
+INV-RIVER-BITEMPORAL: "Every bar carries world_time + knowledge_time"
+INV-RIVER-IMMUTABLE: "Raw parquet files are write-once, never modified"
+INV-RIVER-CONTINUOUS: "No gaps in materialized 1m series (ghosts flagged)"
+INV-RIVER-SOURCE-TAG: "Every bar carries source provenance forever"
+INV-RIVER-IBKR-PRIMACY: "Execution venue = data authority for live"
+INV-RIVER-FRESHNESS: "market_state_builder refuses stale data"
 ```
 
 ### Data Integrity
@@ -291,6 +436,10 @@ DEC-PQC-FOUNDATIONAL: "Software-first signing. TEE additional."
 DEC-TWO-ECONOMIES: "Governance and analytical beads = separate systems + one-way bridge"
 DEC-PROJECTION: "Phoenix projects into Bead Field. Not vice versa."
 DEC-RIVER-INTERNAL: "River stays Phoenix-internal. Event bus is swarm-level."
+DEC-RIVER-DUAL-SOURCE: "Dukascopy (history) + IBKR (recent + live). Seam attested by G."
+DEC-RIVER-PARQUET-DUCKDB: "Immutable parquet (daily partition) + DuckDB query layer."
+DEC-RIVER-GHOST-HYBRID: "Raw = FLAG_ONLY. Materialized = ghost bars (is_ghost=True). Gates = SKIP."
+DEC-RIVER-BITEMPORAL: "Every bar has WT + KT. Prevents temporal hallucination in backtesting."
 DEC-COE: "Olya validates (recognition), not extracts (recall)"
 DEC-PHYSICS-EXPERIMENT: "Bead Field = physics experiment, not log"
 ```
@@ -333,6 +482,26 @@ PLANNED: [BRIDGE_SPEC.md, REFINERY_CONTRACT.yaml, PULSE_OPERATIONS.md]
 - date: 2026-02-22
   office: CTO_SYNTHESIS
   change: "v1.1. Phoenix v0.1 SEALED. Bead Field Gate 1 PASS. DGX arrived. Metrics updated. Cabinet model v1.1. Doc refs corrected."
+
+- date: 2026-02-22
+  office: OPUS_CURSOR
+  change: |
+    v1.3. River Phase 1 COMPLETE. Full river architecture section (4.1.1).
+    6 INV-RIVER-* invariants. 4 River decisions. 11.8M bars ingested.
+    Three-way seam validation (Dukascopy × NEX-IBKR × T0-IBKR).
+    Seam attestation signed by G. ICT_DATA_CONTRACT amended.
+    Tests: 1665 pass, 25 xfailed, zero regressions.
+
+- date: 2026-02-23
+  office: OPUS_CURSOR
+  change: |
+    v1.4. S52 HARDENING. Post-forensic-audit hardening sprint.
+    T1: Dual FSM killed — execution/position.py deprecated, canonical at execution/positions/.
+    T2: GovernanceSentinel — passive bounds, dead-man's switch, <2ms proven.
+    T3: Freshness defense — stale data refused, CSE provenance mandatory (3 fields).
+    T4: Doc honesty — DRIFT_LOG (12 deltas), INVARIANT_REGISTRY (28 entries), genesis 981→789.
+    55 new tests. 4 new invariants. All CTO addenda applied.
+    New modules: governance/sentinel.py, execution/positions/paper.py.
 
 # --- APPEND BELOW ---
 ```

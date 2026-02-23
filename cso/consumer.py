@@ -226,6 +226,36 @@ class CSEValidator:
         elif len(evidence_hash) != 64:
             warnings.append(f"evidence_hash should be 64 chars (SHA256), got {len(evidence_hash)}")
 
+        # S52 T3 — INV-CSE-PROVENANCE-1: River provenance REQUIRED
+        provenance_fields = [
+            "river_latest_bar_timestamp",
+            "river_knowledge_time",
+            "river_bar_hash_sample",
+        ]
+        for pf in provenance_fields:
+            val = cse.get(pf)
+            if val is None or (isinstance(val, str) and val == ""):
+                errors.append(f"Missing required provenance field: {pf}")
+
+        # S52 T3 — INV-CSE-FRESHNESS-1: Reject stale CSE at consumer (defense-in-depth)
+        river_kt = cse.get("river_knowledge_time")
+        if isinstance(river_kt, str):
+            try:
+                from datetime import UTC
+                from datetime import datetime as dt_cls
+
+                kt_parsed = dt_cls.fromisoformat(river_kt)
+                if kt_parsed.tzinfo is None:
+                    kt_parsed = kt_parsed.replace(tzinfo=UTC)
+                now = dt_cls.now(UTC)
+                staleness_minutes = (now - kt_parsed).total_seconds() / 60
+                if staleness_minutes > 10:
+                    errors.append(
+                        f"CSE river_knowledge_time is stale: {staleness_minutes:.1f}min old"
+                    )
+            except (ValueError, TypeError):
+                warnings.append("river_knowledge_time could not be parsed as ISO datetime")
+
         return ValidationResult(
             valid=len(errors) == 0,
             errors=errors,
