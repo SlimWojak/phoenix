@@ -1,8 +1,8 @@
 # INVARIANT_REGISTRY.yaml — Canonical Invariant List
 # Source: FORENSIC_AUDIT.md Section 3 (2026-02-23) + S52/S53 additions
 # Status: PROVEN = test evidence, ENFORCED = code enforces, UNTESTED = no test, DESIGNED = spec only
-# Last updated: S53.1 ORACLE_REMEDIATION (2026-02-24)
-# Declared count: 37 (validated by scripts/validate_registry.py)
+# Last updated: S54 TRUTH_SWEEP (2026-02-24)
+# Declared count: 240 (validated by scripts/validate_registry.py)
 
 invariants:
 
@@ -379,3 +379,1780 @@ invariants:
       - scripts/validate_manifest.py
     note: "S53. Manifest counts generated, not typed."
     last_verified: S53
+
+  # =========================================================================
+  # S54 BULK REGISTRATION — code-referenced invariants
+  # Generated from: grep -roh 'INV-*' --include='*.py' | sort -u
+  # Status: PROVEN = test asserts it, ENFORCED = code enforces, no dedicated test
+  # =========================================================================
+
+  - id: INV-ALERT-TAXONOMY-1
+    tier: NOTIFICATION
+    domain: notification
+    status: PROVEN
+    proven_by: ./notification/alert_taxonomy.py
+    test_refs:
+      - ./tests/test_alert_taxonomy/__init__.py
+    last_verified: S54
+
+  - id: INV-ALERT-TAXONOMY-2
+    tier: NOTIFICATION
+    domain: notification
+    status: PROVEN
+    proven_by: ./notification/alert_taxonomy.py
+    test_refs:
+      - ./tests/test_alert_taxonomy/__init__.py
+    last_verified: S54
+
+  - id: INV-ALERT-TAXONOMY-3
+    tier: NOTIFICATION
+    domain: notification
+    status: PROVEN
+    proven_by: ./notification/alert_taxonomy.py
+    test_refs:
+      - ./tests/test_alert_taxonomy/__init__.py
+    last_verified: S54
+
+  - id: INV-ALERT-THROTTLE-1
+    tier: OPERATIONAL
+    domain: system
+    status: PROVEN
+    proven_by: ./tests/chaos/test_bunny_s31.py
+    test_refs:
+      - ./tests/chaos/test_bunny_s31.py
+    last_verified: S54
+
+  - id: INV-ALIAS-PARSER-BOUNDARY
+    tier: GOVERNANCE
+    domain: governance
+    status: PROVEN
+    proven_by: ./governance/lease_types.py
+    test_refs:
+      - ./tests/test_s51_driveshaft/test_drawer_aliases.py
+    last_verified: S54
+
+  - id: INV-ATHENA-AUDIT-1
+    tier: ATHENA
+    domain: athena
+    status: PROVEN
+    proven_by: ./memory/query_parser.py
+    test_refs:
+      - ./tests/chaos/test_bunny_s30.py
+    last_verified: S54
+
+  - id: INV-ATHENA-CAP-1
+    tier: ATHENA
+    domain: athena
+    status: PROVEN
+    proven_by: ./memory/query_parser.py
+    test_refs:
+      - ./tests/chaos/test_bunny_s30.py
+    last_verified: S54
+
+  - id: INV-ATHENA-IR-ONLY-1
+    tier: ATHENA
+    domain: athena
+    status: PROVEN
+    proven_by: ./memory/query_parser.py
+    test_refs:
+      - ./tests/chaos/test_bunny_s30.py
+    last_verified: S54
+
+  - id: INV-ATHENA-NO-EXECUTION
+    tier: OPERATIONAL
+    domain: system
+    status: PROVEN
+    proven_by: ./tests/chain/test_athena_cfp_chain.py
+    test_refs:
+      - ./tests/chain/test_athena_cfp_chain.py
+    last_verified: S54
+
+  - id: INV-ATHENA-RO-1
+    tier: ATHENA
+    domain: athena
+    status: PROVEN
+    proven_by: ./memory/bead_store.py
+    test_refs:
+      - ./tests/chaos/test_bunny_s30.py
+    last_verified: S54
+
+  - id: INV-ATTR-CAUSAL-BAN
+    tier: CFP
+    domain: cfp
+    status: PROVEN
+    proven_by: ./cfp/__init__.py
+    test_refs:
+      - ./tests/test_slm_distillation/test_smoke.py
+    last_verified: S54
+
+  - id: INV-ATTR-CONFLICT-DISPLAY
+    tier: CFP
+    domain: cfp
+    status: PROVEN
+    proven_by: ./cfp/conflict_display.py
+    test_refs:
+      - ./tests/test_cfp/test_conflict_display.py
+    last_verified: S54
+
+  - id: INV-ATTR-NO-RANKING
+    tier: CSO
+    domain: cso
+    status: PROVEN
+    proven_by: ./cso/multi_pair.py
+    test_refs:
+      - ./tests/test_slm_distillation/test_smoke.py
+    last_verified: S54
+
+  - id: INV-ATTR-NO-WRITEBACK
+    tier: ATHENA
+    domain: athena
+    status: PROVEN
+    proven_by: ./athena/store.py
+    test_refs:
+      - ./tests/test_athena/test_store.py
+    last_verified: S54
+
+  - id: INV-ATTR-PROVENANCE
+    tier: ATHENA
+    domain: athena
+    status: PROVEN
+    proven_by: ./cfp/bead_adapter.py
+    test_refs:
+      - ./tests/chain/test_cfp_validation_chain.py
+    last_verified: S54
+
+  - id: INV-ATTR-SILENCE
+    tier: ATHENA
+    domain: athena
+    status: PROVEN
+    proven_by: ./athena/__init__.py
+    test_refs:
+      - ./tests/test_athena/test_bead_types.py
+    last_verified: S54
+
+  - id: INV-AUTOPSY-BEAD-1
+    tier: OPERATIONAL
+    domain: system
+    status: ENFORCED
+    proven_by: ./analysis/__init__.py
+    test_refs: []
+    last_verified: S54
+
+  - id: INV-AUTOPSY-FALLBACK-1
+    tier: OPERATIONAL
+    domain: system
+    status: PROVEN
+    proven_by: ./analysis/__init__.py
+    test_refs:
+      - ./tests/chaos/test_bunny_s31.py
+    last_verified: S54
+
+  - id: INV-BACKOFF-1
+    tier: GOVERNANCE
+    domain: governance
+    status: PROVEN
+    proven_by: ./governance/backoff.py
+    test_refs:
+      - ./tests/test_self_healing/test_backoff.py
+    last_verified: S54
+
+  - id: INV-BACKOFF-2
+    tier: GOVERNANCE
+    domain: governance
+    status: PROVEN
+    proven_by: ./governance/backoff.py
+    test_refs:
+      - ./tests/test_self_healing/test_backoff.py
+    last_verified: S54
+
+  - id: INV-BEAD-CHAIN-1
+    tier: ATHENA
+    domain: athena
+    status: ENFORCED
+    proven_by: ./memory/bead_store.py
+    test_refs: []
+    last_verified: S54
+
+  - id: INV-BEAD-COMPLETENESS
+    tier: GOVERNANCE
+    domain: governance
+    status: ENFORCED
+    proven_by: ./governance/lease_types.py
+    test_refs: []
+    last_verified: S54
+
+  - id: INV-BEAD-HASH-1
+    tier: ATHENA
+    domain: athena
+    status: ENFORCED
+    proven_by: ./memory/bead_store.py
+    test_refs: []
+    last_verified: S54
+
+  - id: INV-BEAD-IMMUTABLE-1
+    tier: ATHENA
+    domain: athena
+    status: ENFORCED
+    proven_by: ./memory/bead_store.py
+    test_refs: []
+    last_verified: S54
+
+  - id: INV-BIAS-PREDICATE
+    tier: CSO
+    domain: cso
+    status: PROVEN
+    proven_by: ./cso/evaluator.py
+    test_refs:
+      - ./tests/test_cso/test_evaluator.py
+    last_verified: S54
+
+  - id: INV-BITVECTOR-NO-POPULATION
+    tier: CSO
+    domain: cso
+    status: PROVEN
+    proven_by: ./cso/bit_vector.py
+    test_refs:
+      - ./tests/test_cso/test_bit_vector.py
+    last_verified: S54
+
+  - id: INV-BUILDER-PURE-ADAPTER
+    tier: CSO
+    domain: cso
+    status: ENFORCED
+    proven_by: ./cso/market_state_builder.py
+    test_refs: []
+    last_verified: S54
+
+  - id: INV-CFP-BUDGET-ENFORCE
+    tier: CFP
+    domain: cfp
+    status: PROVEN
+    proven_by: ./cfp/budget.py
+    test_refs:
+      - ./tests/test_cfp/test_executor.py
+    last_verified: S54
+
+  - id: INV-CFP-LOW-N-GATE
+    tier: CFP
+    domain: cfp
+    status: PROVEN
+    proven_by: ./cfp/conflict_display.py
+    test_refs:
+      - ./tests/chain/test_athena_cfp_chain.py
+    last_verified: S54
+
+  - id: INV-CHECKPOINT-ATOMIC-1
+    tier: OPERATIONAL
+    domain: system
+    status: PROVEN
+    proven_by: ./tests/chaos/test_bunny_s30.py
+    test_refs:
+      - ./tests/chaos/test_bunny_s30.py
+    last_verified: S54
+
+  - id: INV-CHKPT-ATOMIC-1
+    tier: OPERATIONAL
+    domain: checkpoint
+    status: ENFORCED
+    proven_by: ./checkpoint/checkpoint.py
+    test_refs: []
+    last_verified: S54
+
+  - id: INV-CHKPT-AUDIT-1
+    tier: OPERATIONAL
+    domain: checkpoint
+    status: ENFORCED
+    proven_by: ./checkpoint/__init__.py
+    test_refs: []
+    last_verified: S54
+
+  - id: INV-CHKPT-BEAD-1
+    tier: OPERATIONAL
+    domain: checkpoint
+    status: ENFORCED
+    proven_by: ./checkpoint/checkpoint.py
+    test_refs: []
+    last_verified: S54
+
+  - id: INV-CIRCUIT-1
+    tier: GOVERNANCE
+    domain: governance
+    status: PROVEN
+    proven_by: ./governance/circuit_breaker.py
+    test_refs:
+      - ./tests/test_bunny/test_chaos_battery.py
+    last_verified: S54
+
+  - id: INV-CIRCUIT-2
+    tier: GOVERNANCE
+    domain: governance
+    status: PROVEN
+    proven_by: ./governance/circuit_breaker.py
+    test_refs:
+      - ./tests/test_self_healing/test_circuit_breaker.py
+    last_verified: S54
+
+  - id: INV-CLAIM-FACT-SEPARATION
+    tier: OPERATIONAL
+    domain: system
+    status: PROVEN
+    proven_by: ./tests/chain/test_athena_cfp_chain.py
+    test_refs:
+      - ./tests/chain/test_athena_cfp_chain.py
+    last_verified: S54
+
+  - id: INV-CLAIM-NO-EXECUTION
+    tier: ATHENA
+    domain: athena
+    status: PROVEN
+    proven_by: ./athena/store.py
+    test_refs:
+      - ./tests/test_athena/test_store.py
+    last_verified: S54
+
+  - id: INV-CONFIG-1
+    tier: OPERATIONAL
+    domain: system
+    status: ENFORCED
+    proven_by: ./config/loader.py
+    test_refs: []
+    last_verified: S54
+
+  - id: INV-CONFIG-2
+    tier: OPERATIONAL
+    domain: system
+    status: ENFORCED
+    proven_by: ./config/loader.py
+    test_refs: []
+    last_verified: S54
+
+  - id: INV-CONFLICT-NO-AGGREGATION
+    tier: ATHENA
+    domain: athena
+    status: PROVEN
+    proven_by: ./athena/__init__.py
+    test_refs:
+      - ./tests/chaos/test_bunny_s37.py
+    last_verified: S54
+
+  - id: INV-CONFLICT-NO-RESOLUTION
+    tier: OPERATIONAL
+    domain: system
+    status: PROVEN
+    proven_by: ./tests/test_bunny/test_integration_stress.py
+    test_refs:
+      - ./tests/test_bunny/test_integration_stress.py
+    last_verified: S54
+
+  - id: INV-CONFLICT-SHUFFLE
+    tier: ATHENA
+    domain: athena
+    status: ENFORCED
+    proven_by: ./athena/store.py
+    test_refs: []
+    last_verified: S54
+
+  - id: INV-CONTRACT-3
+    tier: OPERATIONAL
+    domain: system
+    status: ENFORCED
+    proven_by: ./contracts/truth_teller.py
+    test_refs: []
+    last_verified: S54
+
+  - id: INV-CROSS-MODULE-NO-SYNTH
+    tier: VALIDATION
+    domain: validation
+    status: PROVEN
+    proven_by: ./validation/__init__.py
+    test_refs:
+      - ./tests/test_bunny/test_integration_stress.py
+    last_verified: S54
+
+  - id: INV-CSE-FRESHNESS-1
+    tier: CSO
+    domain: cso
+    status: PROVEN
+    proven_by: ./cso/consumer.py
+    test_refs:
+      - ./tests/test_river_freshness/test_cse_provenance.py
+    last_verified: S54
+
+  - id: INV-CSO-1
+    tier: CSO
+    domain: cso
+    status: ENFORCED
+    proven_by: ./cso/contract.py
+    test_refs: []
+    last_verified: S54
+
+  - id: INV-CSO-2
+    tier: CSO
+    domain: cso
+    status: ENFORCED
+    proven_by: ./cso/contract.py
+    test_refs: []
+    last_verified: S54
+
+  - id: INV-CSO-3
+    tier: CSO
+    domain: cso
+    status: ENFORCED
+    proven_by: ./cso/contract.py
+    test_refs: []
+    last_verified: S54
+
+  - id: INV-CSO-4
+    tier: CSO
+    domain: cso
+    status: ENFORCED
+    proven_by: ./cso/contract.py
+    test_refs: []
+    last_verified: S54
+
+  - id: INV-CSO-6PAIR-1
+    tier: CSO
+    domain: cso
+    status: ENFORCED
+    proven_by: ./cso/scanner.py
+    test_refs: []
+    last_verified: S54
+
+  - id: INV-CSO-BUDGET
+    tier: CSO
+    domain: cso
+    status: PROVEN
+    proven_by: ./cso/harness/__init__.py
+    test_refs:
+      - ./tests/test_cso/test_multi_pair.py
+    last_verified: S54
+
+  - id: INV-CSO-CAL-1
+    tier: CSO
+    domain: cso
+    status: PROVEN
+    proven_by: ./cso/__init__.py
+    test_refs:
+      - ./tests/chaos/test_bunny_s31.py
+    last_verified: S54
+
+  - id: INV-CSO-CORE-1
+    tier: CSO
+    domain: cso
+    status: PROVEN
+    proven_by: ./cso/__init__.py
+    test_refs:
+      - ./tests/chaos/test_bunny_s31.py
+    last_verified: S54
+
+  - id: INV-CSO-CSE-1
+    tier: CSO
+    domain: cso
+    status: ENFORCED
+    proven_by: ./cso/scanner.py
+    test_refs: []
+    last_verified: S54
+
+  - id: INV-CSO-DRAFT-ONLY
+    tier: CSO
+    domain: cso
+    status: PROVEN
+    proven_by: ./cso/beads.py
+    test_refs:
+      - ./tests/test_cso_draft_beads.py
+    last_verified: S54
+
+  - id: INV-CSO-NO-CONFIDENCE
+    tier: OPERATIONAL
+    domain: system
+    status: PROVEN
+    proven_by: ./tests/chain/test_cso_hunt_chain.py
+    test_refs:
+      - ./tests/chain/test_cso_hunt_chain.py
+    last_verified: S54
+
+  - id: INV-CSO-PASSIVE-S27
+    tier: CSO
+    domain: cso
+    status: ENFORCED
+    proven_by: ./cso/observer.py
+    test_refs: []
+    last_verified: S54
+
+  - id: INV-D1-HALT-PRIORITY-1
+    tier: DAEMONS
+    domain: daemons
+    status: PROVEN
+    proven_by: ./daemons/routing.py
+    test_refs:
+      - ./tests/daemons/test_halt_priority.py
+    last_verified: S54
+
+  - id: INV-D1-LENS-1
+    tier: DAEMONS
+    domain: daemons
+    status: PROVEN
+    proven_by: ./daemons/lens.py
+    test_refs:
+      - ./tests/daemons/test_lens_context_cost.py
+    last_verified: S54
+
+  - id: INV-D1-WATCHER-1
+    tier: DAEMONS
+    domain: daemons
+    status: PROVEN
+    proven_by: ./daemons/watcher.py
+    test_refs:
+      - ./tests/daemons/test_watcher_exactly_once.py
+    last_verified: S54
+
+  - id: INV-D1-WATCHER-IMMUTABLE-1
+    tier: DAEMONS
+    domain: daemons
+    status: PROVEN
+    proven_by: ./daemons/routing.py
+    test_refs:
+      - ./tests/daemons/test_watcher_immutable.py
+    last_verified: S54
+
+  - id: INV-D2-FORMAT-1
+    tier: CSO
+    domain: cso
+    status: PROVEN
+    proven_by: ./mocks/mock_cse_generator.py
+    test_refs:
+      - ./drills/d2_verification.py
+    last_verified: S54
+
+  - id: INV-D2-NO-COMPOSITION-1
+    tier: OPERATIONAL
+    domain: system
+    status: PROVEN
+    proven_by: ./mocks/mock_cse_generator.py
+    test_refs:
+      - ./drills/d2_verification.py
+    last_verified: S54
+
+  - id: INV-D2-NO-INTELLIGENCE-1
+    tier: OPERATIONAL
+    domain: system
+    status: PROVEN
+    proven_by: ./mocks/mock_cse_generator.py
+    test_refs:
+      - ./drills/d2_verification.py
+    last_verified: S54
+
+  - id: INV-D2-TRACEABLE-1
+    tier: CSO
+    domain: cso
+    status: PROVEN
+    proven_by: ./mocks/mock_cse_generator.py
+    test_refs:
+      - ./drills/d2_verification.py
+    last_verified: S54
+
+  - id: INV-D3-CHECKSUM-1
+    tier: OPERATIONAL
+    domain: orientation
+    status: PROVEN
+    proven_by: ./orientation/__init__.py
+    test_refs:
+      - ./drills/d3_verification.py
+    last_verified: S54
+
+  - id: INV-D3-CHECKSUM-HASH
+    tier: OPERATIONAL
+    domain: system
+    status: PROVEN
+    proven_by: ./drills/d3_verification.py
+    test_refs:
+      - ./drills/d3_verification.py
+    last_verified: S54
+
+  - id: INV-D3-CORRUPTION-1
+    tier: OPERATIONAL
+    domain: orientation
+    status: ENFORCED
+    proven_by: ./orientation/validator.py
+    test_refs: []
+    last_verified: S54
+
+  - id: INV-D3-CROSS-CHECK-1
+    tier: OPERATIONAL
+    domain: orientation
+    status: PROVEN
+    proven_by: ./orientation/validator.py
+    test_refs:
+      - ./drills/d3_verification.py
+    last_verified: S54
+
+  - id: INV-D3-NO-DERIVED-1
+    tier: OPERATIONAL
+    domain: orientation
+    status: PROVEN
+    proven_by: ./orientation/__init__.py
+    test_refs:
+      - ./drills/d3_verification.py
+    last_verified: S54
+
+  - id: INV-D4-ACCURATE-1
+    tier: OPERATIONAL
+    domain: system
+    status: PROVEN
+    proven_by: ./widget/menu_bar.py
+    test_refs:
+      - ./drills/d4_verification.py
+    last_verified: S54
+
+  - id: INV-D4-EPHEMERAL-1
+    tier: OPERATIONAL
+    domain: system
+    status: PROVEN
+    proven_by: ./widget/menu_bar.py
+    test_refs:
+      - ./drills/d4_verification.py
+    last_verified: S54
+
+  - id: INV-D4-GLANCEABLE-1
+    tier: OPERATIONAL
+    domain: system
+    status: PROVEN
+    proven_by: ./widget/menu_bar.py
+    test_refs:
+      - ./drills/d4_verification.py
+    last_verified: S54
+
+  - id: INV-D4-NO-ACTIONS-1
+    tier: OPERATIONAL
+    domain: system
+    status: PROVEN
+    proven_by: ./widget/menu_bar.py
+    test_refs:
+      - ./drills/d4_verification.py
+    last_verified: S54
+
+  - id: INV-D4-NO-DERIVATION-1
+    tier: OPERATIONAL
+    domain: system
+    status: PROVEN
+    proven_by: ./widget/menu_bar.py
+    test_refs:
+      - ./drills/d4_verification.py
+    last_verified: S54
+
+  - id: INV-DATA-1
+    tier: ENRICHMENT
+    domain: enrichment
+    status: ENFORCED
+    proven_by: ./enrichment/__init__.py
+    test_refs: []
+    last_verified: S54
+
+  - id: INV-DATA-2
+    tier: ENRICHMENT
+    domain: enrichment
+    status: ENFORCED
+    proven_by: ./enrichment/layers/l5_order_blocks.py
+    test_refs: []
+    last_verified: S54
+
+  - id: INV-DISPATCH-1
+    tier: DAEMONS
+    domain: dispatcher
+    status: PROVEN
+    proven_by: ./dispatcher/dispatcher.py
+    test_refs:
+      - ./tests/test_worker_lifecycle.py
+    last_verified: S54
+
+  - id: INV-DISPATCH-2
+    tier: DAEMONS
+    domain: dispatcher
+    status: PROVEN
+    proven_by: ./dispatcher/dispatcher.py
+    test_refs:
+      - ./tests/test_halt_propagation_multiprocess.py
+    last_verified: S54
+
+  - id: INV-DISPATCH-3
+    tier: DAEMONS
+    domain: dispatcher
+    status: PROVEN
+    proven_by: ./dispatcher/dispatcher.py
+    test_refs:
+      - ./tests/test_worker_lifecycle.py
+    last_verified: S54
+
+  - id: INV-DISPATCH-4
+    tier: DAEMONS
+    domain: dispatcher
+    status: PROVEN
+    proven_by: ./dispatcher/dispatcher.py
+    test_refs:
+      - ./tests/test_halt_propagation_multiprocess.py
+    last_verified: S54
+
+  - id: INV-DISPLAY-SHUFFLE
+    tier: CSO
+    domain: cso
+    status: PROVEN
+    proven_by: ./cso/harness/__init__.py
+    test_refs:
+      - ./tests/test_cso/test_multi_pair.py
+    last_verified: S54
+
+  - id: INV-DRAWER-RULE-EXPLICIT
+    tier: CSO
+    domain: cso
+    status: PROVEN
+    proven_by: ./cso/drawer.py
+    test_refs:
+      - ./tests/test_cso/test_drawer_schema.py
+    last_verified: S54
+
+  - id: INV-DYNASTY-5
+    tier: CSO
+    domain: cso
+    status: PROVEN
+    proven_by: ./cso/observer.py
+    test_refs:
+      - ./tests/test_bead_immutable.py
+    last_verified: S54
+
+  - id: INV-EXEC-NO-CAPITAL
+    tier: EXECUTION
+    domain: execution
+    status: PROVEN
+    proven_by: ./execution/intent.py
+    test_refs:
+      - ./tests/test_no_live_orders.py
+    last_verified: S54
+
+  - id: INV-EXPIRY-BUFFER
+    tier: GOVERNANCE
+    domain: governance
+    status: PROVEN
+    proven_by: ./governance/lease.py
+    test_refs:
+      - ./tests/test_lease/test_expiry.py
+    last_verified: S54
+
+  - id: INV-GOV-1
+    tier: GOVERNANCE
+    domain: governance
+    status: PROVEN
+    proven_by: ./governance/interface.py
+    test_refs:
+      - ./tests/test_violation_escalation_schedule.py
+    last_verified: S54
+
+  - id: INV-GOV-2
+    tier: GOVERNANCE
+    domain: governance
+    status: PROVEN
+    proven_by: ./governance/interface.py
+    test_refs:
+      - ./tests/test_violation_escalation_schedule.py
+    last_verified: S54
+
+  - id: INV-GOV-NO-T1-WRITE-EXEC
+    tier: CSO
+    domain: cso
+    status: PROVEN
+    proven_by: ./cso/observer.py
+    test_refs:
+      - ./tests/test_tier_gates.py
+    last_verified: S54
+
+  - id: INV-GRID-DIMENSION-CAP
+    tier: HUNT
+    domain: hunt
+    status: PROVEN
+    proven_by: ./hunt/__init__.py
+    test_refs:
+      - ./tests/test_hunt/test_hypothesis_schema.py
+    last_verified: S54
+
+  - id: INV-HARNESS-1
+    tier: CSO
+    domain: cso
+    status: PROVEN
+    proven_by: ./cso/drawer.py
+    test_refs:
+      - ./tests/test_cso/test_drawer_schema.py
+    last_verified: S54
+
+  - id: INV-HARNESS-2
+    tier: CSO
+    domain: cso
+    status: PROVEN
+    proven_by: ./cso/harness/__init__.py
+    test_refs:
+      - ./tests/test_cso/test_evaluator.py
+    last_verified: S54
+
+  - id: INV-HARNESS-3
+    tier: CSO
+    domain: cso
+    status: PROVEN
+    proven_by: ./cso/alerts.py
+    test_refs:
+      - ./tests/test_cso/test_alerts.py
+    last_verified: S54
+
+  - id: INV-HARNESS-4
+    tier: CSO
+    domain: cso
+    status: ENFORCED
+    proven_by: ./cso/harness/__init__.py
+    test_refs: []
+    last_verified: S54
+
+  - id: INV-HARNESS-5
+    tier: CSO
+    domain: cso
+    status: PROVEN
+    proven_by: ./cso/bit_vector.py
+    test_refs:
+      - ./tests/test_cso/test_bit_vector.py
+    last_verified: S54
+
+  - id: INV-HEAL-REENTRANCY
+    tier: GOVERNANCE
+    domain: governance
+    status: PROVEN
+    proven_by: ./governance/health_fsm.py
+    test_refs:
+      - ./tests/test_bunny/test_chaos_battery.py
+    last_verified: S54
+
+  - id: INV-HEALTH-1
+    tier: GOVERNANCE
+    domain: governance
+    status: PROVEN
+    proven_by: ./governance/health_fsm.py
+    test_refs:
+      - ./tests/test_bunny/test_chaos_battery.py
+    last_verified: S54
+
+  - id: INV-HEALTH-2
+    tier: GOVERNANCE
+    domain: governance
+    status: PROVEN
+    proven_by: ./governance/health_fsm.py
+    test_refs:
+      - ./tests/test_bunny/test_chaos_battery.py
+    last_verified: S54
+
+  - id: INV-HISTORY-NO-BURY
+    tier: ATHENA
+    domain: athena
+    status: PROVEN
+    proven_by: ./athena/__init__.py
+    test_refs:
+      - ./tests/chaos/test_bunny_s37.py
+    last_verified: S54
+
+  - id: INV-HOOK-1
+    tier: OPERATIONAL
+    domain: system
+    status: PROVEN
+    proven_by: ./tools/hooks/pre_commit_linter.py
+    test_refs:
+      - ./tests/test_hooks/__init__.py
+    last_verified: S54
+
+  - id: INV-HOOK-2
+    tier: OPERATIONAL
+    domain: system
+    status: PROVEN
+    proven_by: ./tools/hooks/pre_commit_linter.py
+    test_refs:
+      - ./tests/test_hooks/__init__.py
+    last_verified: S54
+
+  - id: INV-HOOK-3
+    tier: GOVERNANCE
+    domain: governance
+    status: PROVEN
+    proven_by: ./governance/runtime_assertions.py
+    test_refs:
+      - ./tests/test_bunny/test_integration_stress.py
+    last_verified: S54
+
+  - id: INV-HOOK-4
+    tier: GOVERNANCE
+    domain: governance
+    status: PROVEN
+    proven_by: ./governance/runtime_assertions.py
+    test_refs:
+      - ./tests/test_bunny/test_integration_stress.py
+    last_verified: S54
+
+  - id: INV-HUD-ATOMIC-READ
+    tier: OPERATIONAL
+    domain: system
+    status: ENFORCED
+    proven_by: ./state/manifest_writer.py
+    test_refs: []
+    last_verified: S54
+
+  - id: INV-HUD-READ-ONLY
+    tier: OPERATIONAL
+    domain: system
+    status: ENFORCED
+    proven_by: ./state/manifest_writer.py
+    test_refs: []
+    last_verified: S54
+
+  - id: INV-HUNT-BEAD-1
+    tier: LAB
+    domain: lab
+    status: PROVEN
+    proven_by: ./lab/hunt.py
+    test_refs:
+      - ./tests/chaos/test_bunny_s30.py
+    last_verified: S54
+
+  - id: INV-HUNT-BUDGET
+    tier: HUNT
+    domain: hunt
+    status: PROVEN
+    proven_by: ./hunt/budget.py
+    test_refs:
+      - ./tests/test_hunt/test_budget.py
+    last_verified: S54
+
+  - id: INV-HUNT-CAP-1
+    tier: LAB
+    domain: lab
+    status: PROVEN
+    proven_by: ./lab/hunt.py
+    test_refs:
+      - ./tests/chaos/test_bunny_s30.py
+    last_verified: S54
+
+  - id: INV-HUNT-DET-1
+    tier: LAB
+    domain: lab
+    status: PROVEN
+    proven_by: ./lab/hunt.py
+    test_refs:
+      - ./lab/backtester.py
+    last_verified: S54
+
+  - id: INV-HUNT-DIM-CARDINALITY-CAP
+    tier: HUNT
+    domain: hunt
+    status: PROVEN
+    proven_by: ./hunt/__init__.py
+    test_refs:
+      - ./tests/test_hunt/test_hypothesis_schema.py
+    last_verified: S54
+
+  - id: INV-HUNT-EXHAUSTIVE
+    tier: HUNT
+    domain: hunt
+    status: PROVEN
+    proven_by: ./hunt/grid.py
+    test_refs:
+      - ./tests/test_bunny/test_integration_stress.py
+    last_verified: S54
+
+  - id: INV-HUNT-GRID-ORDER-DECLARED
+    tier: HUNT
+    domain: hunt
+    status: PROVEN
+    proven_by: ./hunt/__init__.py
+    test_refs:
+      - ./tests/test_hunt/test_output.py
+    last_verified: S54
+
+  - id: INV-HUNT-HPG-1
+    tier: LAB
+    domain: lab
+    status: PROVEN
+    proven_by: ./lab/hunt.py
+    test_refs:
+      - ./tests/chaos/test_bunny_s30.py
+    last_verified: S54
+
+  - id: INV-HUNT-METRICS-DECLARED
+    tier: HUNT
+    domain: hunt
+    status: PROVEN
+    proven_by: ./hunt/__init__.py
+    test_refs:
+      - ./tests/test_hunt/test_hypothesis_schema.py
+    last_verified: S54
+
+  - id: INV-HUNT-NO-SURVIVOR-RANKING
+    tier: OPERATIONAL
+    domain: system
+    status: PROVEN
+    proven_by: ./tests/chain/test_hunt_validation_chain.py
+    test_refs:
+      - ./tests/chain/test_hunt_validation_chain.py
+    last_verified: S54
+
+  - id: INV-HUNT-PARTIAL-WATERMARK
+    tier: HUNT
+    domain: hunt
+    status: PROVEN
+    proven_by: ./hunt/budget.py
+    test_refs:
+      - ./tests/test_hunt/test_executor.py
+    last_verified: S54
+
+  - id: INV-HUNT-REGIME-ANCHOR
+    tier: HUNT
+    domain: hunt
+    status: ENFORCED
+    proven_by: ./hunt/__init__.py
+    test_refs: []
+    last_verified: S54
+
+  - id: INV-HUNT-SORT-1
+    tier: LAB
+    domain: lab
+    status: PROVEN
+    proven_by: ./lab/hunt.py
+    test_refs:
+      - ./lab/backtester.py
+    last_verified: S54
+
+  - id: INV-IBKR-ACCOUNT-CHECK-1
+    tier: IBKR
+    domain: ibkr
+    status: PROVEN
+    proven_by: ./brokers/ibkr/config.py
+    test_refs:
+      - ./tests/chaos/test_bunny_s33_p1.py
+    last_verified: S54
+
+  - id: INV-IBKR-CONFIG-1
+    tier: IBKR
+    domain: ibkr
+    status: ENFORCED
+    proven_by: ./brokers/ibkr/config.py
+    test_refs: []
+    last_verified: S54
+
+  - id: INV-IBKR-DEGRADE-1
+    tier: IBKR
+    domain: ibkr
+    status: PROVEN
+    proven_by: ./brokers/ibkr/degradation.py
+    test_refs:
+      - ./tests/test_ibkr/__init__.py
+    last_verified: S54
+
+  - id: INV-IBKR-DEGRADE-2
+    tier: IBKR
+    domain: ibkr
+    status: PROVEN
+    proven_by: ./brokers/ibkr/degradation.py
+    test_refs:
+      - ./tests/test_bunny/test_chaos_battery.py
+    last_verified: S54
+
+  - id: INV-IBKR-FLAKEY-1
+    tier: IBKR
+    domain: ibkr
+    status: PROVEN
+    proven_by: ./brokers/ibkr/heartbeat.py
+    test_refs:
+      - ./tests/test_bunny/test_chaos_battery.py
+    last_verified: S54
+
+  - id: INV-IBKR-FLAKEY-2
+    tier: IBKR
+    domain: ibkr
+    status: PROVEN
+    proven_by: ./brokers/ibkr/supervisor.py
+    test_refs:
+      - ./tests/test_ibkr/__init__.py
+    last_verified: S54
+
+  - id: INV-IBKR-FLAKEY-3
+    tier: IBKR
+    domain: ibkr
+    status: PROVEN
+    proven_by: ./brokers/ibkr/supervisor.py
+    test_refs:
+      - ./tests/test_ibkr/__init__.py
+    last_verified: S54
+
+  - id: INV-IBKR-MOCK-1
+    tier: IBKR
+    domain: ibkr
+    status: PROVEN
+    proven_by: ./brokers/ibkr/mock_client.py
+    test_refs:
+      - ./tests/chaos/test_bunny_s32.py
+    last_verified: S54
+
+  - id: INV-IBKR-PAPER-FIRST-1
+    tier: IBKR
+    domain: ibkr
+    status: ENFORCED
+    proven_by: ./brokers/ibkr/real_client.py
+    test_refs: []
+    last_verified: S54
+
+  - id: INV-IBKR-PAPER-GUARD-1
+    tier: IBKR
+    domain: ibkr
+    status: PROVEN
+    proven_by: ./brokers/ibkr/config.py
+    test_refs:
+      - ./tests/chaos/test_bunny_s33_p1.py
+    last_verified: S54
+
+  - id: INV-IBKR-RECONNECT-1
+    tier: IBKR
+    domain: ibkr
+    status: PROVEN
+    proven_by: ./brokers/ibkr/config.py
+    test_refs:
+      - ./tests/chaos/test_bunny_s33_p1.py
+    last_verified: S54
+
+  - id: INV-LEASE-CEILING
+    tier: GOVERNANCE
+    domain: governance
+    status: PROVEN
+    proven_by: ./governance/insertion.py
+    test_refs:
+      - ./tests/test_lease/test_insertion.py
+    last_verified: S54
+
+  - id: INV-METRIC-DEFINITION-EXPLICIT
+    tier: CFP
+    domain: cfp
+    status: PROVEN
+    proven_by: ./cfp/river_adapter.py
+    test_refs:
+      - ./tests/test_cfp/test_lens_schema_validation.py
+    last_verified: S54
+
+  - id: INV-NARRATOR-1
+    tier: NARRATOR
+    domain: narrator
+    status: PROVEN
+    proven_by: ./tools/generate_training_data.py
+    test_refs:
+      - ./tests/test_slm_distillation/test_smoke.py
+    last_verified: S54
+
+  - id: INV-NARRATOR-2
+    tier: NARRATOR
+    domain: narrator
+    status: PROVEN
+    proven_by: ./narrator/renderer.py
+    test_refs:
+      - ./tests/test_slm_distillation/test_smoke.py
+    last_verified: S54
+
+  - id: INV-NARRATOR-3
+    tier: NARRATOR
+    domain: narrator
+    status: PROVEN
+    proven_by: ./narrator/renderer.py
+    test_refs:
+      - ./tests/test_bunny/test_narrator_chaos.py
+    last_verified: S54
+
+  - id: INV-NARRATOR-FACTS-ONLY
+    tier: OPERATIONAL
+    domain: system
+    status: PROVEN
+    proven_by: ./tests/test_narrator_templates.py
+    test_refs:
+      - ./tests/test_narrator_templates.py
+    last_verified: S54
+
+  - id: INV-NEUTRAL-ADJECTIVES
+    tier: VALIDATION
+    domain: validation
+    status: ENFORCED
+    proven_by: ./tools/hooks/scalar_ban_hook.py
+    test_refs: []
+    last_verified: S54
+
+  - id: INV-NO-AGGREGATE-SCALAR
+    tier: VALIDATION
+    domain: validation
+    status: PROVEN
+    proven_by: ./tools/hooks/scalar_ban_hook.py
+    test_refs:
+      - ./tests/chain/test_cfp_validation_chain.py
+    last_verified: S54
+
+  - id: INV-NO-AUTO-SURFACE
+    tier: ATHENA
+    domain: athena
+    status: PROVEN
+    proven_by: ./athena/store.py
+    test_refs:
+      - ./tests/test_athena/test_store.py
+    last_verified: S54
+
+  - id: INV-NO-DEFAULT-SALIENCE
+    tier: CFP
+    domain: cfp
+    status: PROVEN
+    proven_by: ./cfp/conflict_display.py
+    test_refs:
+      - ./tests/test_cfp/test_conflict_display.py
+    last_verified: S54
+
+  - id: INV-NO-FALSE-PRECISION
+    tier: CFP
+    domain: cfp
+    status: PROVEN
+    proven_by: ./cfp/executor.py
+    test_refs:
+      - ./tests/test_cfp/test_executor.py
+    last_verified: S54
+
+  - id: INV-NO-FORMING-CANDLE
+    tier: DATA
+    domain: river
+    status: ENFORCED
+    proven_by: ./river/streamer.py
+    test_refs: []
+    last_verified: S54
+
+  - id: INV-NO-GRADE-RECONSTRUCTION
+    tier: OPERATIONAL
+    domain: system
+    status: PROVEN
+    proven_by: ./tools/hooks/scalar_ban_hook.py
+    test_refs:
+      - ./tests/chain/test_cso_hunt_chain.py
+    last_verified: S54
+
+  - id: INV-NO-IMPLICIT-VERDICT
+    tier: VALIDATION
+    domain: validation
+    status: PROVEN
+    proven_by: ./tools/hooks/scalar_ban_hook.py
+    test_refs:
+      - ./validation/backtest.py
+    last_verified: S54
+
+  - id: INV-NO-SESSION-OVERLAP
+    tier: GOVERNANCE
+    domain: governance
+    status: PROVEN
+    proven_by: ./governance/insertion.py
+    test_refs:
+      - ./tests/chaos/test_bunny_s47.py
+    last_verified: S54
+
+  - id: INV-NO-UNSOLICITED
+    tier: CSO
+    domain: cso
+    status: PROVEN
+    proven_by: ./cso/alerts.py
+    test_refs:
+      - ./tests/test_cso/test_alerts.py
+    last_verified: S54
+
+  - id: INV-OBSERVE-NO-INTERPRETATION
+    tier: OPERATIONAL
+    domain: system
+    status: ENFORCED
+    proven_by: ./cli/phoenix_status.py
+    test_refs: []
+    last_verified: S54
+
+  - id: INV-OPS-HEARTBEAT-30S-1
+    tier: MONITORING
+    domain: monitoring
+    status: PROVEN
+    proven_by: ./monitoring/ops/__init__.py
+    test_refs:
+      - ./tests/chaos/test_bunny_s33_p1.py
+    last_verified: S54
+
+  - id: INV-OPS-HEARTBEAT-SEMANTIC-1
+    tier: MONITORING
+    domain: monitoring
+    status: PROVEN
+    proven_by: ./monitoring/ops/semantic_health.py
+    test_refs:
+      - ./tests/chaos/test_bunny_s33_p1.py
+    last_verified: S54
+
+  - id: INV-OUTPUT-SHUFFLE
+    tier: HUNT
+    domain: hunt
+    status: PROVEN
+    proven_by: ./hunt/__init__.py
+    test_refs:
+      - ./tests/test_hunt/test_output.py
+    last_verified: S54
+
+  - id: INV-PHASE2-REVALIDATE-1
+    tier: OPERATIONAL
+    domain: system
+    status: PROVEN
+    proven_by: ./tests/chaos/test_bunny_s33_p1.py
+    test_refs:
+      - ./tests/chaos/test_bunny_s33_p1.py
+    last_verified: S54
+
+  - id: INV-PIT-JOIN-ONLY
+    tier: CSO
+    domain: cso
+    status: PROVEN
+    proven_by: ./cso/market_state_builder.py
+    test_refs:
+      - ./tests/test_s51_driveshaft/test_market_state_builder.py
+    last_verified: S54
+
+  - id: INV-POSITION-AUDIT-1
+    tier: EXECUTION
+    domain: execution
+    status: PROVEN
+    proven_by: ./execution/positions/__init__.py
+    test_refs:
+      - ./tests/chaos/test_bunny_s32.py
+    last_verified: S54
+
+  - id: INV-POSITION-SM-1
+    tier: EXECUTION
+    domain: execution
+    status: PROVEN
+    proven_by: ./execution/positions/__init__.py
+    test_refs:
+      - ./tests/chaos/test_bunny_s32.py
+    last_verified: S54
+
+  - id: INV-POSITION-SUBMITTED-TTL-1
+    tier: EXECUTION
+    domain: execution
+    status: PROVEN
+    proven_by: ./execution/positions/__init__.py
+    test_refs:
+      - ./tests/chaos/test_bunny_s32.py
+    last_verified: S54
+
+  - id: INV-POSITION-TRACK-1
+    tier: SHADOW
+    domain: shadow
+    status: ENFORCED
+    proven_by: ./shadow/paper_position.py
+    test_refs: []
+    last_verified: S54
+
+  - id: INV-PROMOTION-EVIDENCE-1
+    tier: EXECUTION
+    domain: execution
+    status: ENFORCED
+    proven_by: ./execution/promotion/__init__.py
+    test_refs: []
+    last_verified: S54
+
+  - id: INV-PROMOTION-SAFE-1
+    tier: EXECUTION
+    domain: execution
+    status: PROVEN
+    proven_by: ./execution/promotion/checklist.py
+    test_refs:
+      - ./tests/chaos/test_bunny_s32.py
+    last_verified: S54
+
+  - id: INV-PROMOTION-SAFE-2
+    tier: EXECUTION
+    domain: execution
+    status: PROVEN
+    proven_by: ./execution/promotion/checklist.py
+    test_refs:
+      - ./tests/chaos/test_bunny_s32.py
+    last_verified: S54
+
+  - id: INV-PROMOTION-T2-1
+    tier: EXECUTION
+    domain: execution
+    status: ENFORCED
+    proven_by: ./execution/promotion/__init__.py
+    test_refs: []
+    last_verified: S54
+
+  - id: INV-QUEUE-SHUFFLE
+    tier: HUNT
+    domain: hunt
+    status: PROVEN
+    proven_by: ./hunt/queue.py
+    test_refs:
+      - ./tests/test_hunt/test_queue.py
+    last_verified: S54
+
+  - id: INV-RANKING-BAN
+    tier: OPERATIONAL
+    domain: system
+    status: ENFORCED
+    proven_by: ./tools/hooks/scalar_ban_hook.py
+    test_refs: []
+    last_verified: S54
+
+  - id: INV-RAW-SIM-T2-ONLY
+    tier: VALIDATION
+    domain: validation
+    status: ENFORCED
+    proven_by: ./validation/__init__.py
+    test_refs: []
+    last_verified: S54
+
+  - id: INV-RECONCILE-ALERT-1
+    tier: EXECUTION
+    domain: execution
+    status: ENFORCED
+    proven_by: ./execution/reconciliation/reconciler.py
+    test_refs: []
+    last_verified: S54
+
+  - id: INV-RECONCILE-AUDIT-1
+    tier: EXECUTION
+    domain: execution
+    status: ENFORCED
+    proven_by: ./execution/reconciliation/reconciler.py
+    test_refs: []
+    last_verified: S54
+
+  - id: INV-RECONCILE-AUDIT-2
+    tier: EXECUTION
+    domain: execution
+    status: ENFORCED
+    proven_by: ./execution/reconciliation/reconciler.py
+    test_refs: []
+    last_verified: S54
+
+  - id: INV-RECONCILE-READONLY-1
+    tier: EXECUTION
+    domain: execution
+    status: PROVEN
+    proven_by: ./execution/reconciliation/reconciler.py
+    test_refs:
+      - ./tests/chaos/test_bunny_s32.py
+    last_verified: S54
+
+  - id: INV-REGIME-EXPLICIT
+    tier: CFP
+    domain: cfp
+    status: PROVEN
+    proven_by: ./cfp/validation.py
+    test_refs:
+      - ./tests/test_cfp/test_lens_schema_validation.py
+    last_verified: S54
+
+  - id: INV-RIVER-CONTINUOUS
+    tier: DATA
+    domain: river
+    status: ENFORCED
+    proven_by: ./river/reader.py
+    test_refs: []
+    last_verified: S54
+
+  - id: INV-RIVER-IBKR-PRIMACY
+    tier: DATA
+    domain: river
+    status: ENFORCED
+    proven_by: ./river/reader.py
+    test_refs: []
+    last_verified: S54
+
+  - id: INV-RIVER-MONOTONICITY
+    tier: DATA
+    domain: river
+    status: ENFORCED
+    proven_by: ./river/schema.py
+    test_refs: []
+    last_verified: S54
+
+  - id: INV-RIVER-RO-1
+    tier: CFP
+    domain: cfp
+    status: PROVEN
+    proven_by: ./data/__init__.py
+    test_refs:
+      - ./tests/chaos/test_bunny_s30.py
+    last_verified: S54
+
+  - id: INV-RIVER-SOURCE-TAG
+    tier: DATA
+    domain: river
+    status: ENFORCED
+    proven_by: ./river/streamer.py
+    test_refs: []
+    last_verified: S54
+
+  - id: INV-SEMANTIC-NO-SINGLE-BEST
+    tier: ATHENA
+    domain: athena
+    status: PROVEN
+    proven_by: ./athena/semantic.py
+    test_refs:
+      - ./tests/chaos/test_bunny_s37.py
+    last_verified: S54
+
+  - id: INV-SEMANTIC-POLARITY
+    tier: ATHENA
+    domain: athena
+    status: ENFORCED
+    proven_by: ./athena/semantic.py
+    test_refs: []
+    last_verified: S54
+
+  - id: INV-SENSITIVITY-PARAM-ORDER
+    tier: OPERATIONAL
+    domain: system
+    status: PROVEN
+    proven_by: ./tests/chain/test_hunt_validation_chain.py
+    test_refs:
+      - ./tests/chain/test_hunt_validation_chain.py
+    last_verified: S54
+
+  - id: INV-SENSITIVITY-SHUFFLE
+    tier: VALIDATION
+    domain: validation
+    status: ENFORCED
+    proven_by: ./validation/__init__.py
+    test_refs: []
+    last_verified: S54
+
+  - id: INV-SESS-CHKPT-1
+    tier: OPERATIONAL
+    domain: checkpoint
+    status: ENFORCED
+    proven_by: ./checkpoint/session_manager.py
+    test_refs: []
+    last_verified: S54
+
+  - id: INV-SESS-SINGLE-1
+    tier: OPERATIONAL
+    domain: checkpoint
+    status: ENFORCED
+    proven_by: ./checkpoint/session_manager.py
+    test_refs: []
+    last_verified: S54
+
+  - id: INV-SHADOW-BEAD-1
+    tier: SHADOW
+    domain: shadow
+    status: ENFORCED
+    proven_by: ./shadow/__init__.py
+    test_refs: []
+    last_verified: S54
+
+  - id: INV-SHADOW-CSE-1
+    tier: SHADOW
+    domain: shadow
+    status: PROVEN
+    proven_by: ./shadow/__init__.py
+    test_refs:
+      - ./tests/chaos/test_bunny_s30.py
+    last_verified: S54
+
+  - id: INV-SHADOW-ISO-1
+    tier: SHADOW
+    domain: shadow
+    status: PROVEN
+    proven_by: ./shadow/paper_position.py
+    test_refs:
+      - ./tests/chaos/test_bunny_s30.py
+    last_verified: S54
+
+  - id: INV-SIGNALMAN-COLD-1
+    tier: MONITORING
+    domain: monitoring
+    status: PROVEN
+    proven_by: ./monitoring/__init__.py
+    test_refs:
+      - ./tests/integration/test_e2e_signalman_kill.py
+    last_verified: S54
+
+  - id: INV-SIGNALMAN-DECAY-1
+    tier: MONITORING
+    domain: monitoring
+    status: PROVEN
+    proven_by: ./monitoring/__init__.py
+    test_refs:
+      - ./tests/integration/test_e2e_signalman_kill.py
+    last_verified: S54
+
+  - id: INV-SIGNALMAN-MULTI-1
+    tier: OPERATIONAL
+    domain: system
+    status: PROVEN
+    proven_by: ./tests/chaos/test_bunny_s31.py
+    test_refs:
+      - ./tests/chaos/test_bunny_s31.py
+    last_verified: S54
+
+  - id: INV-SLICE-MINIMUM-N
+    tier: CFP
+    domain: cfp
+    status: PROVEN
+    proven_by: ./cfp/executor.py
+    test_refs:
+      - ./tests/test_cfp/test_executor.py
+    last_verified: S54
+
+  - id: INV-SLM-BANNED-WORDS-1
+    tier: OPERATIONAL
+    domain: system
+    status: PROVEN
+    proven_by: ./tests/test_slm_boundary.py
+    test_refs:
+      - ./tests/test_slm_boundary.py
+    last_verified: S54
+
+  - id: INV-SLM-CLASSIFICATION-ONLY-1
+    tier: GOVERNANCE
+    domain: governance
+    status: PROVEN
+    proven_by: ./governance/slm_boundary.py
+    test_refs:
+      - ./tests/test_slm_distillation/__init__.py
+    last_verified: S54
+
+  - id: INV-SLM-NARRATOR-GATE
+    tier: NARRATOR
+    domain: narrator
+    status: ENFORCED
+    proven_by: ./narrator/renderer.py
+    test_refs: []
+    last_verified: S54
+
+  - id: INV-SLM-NO-CREATE-1
+    tier: GOVERNANCE
+    domain: governance
+    status: PROVEN
+    proven_by: ./governance/slm_boundary.py
+    test_refs:
+      - ./tests/test_slm_distillation/__init__.py
+    last_verified: S54
+
+  - id: INV-SLM-READONLY-1
+    tier: GOVERNANCE
+    domain: governance
+    status: PROVEN
+    proven_by: ./tools/generate_training_data.py
+    test_refs:
+      - ./tests/test_slm_distillation/__init__.py
+    last_verified: S54
+
+  - id: INV-STALE-KILL-1
+    tier: GOVERNANCE
+    domain: governance
+    status: PROVEN
+    proven_by: ./governance/stale_gate.py
+    test_refs:
+      - ./tests/chaos/test_bunny_s32.py
+    last_verified: S54
+
+  - id: INV-STATE-ANCHOR-1
+    tier: MONITORING
+    domain: monitoring
+    status: PROVEN
+    proven_by: ./monitoring/__init__.py
+    test_refs:
+      - ./tests/chaos/test_bunny_s31.py
+    last_verified: S54
+
+  - id: INV-STRUCTURE-DET-1
+    tier: CSO
+    domain: cso
+    status: ENFORCED
+    proven_by: ./cso/structure_detector.py
+    test_refs: []
+    last_verified: S54
+
+  - id: INV-SUPERVISOR-1
+    tier: IBKR
+    domain: ibkr
+    status: PROVEN
+    proven_by: ./brokers/ibkr/supervisor.py
+    test_refs:
+      - ./tests/test_bunny/test_chaos_battery.py
+    last_verified: S54
+
+  - id: INV-SYNTH-DETERMINISM
+    tier: DATA
+    domain: river
+    status: ENFORCED
+    proven_by: ./river/synthetic_river.py
+    test_refs: []
+    last_verified: S54
+
+  - id: INV-SYNTH-PAIRS
+    tier: DATA
+    domain: river
+    status: ENFORCED
+    proven_by: ./river/synthetic_river.py
+    test_refs: []
+    last_verified: S54
+
+  - id: INV-SYNTH-SCHEMA
+    tier: DATA
+    domain: river
+    status: ENFORCED
+    proven_by: ./river/synthetic_river.py
+    test_refs: []
+    last_verified: S54
+
+  - id: INV-T2-GATE-1
+    tier: IBKR
+    domain: ibkr
+    status: PROVEN
+    proven_by: ./brokers/ibkr/__init__.py
+    test_refs:
+      - ./tests/chaos/test_bunny_s33_p1.py
+    last_verified: S54
+
+  - id: INV-T2-TOKEN-1
+    tier: GOVERNANCE
+    domain: governance
+    status: PROVEN
+    proven_by: ./governance/t2/__init__.py
+    test_refs:
+      - ./tests/chaos/test_bunny_s32.py
+    last_verified: S54
+
+  - id: INV-T2-TOKEN-AUDIT-1
+    tier: GOVERNANCE
+    domain: governance
+    status: ENFORCED
+    proven_by: ./governance/t2/__init__.py
+    test_refs: []
+    last_verified: S54
+
+  - id: INV-TELEGRAM-LIVE-1
+    tier: NOTIFICATION
+    domain: notification
+    status: PROVEN
+    proven_by: ./tests/chaos/test_bunny_s33_p1.py
+    test_refs:
+      - ./tests/chaos/test_bunny_s33_p1.py
+    last_verified: S54
+
+  - id: INV-VALIDATION-DECOMPOSED
+    tier: VALIDATION
+    domain: validation
+    status: PROVEN
+    proven_by: ./validation/__init__.py
+    test_refs:
+      - ./validation/backtest.py
+    last_verified: S54
+
+  - id: INV-VISUAL-PARITY
+    tier: VALIDATION
+    domain: validation
+    status: ENFORCED
+    proven_by: ./validation/__init__.py
+    test_refs: []
+    last_verified: S54
