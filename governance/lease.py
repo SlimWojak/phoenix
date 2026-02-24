@@ -621,8 +621,11 @@ class LeaseManager:
 
         elapsed_ms = (time.perf_counter_ns() - start) / 1_000_000
 
-        # INV-HALT-1: Must complete in <50ms
-        assert elapsed_ms < 50, f"Lease halt took {elapsed_ms:.2f}ms, exceeds 50ms limit"
+        # INV-HALT-1: Must complete in <50ms (raise, not assert — survives python -O)
+        if elapsed_ms >= 50:
+            raise RuntimeError(
+                f"INV-HALT-1 VIOLATION: Lease halt took {elapsed_ms:.2f}ms, " f"exceeds 50ms limit"
+            )
 
     def reset(self) -> None:
         """Reset manager state (for testing)."""

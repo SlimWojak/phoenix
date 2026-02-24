@@ -1,7 +1,8 @@
 # INVARIANT_REGISTRY.yaml — Canonical Invariant List
-# Source: FORENSIC_AUDIT.md Section 3 (2026-02-23) + S52 additions
+# Source: FORENSIC_AUDIT.md Section 3 (2026-02-23) + S52/S53 additions
 # Status: PROVEN = test evidence, ENFORCED = code enforces, UNTESTED = no test, DESIGNED = spec only
-# Last updated: S52 HARDENING (2026-02-23)
+# Last updated: S53.1 ORACLE_REMEDIATION (2026-02-24)
+# Declared count: 37 (validated by scripts/validate_registry.py)
 
 invariants:
 
@@ -253,11 +254,12 @@ invariants:
   - id: INV-EXECUTION-FIDELITY
     tier: OPERATIONAL
     domain: execution
-    status: UNTESTED
-    proven_by: null
-    test_refs: []
-    note: "Intent vs fill delta >50bps alert. No tracking code."
-    last_verified: S52
+    status: PROVEN
+    proven_by: execution/fidelity.py
+    test_refs:
+      - tests/test_fidelity.py
+    note: "S53. Fidelity record emitted on every fill."
+    last_verified: S53
 
   - id: INV-BRIDGE-PROMOTION-GATE
     tier: GOVERNANCE
@@ -303,3 +305,77 @@ invariants:
     test_refs: []
     note: "ChadBoar canary finding. No deployment config audit."
     last_verified: S52
+
+  # =========================================================================
+  # S53 NEW — SENTINEL WIRING / CSE CONTRACT / E2E
+  # =========================================================================
+
+  - id: INV-SENTINEL-WIRED-1
+    tier: GOVERNANCE
+    domain: execution
+    status: PROVEN
+    proven_by: execution/halt_gate.py (HaltGate.check_before → _run_sentinel)
+    test_refs:
+      - tests/test_sentinel/test_sentinel_wired.py
+    note: "S53. intercept() called on every capital mutation via HaltGate."
+    last_verified: S53
+
+  - id: INV-SENTINEL-FAIL-CLOSED-1
+    tier: GOVERNANCE
+    domain: execution
+    status: PROVEN
+    proven_by: execution/halt_gate.py (_run_sentinel exception → SentinelHaltError)
+    test_refs:
+      - tests/test_sentinel/test_sentinel_fail_closed.py
+    note: "S53. Sentinel exception → HALT, never continue."
+    last_verified: S53
+
+  - id: INV-CSE-EMIT-COMPLETENESS-1
+    tier: DATA
+    domain: cso
+    status: PROVEN
+    proven_by: cso/scanner.py (_emit_cse validates before emit)
+    test_refs:
+      - tests/test_cse_contract/test_cse_contract.py
+    note: "S53. Scanner CSE validated at emit boundary, schema-complete."
+    last_verified: S53
+
+  - id: INV-CSE-VERSION-SINGLE-SOURCE-1
+    tier: DATA
+    domain: cso
+    status: PROVEN
+    proven_by: cso/constants.py (CSE_VERSION defined once)
+    test_refs:
+      - tests/test_cse_contract/test_cse_contract.py
+    note: "S53. cse_version defined once in cso/constants.py, imported everywhere."
+    last_verified: S53
+
+  - id: INV-E2E-DETERMINISTIC-1
+    tier: DATA
+    domain: execution
+    status: PROVEN
+    proven_by: tests/integration/test_e2e_s53_pipeline.py
+    test_refs:
+      - tests/integration/test_e2e_s53_pipeline.py
+    note: "S53. Identical inputs → identical outputs in synthetic mode."
+    last_verified: S53
+
+  - id: INV-REGISTRY-CONSISTENCY-1
+    tier: OPERATIONAL
+    domain: system
+    status: PROVEN
+    proven_by: scripts/validate_registry.py
+    test_refs:
+      - scripts/validate_registry.py
+    note: "S53. Registry declared count matches file entries."
+    last_verified: S53
+
+  - id: INV-MANIFEST-DERIVED-NOT-TYPED-1
+    tier: OPERATIONAL
+    domain: system
+    status: PROVEN
+    proven_by: scripts/validate_manifest.py
+    test_refs:
+      - scripts/validate_manifest.py
+    note: "S53. Manifest counts generated, not typed."
+    last_verified: S53

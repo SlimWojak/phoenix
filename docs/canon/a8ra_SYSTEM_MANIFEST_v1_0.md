@@ -2,13 +2,13 @@
 
 ```yaml
 document: SYSTEM_MANIFEST
-version: 1.3
-date: 2026-02-22
-status: CANONICAL — updated post S51 RIVER FOUNDATION
+version: 1.5
+date: 2026-02-24
+status: CANONICAL — updated post S53.1 ORACLE_REMEDIATION
 purpose: Single M2M orientation for every Claude instance in the a8ra ecosystem
 update_discipline: Any session making a significant decision appends a MANIFEST DELTA
 owner: G (Sovereign Operator)
-supersedes: SYSTEM_MANIFEST v1.2
+supersedes: SYSTEM_MANIFEST v1.4
 ```
 
 ---
@@ -102,15 +102,15 @@ CONNECTIVITY:
 ### 4.1 Phoenix (Constitutional Trading System)
 
 ```yaml
-status: v0.1 SEALED + S52 HARDENING COMPLETE
+status: v0.1 SEALED + S53 JANK_NUKE IN PROGRESS
 repo: phoenix/ (private, tag: v0.1)
-current_sprint: S52 COMPLETE — POST-AUDIT HARDENING delivered
+current_sprint: S53 JANK_NUKE — seam correctness, wire partials, seal contracts
 
 cumulative_metrics:
-  sprints_complete: 22 (S28-S44, S46-S52)
-  tests_passing: 1690+ (exact count from full suite pending confirmation, 55 new in S52)
+  sprints_complete: 23 (S28-S44, S46-S53)
+  tests_passing: 1786 (validated by scripts/validate_manifest.py, 2026-02-24)
   chaos_vectors: 264/264 PASS
-  invariants_frozen: 163+ (159 pre-S52 + 4 new: BOUNDS-PASSIVE, BOUNDS-HEARTBEAT, SENTINEL-LATENCY, CSE-PROVENANCE)
+  invariants_frozen: 167+ (163 pre-S53 + 4 new: SENTINEL-WIRED, SENTINEL-FAIL-CLOSED, CSE-EMIT-COMPLETENESS, E2E-DETERMINISTIC)
   bead_types: 17+
   gates_mapped: 48
   seal_date: 2026-02-22
@@ -428,7 +428,7 @@ DEC-S47: "PERISH_BY_DEFAULT + STATE_LOCK hash protection"
 # Bead Field & Analytical
 DEC-TEMPORAL-BOUNDING: "DERIVED WT = intersection of OBSERVATION spans"
 DEC-MERKLE-HYBRID: "Decision Boundary + 500 bead / 1hr fallback"
-DEC-GENESIS-SNAPSHOT: "981 CLAIMs = single Merkle root = Bead Zero"
+DEC-GENESIS-SNAPSHOT: "789 CLAIMs (corrected from 981 — see DRIFT_LOG DELTA-1) = single Merkle root = Bead Zero"
 DEC-FORMAL-HANDOFF: "commit() is bright line"
 DEC-PQC-FOUNDATIONAL: "Software-first signing. TEE additional."
 
