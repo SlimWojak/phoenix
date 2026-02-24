@@ -5,6 +5,9 @@ Intraday: bars accumulate in staging JSONL.
 End of forex day (17:00 NY): consolidate staging → daily parquet.
 Daily parquet is then write-once immutable forever.
 
+Streaming primitive: reqHistoricalData(keepUpToDate=True) for 1m bars.
+(reqRealTimeBars only supports 5s bars — wrong granularity.)
+
 Invariants:
     INV-RIVER-IMMUTABLE: Daily parquet files are write-once
     INV-RIVER-BITEMPORAL: knowledge_time = IBKR callback timestamp
@@ -15,9 +18,13 @@ Invariants:
 from __future__ import annotations
 
 import json
+import os
 import sys
+import tempfile
+import time
 from datetime import UTC, datetime
 from pathlib import Path
+from typing import Any
 from zoneinfo import ZoneInfo
 
 import pandas as pd
@@ -33,7 +40,6 @@ from .schema import (
     validate_raw_bars,
 )
 
-# EventKit namespace conflict on macOS
 if "EventKit._metadata" in sys.modules:
     del sys.modules["EventKit._metadata"]
 if "EventKit" in sys.modules:
@@ -51,15 +57,19 @@ logger = structlog.get_logger(__name__)
 NY = ZoneInfo("America/New_York")
 IBKR_DEFAULT_PORT = 4002
 STALENESS_THRESHOLD_SECONDS = 120
+WATCHDOG_INITIAL_TIMEOUT_S = 60
+RESUBSCRIBE_MAX_ATTEMPTS = 3
+RESUBSCRIBE_BACKOFF_S = [5, 15, 45]
 
 
 class RiverStreamer:
     """Live 1m bar streaming from IBKR to River.
 
+    Uses reqHistoricalData(keepUpToDate=True) for proper 1m bar delivery.
     Bars arrive via IBKR callback. Each bar is:
     1. Validated (INV-NO-FORMING-CANDLE: only closed bars)
     2. Written to staging JSONL (phoenix-river/{pair}/.staging/{date}.jsonl)
-    3. Heartbeat updated (phoenix-river/.heartbeat)
+    3. Heartbeat updated (phoenix-river/.heartbeat.json)
 
     At forex day close (17:00 NY), staging consolidates into daily parquet.
     """
@@ -77,11 +87,18 @@ class RiverStreamer:
         self._pair = pair
         self._root = river_root or get_river_root()
         self._ibkr_port = ibkr_port
-        self._ib = None
+        self._ib: Any = None
         self._running = False
         self._last_bar_time: datetime | None = None
         self._last_bar_ts: pd.Timestamp | None = None
         self._consecutive_gaps: int = 0
+
+        self._state = "STOPPED"
+        self._connected = False
+        self._subscribed = False
+        self._resubscribe_attempts = 0
+        self._bars_handle: Any = None
+        self._subscribe_time: float | None = None
 
     @property
     def staging_dir(self) -> Path:
@@ -89,7 +106,7 @@ class RiverStreamer:
 
     @property
     def heartbeat_path(self) -> Path:
-        return self._root / ".heartbeat"
+        return self._root / ".heartbeat.json"
 
     def staging_path(self, dt: datetime) -> Path:
         return self.staging_dir / f"{dt.strftime('%Y-%m-%d')}.jsonl"
@@ -107,48 +124,128 @@ class RiverStreamer:
 
         from ib_insync import IB, Forex
 
+        self._state = "STARTED"
+        self._update_heartbeat()
+
         self._ib = IB()
         cid = random.randint(700, 799)  # noqa: S311
         logger.info("streamer_connecting", pair=self._pair, port=self._ibkr_port, cid=cid)
         self._ib.connect("127.0.0.1", self._ibkr_port, clientId=cid, timeout=15)
 
-        contract = Forex(self._pair)
-        self._ib.qualifyContracts(contract)
+        self._connected = True
+        self._ib.errorEvent += self._on_ib_error
 
-        self._ib.reqRealTimeBars(
-            contract,
-            barSize=5,
-            whatToShow="MIDPOINT",
-            useRTH=False,
-        )
-        self._ib.barUpdateEvent += self._on_bar_update
+        mdt = int(os.environ.get("IB_MARKET_DATA_TYPE", "1"))
+        self._ib.reqMarketDataType(mdt)
+        logger.info("market_data_type_set", type=mdt)
+
+        self._subscribe()
 
         self._running = True
         self.staging_dir.mkdir(parents=True, exist_ok=True)
         logger.info("streamer_started", pair=self._pair)
+        self._update_heartbeat()
 
         try:
             while self._running:
                 self._ib.sleep(1)
-                self._check_staleness()
+                self._check_watchdog()
         except KeyboardInterrupt:
             logger.info("streamer_interrupted")
         finally:
             self.stop()
 
+    def _subscribe(self) -> None:
+        """Subscribe to 1m bars via reqHistoricalData(keepUpToDate=True)."""
+        from ib_insync import Forex
+
+        contract = Forex(self._pair)
+        self._ib.qualifyContracts(contract)
+
+        logger.info(
+            "streamer_subscribing",
+            pair=self._pair,
+            exchange=contract.exchange,
+            what_to_show="MIDPOINT",
+            bar_size="1 min",
+            keep_up_to_date=True,
+        )
+
+        self._bars_handle = self._ib.reqHistoricalData(
+            contract,
+            endDateTime="",
+            durationStr="120 S",
+            barSizeSetting="1 min",
+            whatToShow="MIDPOINT",
+            useRTH=False,
+            keepUpToDate=True,
+            timeout=30,
+        )
+
+        seed_count = len(self._bars_handle) if self._bars_handle else 0
+        logger.info("subscribe_seed_received", pair=self._pair, seed_bars=seed_count)
+
+        if self._bars_handle and len(self._bars_handle) > 0:
+            last_seed = self._bars_handle[-1]
+            self._last_bar_time = datetime.now(UTC)
+            self._last_bar_ts = pd.Timestamp(last_seed.date, tz="UTC")
+            logger.info(
+                "subscribe_seed_anchor",
+                last_seed_ts=str(self._last_bar_ts),
+            )
+
+        self._bars_handle.updateEvent += self._on_bar_update
+        self._subscribed = True
+        self._subscribe_time = time.monotonic()
+        self._resubscribe_attempts = 0
+        self._update_heartbeat()
+
     def stop(self) -> None:
         """Stop streaming and consolidate any pending staging data."""
         self._running = False
+        self._subscribed = False
         if self._ib and self._ib.isConnected():
             self._ib.disconnect()
+        self._connected = False
+        self._state = "STOPPED"
+        self._update_heartbeat()
         logger.info("streamer_stopped", pair=self._pair)
+
+    # ------------------------------------------------------------------
+    # IB Error Callback (P0_1)
+    # ------------------------------------------------------------------
+
+    def _on_ib_error(
+        self, reqId: int, errorCode: int, errorString: str, contract: Any = None,
+    ) -> None:
+        """IB error/warning callback. Logs all events for observability."""
+        contract_str = str(contract) if contract else "N/A"
+        if errorCode in (2104, 2106, 2158):
+            logger.info("ib_info", code=errorCode, msg=errorString, contract=contract_str)
+            return
+
+        logger.warning(
+            "ib_error",
+            req_id=reqId,
+            code=errorCode,
+            msg=errorString,
+            contract=contract_str,
+            pair=self._pair,
+        )
+
+        if errorCode in (1100, 1300, 504, 502):
+            self._connected = False
+            self._subscribed = False
+            if self._state != "STOPPED":
+                self._state = "DEGRADED"
+            self._update_heartbeat()
 
     # ------------------------------------------------------------------
     # Bar handling
     # ------------------------------------------------------------------
 
-    def _on_bar_update(self, bars, has_new_bar: bool) -> None:
-        """Callback from ib_insync for each real-time bar update.
+    def _on_bar_update(self, bars: Any, has_new_bar: bool) -> None:
+        """Callback from ib_insync for each historical bar update.
 
         INV-NO-FORMING-CANDLE: We only process when has_new_bar=True,
         which means the previous bar is closed and complete.
@@ -158,9 +255,12 @@ class RiverStreamer:
 
         bar = bars[-1]
         kt = datetime.now(UTC)
-        bar_ts = pd.Timestamp(bar.time, tz="UTC")
+        bar_ts = pd.Timestamp(bar.date, tz="UTC")
 
-        # Real-time gap detection (F3 silent failure defense)
+        if self._state != "STREAMING":
+            self._state = "STREAMING"
+            logger.info("streamer_first_bar", pair=self._pair, bar_ts=str(bar_ts))
+
         if self._last_bar_ts is not None:
             expected_gap = pd.Timedelta(minutes=1)
             actual_gap = bar_ts - self._last_bar_ts
@@ -181,7 +281,7 @@ class RiverStreamer:
 
         bar_data = {
             "timestamp": bar_ts.isoformat(),
-            "open": float(bar.open_),
+            "open": float(bar.open),
             "high": float(bar.high),
             "low": float(bar.low),
             "close": float(bar.close),
@@ -190,7 +290,7 @@ class RiverStreamer:
             "knowledge_time": kt.isoformat(),
         }
 
-        bar_date = pd.Timestamp(bar.time).date()
+        bar_date = pd.Timestamp(bar.date).date()
         staging_file = self.staging_path(bar_date)
         staging_file.parent.mkdir(parents=True, exist_ok=True)
 
@@ -207,9 +307,24 @@ class RiverStreamer:
             close=bar_data["close"],
         )
 
-    def _check_staleness(self) -> None:
-        """Alert if no bar received for > STALENESS_THRESHOLD during trading hours."""
+    # ------------------------------------------------------------------
+    # Watchdog (P0_3 + P0_4 + resubscribe with backoff)
+    # ------------------------------------------------------------------
+
+    def _check_watchdog(self) -> None:
+        """Combined watchdog: initial connect timeout + ongoing staleness."""
         if self._last_bar_time is None:
+            if (
+                self._subscribe_time is not None
+                and self._is_trading_hours()
+                and (time.monotonic() - self._subscribe_time) > WATCHDOG_INITIAL_TIMEOUT_S
+            ):
+                logger.warning(
+                    "watchdog_no_first_bar",
+                    pair=self._pair,
+                    elapsed_s=int(time.monotonic() - self._subscribe_time),
+                )
+                self._attempt_resubscribe()
             return
 
         elapsed = (datetime.now(UTC) - self._last_bar_time).total_seconds()
@@ -220,18 +335,76 @@ class RiverStreamer:
                 seconds_since_last_bar=int(elapsed),
             )
 
-    def _update_heartbeat(self) -> None:
-        """Write heartbeat file for monitoring."""
-        self.heartbeat_path.parent.mkdir(parents=True, exist_ok=True)
-        self.heartbeat_path.write_text(
-            json.dumps(
-                {
-                    "pair": self._pair,
-                    "last_bar": self._last_bar_time.isoformat() if self._last_bar_time else None,
-                    "updated": datetime.now(UTC).isoformat(),
-                }
+    def _attempt_resubscribe(self) -> None:
+        """Resubscribe with exponential backoff. Max RESUBSCRIBE_MAX_ATTEMPTS."""
+        if self._resubscribe_attempts >= RESUBSCRIBE_MAX_ATTEMPTS:
+            logger.error(
+                "resubscribe_exhausted",
+                pair=self._pair,
+                attempts=self._resubscribe_attempts,
             )
+            self._state = "DEGRADED"
+            self._subscribed = False
+            self._update_heartbeat()
+            return
+
+        backoff = RESUBSCRIBE_BACKOFF_S[
+            min(self._resubscribe_attempts, len(RESUBSCRIBE_BACKOFF_S) - 1)
+        ]
+        self._resubscribe_attempts += 1
+        logger.warning(
+            "resubscribe_attempt",
+            pair=self._pair,
+            attempt=self._resubscribe_attempts,
+            max_attempts=RESUBSCRIBE_MAX_ATTEMPTS,
+            backoff_s=backoff,
         )
+
+        time.sleep(backoff)
+
+        try:
+            if self._bars_handle is not None:
+                self._ib.cancelHistoricalData(self._bars_handle)
+            self._subscribe()
+        except Exception:
+            logger.exception("resubscribe_failed", pair=self._pair)
+            if self._resubscribe_attempts >= RESUBSCRIBE_MAX_ATTEMPTS:
+                self._state = "DEGRADED"
+                self._subscribed = False
+                self._update_heartbeat()
+
+    # ------------------------------------------------------------------
+    # Heartbeat (P2 — atomic JSON write)
+    # ------------------------------------------------------------------
+
+    def _update_heartbeat(self) -> None:
+        """Write heartbeat file atomically (tmp + rename)."""
+        self.heartbeat_path.parent.mkdir(parents=True, exist_ok=True)
+        payload = json.dumps(
+            {
+                "state": self._state,
+                "connected": self._connected,
+                "subscribed": self._subscribed,
+                "pair": self._pair,
+                "pairs_active": [self._pair] if self._subscribed else [],
+                "pairs_failed": [] if self._subscribed else ([self._pair] if self._state == "DEGRADED" else []),
+                "last_bar_time": self._last_bar_time.isoformat() if self._last_bar_time else None,
+                "last_update": datetime.now(UTC).isoformat(),
+                "resubscribe_attempts": self._resubscribe_attempts,
+            },
+            indent=2,
+        )
+
+        fd, tmp_path = tempfile.mkstemp(
+            dir=str(self.heartbeat_path.parent), suffix=".tmp",
+        )
+        try:
+            os.write(fd, payload.encode())
+            os.close(fd)
+            os.replace(tmp_path, str(self.heartbeat_path))
+        except Exception:
+            os.close(fd) if not os.get_inheritable(fd) else None  # noqa: E701
+            logger.exception("heartbeat_write_failed")
 
     # ------------------------------------------------------------------
     # Consolidation (staging JSONL → daily parquet)
@@ -301,7 +474,10 @@ class RiverStreamer:
 
     @staticmethod
     def _is_trading_hours() -> bool:
-        """Check if forex market is currently open."""
+        """Check if forex market is currently open (UTC-based boundaries).
+
+        FX hours: Sunday 22:00 UTC → Friday 22:00 UTC (continuous).
+        """
         now_ny = datetime.now(NY)
         dow = now_ny.weekday()
         hour = now_ny.hour
