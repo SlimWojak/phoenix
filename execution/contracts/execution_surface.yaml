@@ -1,10 +1,10 @@
-# Execution Surface Contract — S28.C
-# VERSION: 0.2
-# STATUS: MOCK_SIGNALS (PAPER_ONLY)
+# Execution Surface Contract — S54 (updated from S28.C)
+# VERSION: 2.0
+# STATUS: PAPER + IBKR_PAPER (live-ready)
 
 contract_id: EXEC-SURFACE-001
-version: "0.2.0"
-sprint: "S28.C"
+version: "2.0.0"
+sprint: "S54"
 status: ACTIVE
 
 # =============================================================================
@@ -29,9 +29,10 @@ capabilities:
     halt_gate_integration: true
   
   position_lifecycle:
-    states: [PENDING, OPEN, PARTIAL, CLOSED, HALTED]
+    states: [PROPOSED, APPROVED, SUBMITTED, STALLED, FILLED, MANAGED, CLOSED, CANCELLED, REJECTED, EXPIRED]
     valid_transitions: enforced
     state_machine: deterministic
+    canonical_source: execution/positions/states.py
   
   paper_broker:
     fill_mode: IMMEDIATE
@@ -95,26 +96,43 @@ invariants:
 # =============================================================================
 
 position_lifecycle:
+  version: 2
+  canonical_source: execution/positions/states.py
   states:
-    PENDING:
-      description: "Intent received, order not yet filled"
-      transitions_to: [OPEN, PARTIAL, CLOSED, HALTED]
-    
-    OPEN:
-      description: "Order filled, position active"
-      transitions_to: [PARTIAL, CLOSED, HALTED]
-    
-    PARTIAL:
-      description: "Partial fill received"
-      transitions_to: [OPEN, CLOSED, HALTED]
-    
+    PROPOSED:
+      description: "Intent received, awaiting T2 approval"
+      transitions_to: [APPROVED, CANCELLED]
+    APPROVED:
+      description: "Human approved, T2 token issued"
+      transitions_to: [SUBMITTED, EXPIRED]
+    SUBMITTED:
+      description: "Order sent to broker, awaiting fill"
+      transitions_to: [FILLED, STALLED, REJECTED]
+    STALLED:
+      description: "Broker timeout (60s without ACK) — WP_C1"
+      transitions_to: [FILLED, CANCELLED]
+    FILLED:
+      description: "Entry executed, position open"
+      transitions_to: [MANAGED]
+    MANAGED:
+      description: "SL/TP in place, monitoring"
+      transitions_to: [CLOSED]
     CLOSED:
-      description: "Exit complete, position closed"
+      description: "Position exited (win/loss/BE)"
       transitions_to: []  # Terminal
-    
-    HALTED:
-      description: "System halt killed position"
+    CANCELLED:
+      description: "Order cancelled before fill"
       transitions_to: []  # Terminal
+    REJECTED:
+      description: "Broker rejected order"
+      transitions_to: []  # Terminal
+    EXPIRED:
+      description: "T2 token expired before submission"
+      transitions_to: []  # Terminal
+  terminal_states: [CLOSED, CANCELLED, REJECTED, EXPIRED]
+  invariants:
+    - INV-POSITION-SM-1
+    - INV-EXEC-LIFECYCLE-1
 
 # =============================================================================
 # P&L SEMANTICS (v0 SIMPLIFIED)
@@ -228,6 +246,16 @@ constraints:
 # =============================================================================
 
 changelog:
+  - version: "2.0.0"
+    date: "2026-02-24"
+    sprint: "S54"
+    changes:
+      - "Updated position lifecycle: 5-state S28 → 10-state canonical (execution/positions/states.py)"
+      - "Added T2 approval flow: PROPOSED→APPROVED→SUBMITTED"
+      - "Added problem states: STALLED, REJECTED, EXPIRED"
+      - "Terminal states: CLOSED, CANCELLED, REJECTED, EXPIRED"
+      - "Sourced from oracle audit TIER_2 finding D-1"
+
   - version: "0.2.0"
     date: "2026-01-23"
     sprint: "S28.C"
@@ -238,7 +266,7 @@ changelog:
       - Implemented P&L v0 (simplified)
       - 23/23 tests passing
       - All exit gates PASS
-  
+
   - version: "0.1.0"
     date: "2026-01-22"
     sprint: "S27.0"
