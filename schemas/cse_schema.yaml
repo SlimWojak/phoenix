@@ -59,6 +59,7 @@ cse_fields:
       - CSO           # Chief Strategy Officer (methodology-based)
       - HUNT_SURVIVOR # Promoted from Hunt backtesting
       - MANUAL        # Human-entered signal
+      - MOCK_5DRAWER  # Test/dev source — synthetic 5-drawer evaluation
     description: Signal origin
     required: true
 
