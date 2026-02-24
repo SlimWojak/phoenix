@@ -209,7 +209,8 @@ class LLMClient:
         """
         # Try direct parse
         try:
-            return json.loads(content.strip())
+            parsed: dict[str, Any] = json.loads(content.strip())
+            return parsed
         except json.JSONDecodeError:
             pass
 
@@ -217,7 +218,8 @@ class LLMClient:
         code_block = re.search(r"```(?:json)?\s*([\s\S]*?)```", content)
         if code_block:
             try:
-                return json.loads(code_block.group(1).strip())
+                from_block: dict[str, Any] = json.loads(code_block.group(1).strip())
+                return from_block
             except json.JSONDecodeError:
                 pass
 
@@ -225,7 +227,8 @@ class LLMClient:
         json_match = re.search(r"\{[\s\S]*\}", content)
         if json_match:
             try:
-                return json.loads(json_match.group(0))
+                from_match: dict[str, Any] = json.loads(json_match.group(0))
+                return from_match
             except json.JSONDecodeError:
                 pass
 

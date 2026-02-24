@@ -21,7 +21,7 @@ import threading
 import time
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import Callable, Generic, TypeVar
+from typing import Any, Callable, Generic, TypeVar
 
 T = TypeVar("T")
 
@@ -213,7 +213,7 @@ class CircuitBreaker(Generic[T]):
             self._opened_at = None
             self._probe_in_progress = False
 
-    def get_metrics(self) -> dict:
+    def get_metrics(self) -> dict[str, Any]:
         """Return circuit metrics."""
         with self._lock:
             return {
@@ -248,8 +248,8 @@ class CircuitBreakerRegistry:
         river_breaker = registry.get_or_create("river", failure_threshold=3)
     """
 
-    def __init__(self):
-        self._breakers: dict[str, CircuitBreaker] = {}
+    def __init__(self) -> None:
+        self._breakers: dict[str, CircuitBreaker[Any]] = {}
         self._lock = threading.Lock()
 
     def get_or_create(
@@ -257,7 +257,7 @@ class CircuitBreakerRegistry:
         name: str,
         failure_threshold: int = 3,
         recovery_timeout: float = 60.0,
-    ) -> CircuitBreaker:
+    ) -> CircuitBreaker[Any]:
         """Get existing breaker or create new one."""
         with self._lock:
             if name not in self._breakers:
@@ -268,12 +268,12 @@ class CircuitBreakerRegistry:
                 )
             return self._breakers[name]
 
-    def get(self, name: str) -> CircuitBreaker | None:
+    def get(self, name: str) -> CircuitBreaker[Any] | None:
         """Get breaker by name."""
         with self._lock:
             return self._breakers.get(name)
 
-    def all_metrics(self) -> list[dict]:
+    def all_metrics(self) -> list[dict[str, Any]]:
         """Get metrics from all breakers."""
         with self._lock:
             return [b.get_metrics() for b in self._breakers.values()]
@@ -293,11 +293,11 @@ def get_circuit_breaker(
     name: str,
     failure_threshold: int = 3,
     recovery_timeout: float = 60.0,
-) -> CircuitBreaker:
+) -> CircuitBreaker[Any]:
     """Get or create a circuit breaker from global registry."""
     return _global_registry.get_or_create(name, failure_threshold, recovery_timeout)
 
 
-def get_all_circuit_metrics() -> list[dict]:
+def get_all_circuit_metrics() -> list[dict[str, Any]]:
     """Get metrics from all circuit breakers."""
     return _global_registry.all_metrics()

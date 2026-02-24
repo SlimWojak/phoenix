@@ -151,7 +151,7 @@ class ParamsLoader:
 
         return params, changed
 
-    def validate(self, params: dict) -> ValidationResult:
+    def validate(self, params: dict[str, Any]) -> ValidationResult:
         """
         Validate parameters against schema.
 
@@ -203,7 +203,7 @@ class ParamsLoader:
             warnings=warnings,
         )
 
-    def _parse_params(self, data: dict) -> CSOParams:
+    def _parse_params(self, data: dict[str, Any]) -> CSOParams:
         """Parse YAML data into CSOParams."""
         thresholds = data.get("thresholds", {})
         kill_zones_raw = data.get("kill_zones", {})
@@ -256,7 +256,7 @@ class ParamsLoader:
             ),
         )
 
-    def _compute_hash(self, data: dict) -> str:
+    def _compute_hash(self, data: dict[str, Any]) -> str:
         """Compute hash of params."""
         canonical = json.dumps(data, sort_keys=True)
         return hashlib.sha256(canonical.encode()).hexdigest()[:16]

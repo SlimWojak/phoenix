@@ -12,6 +12,7 @@ EXPANSION (S28.B):
 
 from dataclasses import dataclass, field
 from datetime import UTC, datetime
+from typing import Any
 
 from .types import HealthState, LifecycleState, QualityTelemetry
 
@@ -159,7 +160,7 @@ class TelemetryAggregator:
     Aggregates telemetry across multiple modules.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         self._emitters: dict[str, TelemetryEmitter] = {}
 
     def register(self, emitter: TelemetryEmitter) -> None:
@@ -329,7 +330,7 @@ class ExtendedTelemetryEmitter(TelemetryEmitter):
         self.bounds_violations.record_violation(violation_type)
         self.increment_anomaly()
 
-    def get_extended_telemetry(self) -> dict:
+    def get_extended_telemetry(self) -> dict[str, Any]:
         """Get extended telemetry including S28.B metrics."""
         base = self.get_telemetry()
         return {

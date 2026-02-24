@@ -32,7 +32,9 @@ from collections.abc import Callable
 from dataclasses import dataclass
 from datetime import UTC, datetime
 from enum import Enum
+from typing import Any
 
+from .fidelity import FidelityRecord, compute_fidelity
 from .intent import ExecutionIntent, IntentType
 from .positions.paper import PaperPosition as Position
 from .positions.paper import PaperPositionRegistry as PositionRegistry
@@ -83,7 +85,7 @@ class OrderResult:
     timestamp: datetime
     error: str | None = None
 
-    def to_dict(self) -> dict:
+    def to_dict(self) -> dict[str, Any]:
         return {
             "success": self.success,
             "intent_id": self.intent_id,
@@ -107,7 +109,7 @@ class ExitResult:
     timestamp: datetime
     error: str | None = None
 
-    def to_dict(self) -> dict:
+    def to_dict(self) -> dict[str, Any]:
         return {
             "success": self.success,
             "position_id": self.position_id,
@@ -140,7 +142,7 @@ class PaperBrokerStub:
     def __init__(
         self,
         halt_check_fn: Callable[[], bool],
-        current_price_fn: Callable[[str], float] | None = None,
+        current_price_fn: Callable[[str], float | None] | None = None,
     ):
         """
         Initialize paper broker.
@@ -151,11 +153,12 @@ class PaperBrokerStub:
                               (defaults to using intent price)
         """
         self._halt_check_fn = halt_check_fn
-        self._current_price_fn = current_price_fn or (lambda s: None)
+        self._current_price_fn: Callable[[str], float | None] = current_price_fn or (lambda s: None)
 
         self._registry = PositionRegistry()
         self._order_history: list[OrderResult] = []
         self._exit_history: list[ExitResult] = []
+        self._fidelity_log: list[FidelityRecord] = []
 
         # Halt state
         self._halted = False
@@ -243,6 +246,15 @@ class PaperBrokerStub:
             timestamp=now,
         )
 
+        # INV-EXECUTION-FIDELITY: emit on every fill
+        fidelity = compute_fidelity(
+            intent_id=intent.intent_id,
+            expected_price=intent.entry_price or fill_price,
+            actual_price=fill_price,
+            venue="PAPER",
+        )
+        self._fidelity_log.append(fidelity)
+
         self._order_history.append(result)
         return result
 
@@ -312,6 +324,11 @@ class PaperBrokerStub:
                 timestamp=now,
                 error=str(e),
             )
+
+    @property
+    def fidelity_log(self) -> list[FidelityRecord]:
+        """INV-EXECUTION-FIDELITY: observable fidelity records."""
+        return list(self._fidelity_log)
 
     def on_halt(self, halt_id: str) -> int:
         """
@@ -385,7 +402,7 @@ class PaperBrokerStub:
         canonical = json.dumps(components, sort_keys=True)
         return hashlib.sha256(canonical.encode()).hexdigest()[:16]
 
-    def get_history(self) -> dict:
+    def get_history(self) -> dict[str, Any]:
         """Get order and exit history."""
         return {
             "orders": [o.to_dict() for o in self._order_history],
@@ -400,7 +417,7 @@ class PaperBrokerStub:
         self._halted = False
         self._halt_id = None
 
-    def to_dict(self) -> dict:
+    def to_dict(self) -> dict[str, Any]:
         """Serialize broker state."""
         return {
             "positions": self._registry.to_dict(),

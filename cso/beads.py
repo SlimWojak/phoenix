@@ -17,6 +17,7 @@ import json
 from dataclasses import dataclass, field
 from datetime import UTC, datetime
 from enum import Enum
+from typing import Any
 
 # =============================================================================
 # EXCEPTIONS
@@ -88,7 +89,7 @@ class Bead:
 
     # Content
     symbol: str
-    content: dict
+    content: dict[str, Any]
     comprehension_hash: str
 
     # Source
@@ -96,13 +97,13 @@ class Bead:
     source_state_hash: str
 
     # Outcome (can be set once, not modified)
-    outcome: dict | None = None
+    outcome: dict[str, Any] | None = None
     outcome_set_at: datetime | None = None
 
     # Immutability flag
     _frozen: bool = field(default=False, repr=False)
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         """Freeze bead after creation."""
         # Validate S27 constraint: DRAFT only
         if self.status != BeadStatus.DRAFT:
@@ -115,7 +116,7 @@ class Bead:
         # Freeze
         object.__setattr__(self, "_frozen", True)
 
-    def __setattr__(self, name: str, value) -> None:
+    def __setattr__(self, name: str, value: Any) -> None:
         """Enforce immutability."""
         if hasattr(self, "_frozen") and self._frozen:
             # Allow setting outcome ONCE
@@ -137,7 +138,7 @@ class Bead:
         canonical = json.dumps(hashable, sort_keys=True, default=str)
         return hashlib.sha256(canonical.encode()).hexdigest()[:16]
 
-    def to_dict(self) -> dict:
+    def to_dict(self) -> dict[str, Any]:
         """Serialize to dict (for storage)."""
         return {
             "bead_id": self.bead_id,
@@ -167,7 +168,7 @@ class BeadFactory:
     S27 CONSTRAINT: Can only create DRAFT beads.
     """
 
-    def __init__(self, source_module: str):
+    def __init__(self, source_module: str) -> None:
         self.source_module = source_module
         self._counter = 0
 
@@ -176,7 +177,7 @@ class BeadFactory:
         symbol: str,
         direction: str,
         confidence: float,
-        gate_result: dict,
+        gate_result: dict[str, Any],
         state_hash: str,
         ttl_hours: int = 24,
     ) -> Bead:
@@ -221,7 +222,7 @@ class BeadFactory:
         )
 
     def create_observation_bead(
-        self, symbol: str, observation_type: str, details: dict, state_hash: str
+        self, symbol: str, observation_type: str, details: dict[str, Any], state_hash: str
     ) -> Bead:
         """Create a DRAFT observation bead."""
         now = datetime.now(UTC)
@@ -247,7 +248,7 @@ class BeadFactory:
             source_state_hash=state_hash,
         )
 
-    def create_comprehension_bead(self, symbol: str, understanding: dict, state_hash: str) -> Bead:
+    def create_comprehension_bead(self, symbol: str, understanding: dict[str, Any], state_hash: str) -> Bead:
         """Create a DRAFT comprehension bead (intertwine response)."""
         now = datetime.now(UTC)
         self._counter += 1

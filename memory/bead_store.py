@@ -138,7 +138,7 @@ class Bead:
 
     @staticmethod
     def compute_hash(
-        content: dict,
+        content: dict[str, Any],
         prev_hash: str | None,
         timestamp: datetime,
         signer: str,
@@ -393,7 +393,7 @@ class BeadStore:
             content=json.loads(row["content"]),
         )
 
-    def query_sql(self, sql: str, params: tuple = ()) -> list[dict[str, Any]]:
+    def query_sql(self, sql: str, params: tuple[Any, ...] = ()) -> list[dict[str, Any]]:
         """
         Execute read-only SQL query.
 
@@ -467,4 +467,5 @@ class BeadStore:
         else:
             cursor.execute("SELECT COUNT(*) FROM beads")
 
-        return cursor.fetchone()[0]
+        row = cursor.fetchone()
+        return int(row[0]) if row else 0

@@ -19,6 +19,8 @@ from typing import Any
 
 import yaml
 
+from .constants import CSE_VERSION
+from .consumer import CSEValidator
 from .params_loader import CSOParams, ParamsLoader
 from .strategy_core import Setup, SetupResult, SetupStatus, StrategyCore
 from .structure_detector import StructureDetector
@@ -82,6 +84,9 @@ class CSESignal:
     parameters: dict[str, float]
     evidence_hash: str
 
+    # INV-CSE-VERSION-SINGLE-SOURCE-1
+    cse_version: str = CSE_VERSION
+
     # S52 T3 — River provenance (REQUIRED per INV-CSE-PROVENANCE-1)
     river_latest_bar_timestamp: str | None = None
     river_knowledge_time: str | None = None
@@ -89,6 +94,7 @@ class CSESignal:
 
     def to_dict(self) -> dict[str, Any]:
         return {
+            "cse_version": self.cse_version,
             "signal_id": self.signal_id,
             "timestamp": self.timestamp.isoformat(),
             "pair": self.pair,
@@ -146,6 +152,10 @@ class CSOScanner:
             ready_threshold=self._params.ready_min,
             forming_threshold=self._params.forming_min,
         )
+
+        # Provenance extracted per-pair during scan (sequential, safe)
+        self._current_provenance: dict[str, str | None] = {}
+        self._emit_validator = CSEValidator()
 
     def scan_all_pairs(self) -> ScanResult:
         """
@@ -268,9 +278,20 @@ class CSOScanner:
             else:
                 current_price = 0.0
 
+            # Extract River provenance for CSE emission
+            if not ltf_bars.empty and "knowledge_time" in ltf_bars.columns:
+                self._current_provenance = {
+                    "river_latest_bar_timestamp": str(ltf_bars["timestamp"].max().isoformat()),
+                    "river_knowledge_time": str(ltf_bars["knowledge_time"].max().isoformat()),
+                    "river_bar_hash_sample": str(ltf_bars.iloc[-1].get("bar_hash", "")),
+                }
+            else:
+                self._current_provenance = {}
+
             return htf_bars, ltf_bars, current_price
 
         except Exception:
+            self._current_provenance = {}
             return None, None, 0.0
 
     def _emit_cse(self, result: SetupResult) -> None:
@@ -299,7 +320,20 @@ class CSOScanner:
                 "risk_percent": setup.risk_percent,
             },
             evidence_hash=setup.evidence.evidence_hash,
+            cse_version=CSE_VERSION,
+            river_latest_bar_timestamp=self._current_provenance.get(
+                "river_latest_bar_timestamp"
+            ),
+            river_knowledge_time=self._current_provenance.get("river_knowledge_time"),
+            river_bar_hash_sample=self._current_provenance.get("river_bar_hash_sample"),
         )
+
+        # INV-CSE-EMIT-COMPLETENESS-1: validate before emission
+        validation = self._emit_validator.validate(cse.to_dict())
+        if not validation.valid:
+            raise ValueError(
+                f"INV-CSE-EMIT-COMPLETENESS-1: invalid CSE: {validation.errors}"
+            )
 
         # WIRING: Send to Shadow
         if self._shadow is not None:

@@ -89,7 +89,7 @@ class QueryIR:
 
     def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary."""
-        result = {
+        result: dict[str, Any] = {
             "query_version": self.query_version,
             "query_id": self.query_id,
             "timestamp_utc": self.timestamp_utc.isoformat(),

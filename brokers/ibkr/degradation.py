@@ -16,7 +16,7 @@ import threading
 import time
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import Callable
+from typing import Any, Callable
 
 from governance.health_fsm import HealthStateMachine
 
@@ -248,7 +248,7 @@ class DegradationManager:
         # Override in subclass for real validation
         return True
 
-    def get_status(self) -> dict:
+    def get_status(self) -> dict[str, Any]:
         """Get degradation status."""
         with self._lock:
             degraded_duration = None
@@ -282,7 +282,7 @@ class DegradationManager:
 # =============================================================================
 
 
-def require_tier(tier: int, manager: DegradationManager):
+def require_tier(tier: int, manager: DegradationManager) -> Callable[..., Any]:
     """
     Decorator to guard functions by tier.
 
@@ -291,8 +291,8 @@ def require_tier(tier: int, manager: DegradationManager):
         def place_order(order):
             ...
     """
-    def decorator(fn):
-        def wrapper(*args, **kwargs):
+    def decorator(fn: Callable[..., Any]) -> Callable[..., Any]:
+        def wrapper(*args: Any, **kwargs: Any) -> Any:
             manager.check_tier(tier)
             return fn(*args, **kwargs)
         wrapper.__name__ = fn.__name__

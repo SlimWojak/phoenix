@@ -28,6 +28,7 @@ from collections.abc import Callable
 from dataclasses import dataclass, field
 from datetime import UTC, datetime
 from enum import Enum
+from typing import Any
 
 logger = logging.getLogger(__name__)
 
@@ -35,10 +36,10 @@ logger = logging.getLogger(__name__)
 # BEAD EMISSION
 # =============================================================================
 
-_violation_callback: Callable[[dict], None] | None = None
+_violation_callback: Callable[[dict[str, Any]], None] | None = None
 
 
-def set_violation_callback(callback: Callable[[dict], None]) -> None:
+def set_violation_callback(callback: Callable[[dict[str, Any]], None]) -> None:
     """Set callback for violation bead emission."""
     global _violation_callback
     _violation_callback = callback
@@ -46,7 +47,7 @@ def set_violation_callback(callback: Callable[[dict], None]) -> None:
 
 def _emit_violation_bead(
     violation_type: str, from_state: str, to_state: str, position_id: str | None = None
-) -> dict:
+) -> dict[str, Any]:
     """Emit VIOLATION bead for InvalidTransitionError."""
     now = datetime.now(UTC)
 
@@ -185,7 +186,7 @@ class PaperPosition:
     symbol: str
     direction: str  # "LONG" or "SHORT"
 
-    state_history: list[dict] = field(default_factory=list)
+    state_history: list[dict[str, Any]] = field(default_factory=list)
 
     entry_price: float | None = None
     exit_price: float | None = None
@@ -201,7 +202,7 @@ class PaperPosition:
 
     position_hash: str = ""
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         if not self.state_history:
             self._record_state_change(None, self.state, "created")
         if not self.position_hash:
@@ -291,7 +292,7 @@ class PaperPosition:
         self.unrealized_pnl = (current_price - self.entry_price) * self.filled_size * direction_mult
         return self.unrealized_pnl
 
-    def to_dict(self) -> dict:
+    def to_dict(self) -> dict[str, Any]:
         return {
             "position_id": self.position_id,
             "intent_id": self.intent_id,
@@ -320,7 +321,7 @@ class PaperPosition:
 class PaperPositionRegistry:
     """Registry for paper broker position tracking."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         self._positions: dict[str, PaperPosition] = {}
         self._counter = 0
 
@@ -384,7 +385,7 @@ class PaperPositionRegistry:
         combined = "|".join(position_hashes)
         return hashlib.sha256(combined.encode()).hexdigest()[:16]
 
-    def to_dict(self) -> dict:
+    def to_dict(self) -> dict[str, Any]:
         return {
             "positions": {pid: p.to_dict() for pid, p in self._positions.items()},
             "count": len(self._positions),

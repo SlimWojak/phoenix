@@ -128,7 +128,7 @@ class SLMOutput:
     violation_details: tuple[dict[str, Any], ...] = field(default_factory=tuple)
     confidence: SLMConfidence | None = None
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         """Validate output structure."""
         # BANNED must have reason_code
         if self.classification == SLMClassification.BANNED and self.reason_code is None:
@@ -138,6 +138,8 @@ class SLMOutput:
         """Convert to canonical string format."""
         if self.classification == SLMClassification.VALID_FACTS:
             return "VALID_FACTS"
+        if self.reason_code is None:
+            return "BANNED"
         return f"BANNED — {self.reason_code.value}"
 
     @classmethod
@@ -340,7 +342,7 @@ def slm_output_guard(fn: Callable[..., T]) -> Callable[..., SLMOutput]:
     """
 
     @functools.wraps(fn)
-    def wrapper(*args, **kwargs) -> SLMOutput:
+    def wrapper(*args: Any, **kwargs: Any) -> SLMOutput:
         result = fn(*args, **kwargs)
         return validate_slm_output(result)
 
@@ -360,7 +362,7 @@ def slm_input_guard(fn: Callable[..., T]) -> Callable[..., T]:
     """
 
     @functools.wraps(fn)
-    def wrapper(*args, **kwargs) -> T:
+    def wrapper(*args: Any, **kwargs: Any) -> T:
         # Validate first positional arg (content) if string
         if args and isinstance(args[0], str):
             content = args[0]
@@ -390,7 +392,7 @@ def slm_full_guard(fn: Callable[..., T]) -> Callable[..., SLMOutput]:
     """
 
     @functools.wraps(fn)
-    def wrapper(*args, **kwargs) -> SLMOutput:
+    def wrapper(*args: Any, **kwargs: Any) -> SLMOutput:
         # Input validation
         if args and isinstance(args[0], str):
             content = args[0]
@@ -576,9 +578,8 @@ class ContentClassifier:
 
     FACTS_BANNER = "FACTS_ONLY — NO INTERPRETATION"
 
-    def __init__(self):
-        # Compile patterns
-        self._compiled: dict[SLMReasonCode, list[re.Pattern]] = {}
+    def __init__(self) -> None:
+        self._compiled: dict[SLMReasonCode, list[re.Pattern[str]]] = {}
         for reason, patterns in self.BANNED_PATTERNS.items():
             self._compiled[reason] = [
                 re.compile(p, re.IGNORECASE) for p in patterns

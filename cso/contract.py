@@ -17,6 +17,7 @@ from dataclasses import dataclass, field
 from datetime import UTC, datetime
 from enum import Enum
 from pathlib import Path
+from typing import Any
 
 # Add governance to path
 PHOENIX_ROOT = Path(__file__).parent.parent
@@ -66,10 +67,10 @@ class FourQGateResult:
     q3_pda_destination: bool
     q4_timing: bool
 
-    q1_detail: dict = field(default_factory=dict)
-    q2_detail: dict = field(default_factory=dict)
-    q3_detail: dict = field(default_factory=dict)
-    q4_detail: dict = field(default_factory=dict)
+    q1_detail: dict[str, Any] = field(default_factory=dict)
+    q2_detail: dict[str, Any] = field(default_factory=dict)
+    q3_detail: dict[str, Any] = field(default_factory=dict)
+    q4_detail: dict[str, Any] = field(default_factory=dict)
 
     @property
     def all_pass(self) -> bool:
@@ -180,7 +181,7 @@ class CSOContract(GovernanceInterface, ABC):
     # ==========================================================================
 
     @abstractmethod
-    def evaluate_q1_htf_order_flow(self, bar: dict) -> tuple[bool, dict]:
+    def evaluate_q1_htf_order_flow(self, bar: dict[str, Any]) -> tuple[bool, dict[str, Any]]:
         """
         Q1: Where is HTF order flow pointing?
 
@@ -190,7 +191,7 @@ class CSOContract(GovernanceInterface, ABC):
         pass
 
     @abstractmethod
-    def evaluate_q2_dealing_range(self, bar: dict) -> tuple[bool, dict]:
+    def evaluate_q2_dealing_range(self, bar: dict[str, Any]) -> tuple[bool, dict[str, Any]]:
         """
         Q2: Are we in premium or discount?
 
@@ -200,7 +201,7 @@ class CSOContract(GovernanceInterface, ABC):
         pass
 
     @abstractmethod
-    def evaluate_q3_pda_destination(self, bar: dict) -> tuple[bool, dict]:
+    def evaluate_q3_pda_destination(self, bar: dict[str, Any]) -> tuple[bool, dict[str, Any]]:
         """
         Q3: Where is price going (PDA target)?
 
@@ -210,7 +211,7 @@ class CSOContract(GovernanceInterface, ABC):
         pass
 
     @abstractmethod
-    def evaluate_q4_timing(self, bar: dict) -> tuple[bool, dict]:
+    def evaluate_q4_timing(self, bar: dict[str, Any]) -> tuple[bool, dict[str, Any]]:
         """
         Q4: Is this the right time (kill zone)?
 
@@ -219,7 +220,7 @@ class CSOContract(GovernanceInterface, ABC):
         """
         pass
 
-    def evaluate_4q_gate(self, bar: dict) -> FourQGateResult:
+    def evaluate_4q_gate(self, bar: dict[str, Any]) -> FourQGateResult:
         """
         Run full 4Q Gate evaluation.
 
@@ -258,7 +259,7 @@ class CSOContract(GovernanceInterface, ABC):
 
     @abstractmethod
     def compute_confidence(
-        self, direction: Direction, gate_result: FourQGateResult, bar: dict
+        self, direction: Direction, gate_result: FourQGateResult, bar: dict[str, Any]
     ) -> float:
         """
         Compute confidence score 0.0-1.0.

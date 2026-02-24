@@ -79,8 +79,8 @@ class RedFlag:
 class EvidenceBundle:
     """Evidence supporting a setup."""
 
-    htf_structures: list[dict]
-    ltf_structures: list[dict]
+    htf_structures: list[dict[str, Any]]
+    ltf_structures: list[dict[str, Any]]
     alignment_score: float
     evidence_hash: str
 

@@ -414,7 +414,8 @@ class ResponseLens:
             return None
 
         try:
-            return json.loads(self.flag_path.read_text())
+            result: dict[str, Any] = json.loads(self.flag_path.read_text())
+            return result
         except Exception:
             return None
 

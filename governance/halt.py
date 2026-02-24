@@ -43,7 +43,7 @@ class HaltSignal:
     NO IO, NO logging in the hot path.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         self._signal = False
         self._halt_id: str | None = None
         self._lock = threading.Lock()
@@ -115,7 +115,7 @@ class HaltManager:
     module_id: str
     signal: HaltSignal = field(default_factory=HaltSignal)
     _dependents: list[str] = field(default_factory=list)
-    _dependent_halt_callbacks: dict[str, Callable] = field(default_factory=dict)
+    _dependent_halt_callbacks: dict[str, Callable[[str], AckReceipt]] = field(default_factory=dict)
     _lifecycle_state: LifecycleState = LifecycleState.RUNNING
 
     # Timing config
@@ -273,13 +273,14 @@ class HaltMesh:
 
     _instance: Optional["HaltMesh"] = None
     _lock = threading.Lock()
+    _modules: dict[str, HaltManager]
 
     def __new__(cls) -> "HaltMesh":
         if cls._instance is None:
             with cls._lock:
                 if cls._instance is None:
                     cls._instance = super().__new__(cls)
-                    cls._instance._modules: dict[str, HaltManager] = {}
+                    cls._instance._modules = {}
         return cls._instance
 
     def register(self, manager: HaltManager) -> None:

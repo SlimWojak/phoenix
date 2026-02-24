@@ -25,6 +25,7 @@ from collections.abc import Callable
 from dataclasses import dataclass, field
 from datetime import UTC, datetime
 from enum import Enum
+from typing import Any
 
 from .broker_stub import PaperBrokerStub
 from .intent import Direction, IntentFactory
@@ -69,7 +70,7 @@ class MockSignal:
     stop_loss: float | None = None
     take_profit: float | None = None
 
-    def to_dict(self) -> dict:
+    def to_dict(self) -> dict[str, Any]:
         return {
             "signal_id": self.signal_id,
             "timestamp": self.timestamp.isoformat(),
@@ -108,7 +109,7 @@ class MockSignalGenerator:
         return (self._rng_state % 1000) / 1000.0
 
     def generate_from_prices(
-        self, prices: list[dict], entry_threshold: float = 0.001, exit_after_bars: int = 10
+        self, prices: list[dict[str, Any]], entry_threshold: float = 0.001, exit_after_bars: int = 10
     ) -> list[MockSignal]:
         """
         Generate signals from price data.
@@ -267,7 +268,7 @@ class ReplayResult:
     # Errors
     errors: list[str] = field(default_factory=list)
 
-    def to_dict(self) -> dict:
+    def to_dict(self) -> dict[str, Any]:
         return {
             "success": self.success,
             "state": self.state.value,
@@ -385,17 +386,16 @@ class ReplayHarness:
                 return result.error
 
         elif signal.signal_type == "EXIT":
-            # Exit active position
             if self._active_position_id is None:
-                return None  # Ignore exit when no position
+                return None
 
-            result = self._broker.exit_position(
+            exit_result = self._broker.exit_position(
                 position_id=self._active_position_id, exit_price=signal.price, reason="exit_signal"
             )
-            if result.success:
+            if exit_result.success:
                 self._active_position_id = None
             else:
-                return result.error
+                return exit_result.error
 
         return None
 
@@ -482,7 +482,7 @@ class ReplayHarness:
         )
 
     def run_from_prices(
-        self, prices: list[dict], entry_threshold: float = 0.001, exit_after_bars: int = 10
+        self, prices: list[dict[str, Any]], entry_threshold: float = 0.001, exit_after_bars: int = 10
     ) -> ReplayResult:
         """
         Run replay generating signals from price data.
@@ -539,7 +539,7 @@ class DeterminismVerifier:
     @staticmethod
     def verify(
         harness_factory: Callable[[], ReplayHarness], signals: list[MockSignal], runs: int = 2
-    ) -> dict:
+    ) -> dict[str, Any]:
         """
         Verify determinism across multiple runs.
 

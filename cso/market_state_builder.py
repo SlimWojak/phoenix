@@ -25,7 +25,7 @@ from datetime import UTC, datetime
 from typing import Any
 
 import numpy as np
-import pandas as pd
+import pandas as pd  # type: ignore[import-untyped]  # pandas has no py.typed
 
 from cso.evaluator import MarketState
 
@@ -268,8 +268,11 @@ def _get_evaluation_time(pit_df: pd.DataFrame) -> datetime:
     """Get evaluation time = timestamp of latest closed bar."""
     ts = pit_df["timestamp"].iloc[-1]
     if isinstance(ts, pd.Timestamp):
-        return ts.to_pydatetime()
-    return ts
+        dt: datetime = ts.to_pydatetime()
+        return dt
+    if isinstance(ts, datetime):
+        return ts
+    return datetime.now(UTC)
 
 
 # =============================================================================

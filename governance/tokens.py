@@ -9,8 +9,10 @@ INVARIANTS:
 """
 
 import hashlib
+from collections.abc import Callable
 from dataclasses import dataclass, field
 from datetime import UTC, datetime
+from typing import Any
 
 from .errors import (
     HaltBlocksActionError,
@@ -45,7 +47,7 @@ class ApprovalToken:
 
     token_id: str = field(default="")
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         if not self.token_id:
             # Generate token ID from content hash
             content = f"{self.issued_by}|{self.issued_at}|{self.state_hash}"
@@ -61,7 +63,7 @@ class ApprovalToken:
         """Check if action is in token scope."""
         return action in self.scope or "*" in self.scope
 
-    def to_dict(self) -> dict:
+    def to_dict(self) -> dict[str, Any]:
         return {
             "token_id": self.token_id,
             "issued_by": self.issued_by,
@@ -84,7 +86,7 @@ class TokenValidator:
     Enforces INV-GOV-HALT-BEFORE-ACTION.
     """
 
-    def __init__(self, halt_signal: HaltSignal, state_hash_fn: callable):
+    def __init__(self, halt_signal: HaltSignal, state_hash_fn: Callable[[], str]) -> None:
         """
         Args:
             halt_signal: HaltSignal instance to check

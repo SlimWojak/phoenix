@@ -151,13 +151,13 @@ class CartridgeLoader:
         try:
             manifest = CartridgeManifest(**raw)
         except ValidationError as e:
-            raise CartridgeSchemaError(e.errors()) from e
+            raise CartridgeSchemaError([dict(err) for err in e.errors()]) from e
 
         # Step 2: Required invariants (redundant with model but explicit)
         declared = set(manifest.constitutional.invariants_required)
         missing = self.REQUIRED_INVARIANTS - declared
         if missing:
-            raise CartridgeInvariantError(missing)
+            raise CartridgeInvariantError(set(missing))
 
         # Step 3: Hash verification (if hash was provided)
         if manifest.identity.methodology_hash is not None:
@@ -191,7 +191,7 @@ class CartridgeRegistry:
     Design: P5_SLOT_OR_PERISH — conflicts = rejection.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         self._slotted: dict[str, CartridgeManifest] = {}
         self._active: CartridgeManifest | None = None
         self._beads: list[CartridgeInsertionBead | CartridgeRemovalBead] = []

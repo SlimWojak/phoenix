@@ -16,7 +16,7 @@ from datetime import UTC, datetime
 from enum import Enum
 from typing import Any
 
-import pandas as pd
+import pandas as pd  # type: ignore[import-untyped]  # pandas has no py.typed
 
 # =============================================================================
 # ENUMS
@@ -252,7 +252,7 @@ class StructureDetector:
                 htf_bias=Direction.NEUTRAL,
             )
 
-        structures: list = []
+        structures: list[FVG | BOS | CHoCH | OTE | LiquiditySweep] = []
 
         # Detect swing points first (needed for BOS, CHoCH)
         swing_highs, swing_lows = self._detect_swing_points(bars)
@@ -646,4 +646,6 @@ class StructureDetector:
             return datetime.now(UTC)
         if isinstance(ts, str):
             return datetime.fromisoformat(ts.replace("Z", "+00:00"))
-        return ts
+        if isinstance(ts, datetime):
+            return ts
+        return datetime.now(UTC)

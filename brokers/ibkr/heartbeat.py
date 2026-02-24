@@ -15,7 +15,7 @@ import threading
 import time
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import Callable
+from typing import Any, Callable
 
 
 # =============================================================================
@@ -181,7 +181,7 @@ class HeartbeatMonitor:
             self._beat_count = 0
             self._miss_count = 0
 
-    def get_status(self) -> dict:
+    def get_status(self) -> dict[str, Any]:
         """Get detailed status."""
         self.check()  # Update state first
         with self._lock:

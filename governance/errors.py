@@ -6,6 +6,8 @@ CONTRACT: GOVERNANCE_INTERFACE_CONTRACT.md
 """
 
 
+from typing import Any
+
 from .types import ErrorAction, ErrorCategory, ErrorClassification
 
 # =============================================================================
@@ -89,7 +91,7 @@ class HaltBlocksActionError(ApprovalTokenError):
 class InvariantViolationError(GovernanceError):
     """Raised when an invariant is violated."""
 
-    def __init__(self, invariant_id: str, evidence: dict | None = None):
+    def __init__(self, invariant_id: str, evidence: dict[str, Any] | None = None):
         self.invariant_id = invariant_id
         self.evidence = evidence or {}
         super().__init__(f"Invariant {invariant_id} violated: {evidence}")

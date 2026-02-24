@@ -17,6 +17,7 @@ import hashlib
 import json
 from abc import ABC, abstractmethod
 from datetime import UTC, datetime
+from typing import Any, cast
 
 from .errors import (
     TierViolationError,
@@ -96,16 +97,16 @@ class GovernanceInterface(ABC):
     # INITIALIZATION
     # ==========================================================================
 
-    def __init__(self):
+    def __init__(self) -> None:
         """Initialize governance infrastructure."""
         # Will be set in initialize()
         self._halt_manager: HaltManager | None = None
         self._telemetry: TelemetryEmitter | None = None
-        self._state: dict = {}
+        self._state: dict[str, Any] = {}
         self._state_hash: str = ""
         self._initialized: bool = False
 
-    def initialize(self, config: dict | None = None) -> InitResult:
+    def initialize(self, config: dict[str, Any] | None = None) -> InitResult:
         """
         Initialize module.
 
@@ -291,7 +292,7 @@ class GovernanceInterface(ABC):
             )
         return self._telemetry.get_telemetry()
 
-    def report_violation(self, invariant_id: str, evidence: dict) -> ViolationTicket:
+    def report_violation(self, invariant_id: str, evidence: dict[str, Any]) -> ViolationTicket:
         """
         Self-report contract breach.
 
@@ -334,8 +335,8 @@ class GovernanceInterface(ABC):
         Raises:
             TierViolationError if action forbidden
         """
-        permissions = TIER_PERMISSIONS.get(self.module_tier, {})
-        forbidden = permissions.get("forbidden", [])
+        permissions = cast(dict[str, Any], TIER_PERMISSIONS.get(self.module_tier, {}))
+        forbidden: list[str] = permissions.get("forbidden", [])
 
         if target in forbidden:
             raise TierViolationError(

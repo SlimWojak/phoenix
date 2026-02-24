@@ -129,7 +129,7 @@ class RealIBKRClient:
         if self._config.mode == IBKRMode.MOCK:
             raise ValueError("RealIBKRClient cannot be used in MOCK mode")
 
-        self._ib = IB()
+        self._ib = IB()  # type: ignore[no-untyped-call]  # ib_insync has no type stubs
 
         try:
             self._ib.connect(
@@ -176,7 +176,7 @@ class RealIBKRClient:
     def disconnect(self) -> None:
         """Disconnect from IB Gateway."""
         if self._ib and self._ib.isConnected():
-            self._ib.disconnect()
+            self._ib.disconnect()  # type: ignore[no-untyped-call]  # ib_insync has no type stubs
 
         self._state.connected = False
         logger.info("Disconnected from IBKR")
@@ -270,6 +270,9 @@ class RealIBKRClient:
             # Create order
             ib_order = self._create_ib_order(order)
 
+            if self._ib is None:
+                raise ConnectionError("Not connected to IBKR")
+
             # Place order
             trade = self._ib.placeOrder(contract, ib_order)
 
@@ -360,6 +363,8 @@ class RealIBKRClient:
             return PositionSnapshot()
 
         try:
+            if self._ib is None:
+                return PositionSnapshot()
             ib_positions = self._ib.positions()
             positions = [self._ib_position_to_phoenix(p) for p in ib_positions]
 
@@ -402,6 +407,8 @@ class RealIBKRClient:
             return AccountState(account_id="")
 
         try:
+            if self._ib is None:
+                return AccountState(account_id=self._state.account_id)
             summary = self._ib.accountSummary()
 
             # Parse summary into AccountState

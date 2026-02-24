@@ -188,7 +188,7 @@ class Athena:
         """Validate Query IR."""
         return self._parser.validate(ir)
 
-    def _generate_sql(self, ir: QueryIR) -> tuple[str, tuple]:
+    def _generate_sql(self, ir: QueryIR) -> tuple[str, tuple[Any, ...]]:
         """
         Generate SQL from Query IR.
 
@@ -245,7 +245,7 @@ class Athena:
 
         return sql, tuple(params)
 
-    def _execute(self, sql: str, params: tuple) -> list[dict[str, Any]]:
+    def _execute(self, sql: str, params: tuple[Any, ...]) -> list[dict[str, Any]]:
         """Execute SQL query."""
         return self._store.query_sql(sql, params)
 
@@ -281,7 +281,7 @@ class Athena:
         lines = []
 
         # Group by bead type
-        by_type: dict[str, list] = {}
+        by_type: dict[str, list[dict[str, Any]]] = {}
         for r in results:
             bead_type = r.get("bead_type", "UNKNOWN")
             if bead_type not in by_type:

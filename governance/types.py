@@ -10,6 +10,7 @@ import json
 from dataclasses import dataclass, field
 from datetime import UTC, datetime
 from enum import Enum
+from typing import Any
 
 # =============================================================================
 # ENUMS
@@ -126,7 +127,7 @@ class HaltCascadeReport:
 class StateInput:
     """Input for state machine processing."""
 
-    data: dict
+    data: dict[str, Any]
     timestamp: datetime = field(default_factory=lambda: datetime.now(UTC))
 
     def compute_hash(self) -> str:
@@ -162,7 +163,7 @@ class QualityTelemetry:
     gap_count: int = 0
     staleness_seconds: float = 0.0
 
-    def to_dict(self) -> dict:
+    def to_dict(self) -> dict[str, Any]:
         return {
             "data_health": self.data_health.value,
             "lifecycle_state": self.lifecycle_state.value,
@@ -188,11 +189,11 @@ class ViolationTicket:
     timestamp: datetime
     severity: ViolationSeverity
     status: ViolationStatus = ViolationStatus.OPEN
-    evidence: dict = field(default_factory=dict)
+    evidence: dict[str, Any] = field(default_factory=dict)
     auto_escalate_cto_at: datetime | None = None  # +12h
     auto_escalate_sovereign_at: datetime | None = None  # +24h
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         """Set escalation times if not provided."""
         from datetime import timedelta
 
@@ -229,7 +230,7 @@ class DegradationAction:
     """Action to take when degradation occurs."""
 
     action_type: str  # e.g., "disable_feature", "use_fallback"
-    params: dict = field(default_factory=dict)
+    params: dict[str, Any] = field(default_factory=dict)
 
 
 # =============================================================================

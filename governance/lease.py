@@ -27,7 +27,7 @@ from __future__ import annotations
 import threading
 import time
 from datetime import UTC, datetime, timedelta
-from typing import TYPE_CHECKING, Protocol, runtime_checkable
+from typing import TYPE_CHECKING, Any, Protocol, runtime_checkable
 
 from .halt import HaltManager, HaltMesh
 from .lease_types import (
@@ -63,7 +63,7 @@ class BeadEmitter(Protocol):
 class NullBeadEmitter:
     """No-op bead emitter for testing."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.beads: list[BeadType] = []
 
     def emit(self, bead: BeadType) -> None:
@@ -212,7 +212,7 @@ class LeaseStateMachine:
             return TransitionResult.SUCCESS
 
     def expire(
-        self, expected_hash: str | None = None, final_stats: dict | None = None
+        self, expected_hash: str | None = None, final_stats: dict[str, Any] | None = None
     ) -> TransitionResult:
         """
         Transition ACTIVE → EXPIRED.
@@ -535,15 +535,18 @@ class LeaseManager:
 
     _instance: LeaseManager | None = None
     _lock = threading.Lock()
+    _active_lease: LeaseStateMachine | None
+    _bead_emitter: BeadEmitter | None
+    _halt_mesh: HaltMesh | None
 
     def __new__(cls) -> LeaseManager:
         if cls._instance is None:
             with cls._lock:
                 if cls._instance is None:
                     cls._instance = super().__new__(cls)
-                    cls._instance._active_lease: LeaseStateMachine | None = None
-                    cls._instance._bead_emitter: BeadEmitter | None = None
-                    cls._instance._halt_mesh: HaltMesh | None = None
+                    cls._instance._active_lease = None
+                    cls._instance._bead_emitter = None
+                    cls._instance._halt_mesh = None
         return cls._instance
 
     def configure(
@@ -643,7 +646,7 @@ def create_lease_from_cartridge(
     created_by: str,
     starts_at: datetime,
     duration_days: int,
-    bounds: dict,
+    bounds: dict[str, Any],
 ) -> Lease:
     """
     Create a new Lease instance from cartridge reference.

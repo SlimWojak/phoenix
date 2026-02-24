@@ -19,7 +19,7 @@ import asyncio
 import random
 import time
 from dataclasses import dataclass, field
-from typing import Callable
+from typing import Any, Callable
 
 
 # =============================================================================
@@ -80,7 +80,8 @@ class ExponentialBackoff:
             base_delay += jitter_offset
 
         # Cap at max_delay (INV-BACKOFF-2)
-        return min(base_delay, self.max_delay)
+        result: float = min(base_delay, self.max_delay)
+        return result
 
     def wait(self, attempt: int | None = None) -> float:
         """
@@ -178,13 +179,13 @@ class RetryExhaustedError(Exception):
 
 
 def retry_with_backoff(
-    fn: Callable,
+    fn: Callable[..., Any],
     max_attempts: int = 5,
     base: float = 1.0,
     max_delay: float = 300.0,
-    retryable_exceptions: tuple = (Exception,),
+    retryable_exceptions: tuple[type[Exception], ...] = (Exception,),
     on_retry: Callable[[int, Exception, float], None] | None = None,
-) -> any:
+) -> Any:
     """
     Execute function with exponential backoff retry.
 
@@ -224,13 +225,13 @@ def retry_with_backoff(
 
 
 async def retry_with_backoff_async(
-    fn: Callable,
+    fn: Callable[..., Any],
     max_attempts: int = 5,
     base: float = 1.0,
     max_delay: float = 300.0,
-    retryable_exceptions: tuple = (Exception,),
+    retryable_exceptions: tuple[type[Exception], ...] = (Exception,),
     on_retry: Callable[[int, Exception, float], None] | None = None,
-) -> any:
+) -> Any:
     """
     Execute async function with exponential backoff retry.
 

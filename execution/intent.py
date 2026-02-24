@@ -26,6 +26,7 @@ import json
 from dataclasses import dataclass, field
 from datetime import UTC, datetime, timedelta
 from enum import Enum
+from typing import Any
 
 # =============================================================================
 # EXCEPTIONS
@@ -123,13 +124,13 @@ class ExecutionIntent:
     # Frozen flag
     _frozen: bool = field(default=False, repr=False)
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         """Freeze intent and compute hash."""
         if not self.intent_hash:
             object.__setattr__(self, "intent_hash", self._compute_hash())
         object.__setattr__(self, "_frozen", True)
 
-    def __setattr__(self, name: str, value) -> None:
+    def __setattr__(self, name: str, value: Any) -> None:
         """Enforce immutability."""
         if hasattr(self, "_frozen") and self._frozen:
             # Allow status updates through proper method
@@ -181,7 +182,7 @@ class ExecutionIntent:
             intent_hash=self.intent_hash,  # Preserve hash
         )
 
-    def to_dict(self) -> dict:
+    def to_dict(self) -> dict[str, Any]:
         """Serialize to dict."""
         return {
             "intent_id": self.intent_id,

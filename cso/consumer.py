@@ -16,6 +16,8 @@ from __future__ import annotations
 
 import logging
 from dataclasses import dataclass, field
+from datetime import UTC, datetime
+from enum import Enum
 from pathlib import Path
 from typing import Any, Protocol
 
@@ -29,6 +31,31 @@ logger = logging.getLogger(__name__)
 # =============================================================================
 
 CSE_SCHEMA_PATH = Path(__file__).parent.parent / "schemas" / "cse_schema.yaml"
+
+
+# =============================================================================
+# REJECTION TRACKING
+# =============================================================================
+
+
+class RejectionReason(Enum):
+    """Structured reason for CSE rejection."""
+
+    SCHEMA_INVALID = "SCHEMA_INVALID"
+    MISSING_VERSION = "MISSING_VERSION"
+    MISSING_PROVENANCE = "MISSING_PROVENANCE"
+    STALE_DATA = "STALE_DATA"
+    INVALID_PARAMETERS = "INVALID_PARAMETERS"
+
+
+@dataclass(frozen=True)
+class CSERejectionRecord:
+    """Structured rejection artifact. Immutable."""
+
+    cse_id: str
+    reason: RejectionReason
+    missing_fields: list[str]
+    timestamp: datetime
 
 
 # =============================================================================
@@ -115,7 +142,8 @@ class CSEValidator:
             return {}
 
         with open(self._schema_path) as f:
-            return yaml.safe_load(f)
+            result: dict[str, Any] = yaml.safe_load(f)
+            return result
 
     def validate(self, cse: dict[str, Any]) -> ValidationResult:
         """
@@ -143,6 +171,11 @@ class CSEValidator:
             return ValidationResult(valid=False, errors=errors)
 
         # Type validations
+        # cse_version
+        cse_version = cse.get("cse_version")
+        if not isinstance(cse_version, str) or not cse_version:
+            errors.append("cse_version must be a non-empty string")
+
         # signal_id
         if not isinstance(cse.get("signal_id"), str):
             errors.append("signal_id must be a string")
@@ -359,6 +392,26 @@ class CSOConsumer:
         self._validator = validator or CSEValidator()
         self._resolver = resolver or EvidenceResolver()
         self._approval_handler = approval_handler
+        self._rejections: list[CSERejectionRecord] = []
+
+    @property
+    def rejections(self) -> list[CSERejectionRecord]:
+        """Structured rejection history."""
+        return list(self._rejections)
+
+    @staticmethod
+    def _classify_rejection(errors: list[str]) -> RejectionReason:
+        """Map validation errors to structured reason enum."""
+        error_text = " ".join(errors).lower()
+        if "cse_version" in error_text:
+            return RejectionReason.MISSING_VERSION
+        if "provenance" in error_text or "river_" in error_text:
+            return RejectionReason.MISSING_PROVENANCE
+        if "stale" in error_text:
+            return RejectionReason.STALE_DATA
+        if "parameter" in error_text or "entry" in error_text or "stop" in error_text:
+            return RejectionReason.INVALID_PARAMETERS
+        return RejectionReason.SCHEMA_INVALID
 
     def consume(self, cse: dict[str, Any]) -> ConsumeResult:
         """
@@ -375,7 +428,21 @@ class CSOConsumer:
         # Step 1: Validate (INV-D2-FORMAT-1)
         validation = self._validator.validate(cse)
         if not validation.valid:
-            logger.warning(f"CSE {signal_id} validation failed: {validation.errors}")
+            reason = self._classify_rejection(validation.errors)
+            missing = [e for e in validation.errors if "Missing" in e]
+            rejection = CSERejectionRecord(
+                cse_id=signal_id,
+                reason=reason,
+                missing_fields=missing,
+                timestamp=datetime.now(UTC),
+            )
+            self._rejections.append(rejection)
+            logger.warning(
+                "CSE %s rejected: reason=%s errors=%s",
+                signal_id,
+                reason.value,
+                validation.errors,
+            )
             return ConsumeResult(
                 success=False,
                 signal_id=signal_id,
@@ -463,7 +530,7 @@ class CSOConsumer:
 # =============================================================================
 
 
-def create_cse_route_handler(consumer: CSOConsumer):
+def create_cse_route_handler(consumer: CSOConsumer) -> Any:
     """
     Create a route handler for D1 watcher.
 

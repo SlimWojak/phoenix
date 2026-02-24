@@ -24,7 +24,7 @@ import time
 from collections import deque
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import Callable
+from typing import Any, Callable
 
 
 # =============================================================================
@@ -104,10 +104,10 @@ class HealthStateMachine:
 
     # Internal state
     _state: HealthState = field(default=HealthState.HEALTHY, repr=False)
-    _failures: deque = field(default_factory=lambda: deque(maxlen=1000), repr=False)
-    _successes: deque = field(default_factory=lambda: deque(maxlen=1000), repr=False)
-    _last_alert_time: dict = field(default_factory=dict, repr=False)
-    _pending_degraded_alerts: list = field(default_factory=list, repr=False)
+    _failures: deque[tuple[float, str, str]] = field(default_factory=lambda: deque(maxlen=1000), repr=False)
+    _successes: deque[tuple[float, str]] = field(default_factory=lambda: deque(maxlen=1000), repr=False)
+    _last_alert_time: dict[str, float] = field(default_factory=dict, repr=False)
+    _pending_degraded_alerts: list[dict[str, Any]] = field(default_factory=list, repr=False)
     _lock: threading.Lock = field(default_factory=threading.Lock, repr=False)
 
     # State entry timestamps
@@ -305,7 +305,7 @@ class HealthStateMachine:
             )
             self._pending_degraded_alerts.clear()
 
-    def get_status(self) -> dict:
+    def get_status(self) -> dict[str, Any]:
         """Get current health status."""
         now = time.monotonic()
         with self._lock:
@@ -331,15 +331,15 @@ class HealthStateMachine:
 class HealthRegistry:
     """Registry of health state machines."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         self._machines: dict[str, HealthStateMachine] = {}
         self._lock = threading.Lock()
 
     def get_or_create(
         self,
         name: str,
-        alert_callback: Callable | None = None,
-        halt_callback: Callable | None = None,
+        alert_callback: Callable[[str, HealthState, str], None] | None = None,
+        halt_callback: Callable[[], None] | None = None,
         config: HealthConfig | None = None,
     ) -> HealthStateMachine:
         """Get existing or create new health FSM."""
@@ -358,7 +358,7 @@ class HealthRegistry:
         with self._lock:
             return self._machines.get(name)
 
-    def all_status(self) -> list[dict]:
+    def all_status(self) -> list[dict[str, Any]]:
         """Get status from all health FSMs."""
         with self._lock:
             return [m.get_status() for m in self._machines.values()]
@@ -378,14 +378,14 @@ _global_health_registry = HealthRegistry()
 
 def get_health_fsm(
     name: str,
-    alert_callback: Callable | None = None,
-    halt_callback: Callable | None = None,
+    alert_callback: Callable[[str, HealthState, str], None] | None = None,
+    halt_callback: Callable[[], None] | None = None,
 ) -> HealthStateMachine:
     """Get or create health FSM from global registry."""
     return _global_health_registry.get_or_create(name, alert_callback, halt_callback)
 
 
-def get_all_health_status() -> list[dict]:
+def get_all_health_status() -> list[dict[str, Any]]:
     """Get health status from all FSMs."""
     return _global_health_registry.all_status()
 

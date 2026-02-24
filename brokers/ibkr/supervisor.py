@@ -18,7 +18,7 @@ import threading
 import time
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import Callable, Protocol
+from typing import Any, Callable, Protocol
 
 from governance.circuit_breaker import CircuitBreaker
 from governance.health_fsm import HealthStateMachine, HealthState
@@ -101,7 +101,7 @@ class IBKRSupervisor:
     heartbeat: HeartbeatMonitor | None = None
     degradation: DegradationManager | None = None
     health_fsm: HealthStateMachine | None = None
-    circuit_breaker: CircuitBreaker | None = None
+    circuit_breaker: CircuitBreaker[Any] | None = None
 
     # Internal state
     _state: SupervisorState = field(default=SupervisorState.STOPPED, repr=False)
@@ -114,7 +114,7 @@ class IBKRSupervisor:
     _recovery_count: int = field(default=0, repr=False)
     _check_count: int = field(default=0, repr=False)
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
         """Initialize components if not provided."""
         if self.heartbeat is None:
             self.heartbeat = HeartbeatMonitor(
@@ -157,6 +157,8 @@ class IBKRSupervisor:
     @property
     def connector_alive(self) -> bool:
         """Check if connector is alive (via heartbeat)."""
+        if self.heartbeat is None:
+            return False
         return self.heartbeat.is_alive
 
     def start(self) -> None:
@@ -199,7 +201,8 @@ class IBKRSupervisor:
         with self._lock:
             self._degradation_triggers += 1
 
-        self.degradation.trigger_degradation(f"Manual: {reason}")
+        if self.degradation is not None:
+            self.degradation.trigger_degradation(f"Manual: {reason}")
 
         if self.on_alert:
             self.on_alert("IBKR_FORCED_DEGRADATION", reason)
@@ -228,6 +231,8 @@ class IBKRSupervisor:
 
     def _check_heartbeat(self) -> None:
         """Check heartbeat and trigger degradation if needed."""
+        if self.heartbeat is None:
+            return
         hb_state = self.heartbeat.check()
 
         with self._lock:
@@ -249,14 +254,18 @@ class IBKRSupervisor:
             self._state = SupervisorState.ALERTING
             self._degradation_triggers += 1
 
-        self.degradation.trigger_degradation(reason)
-        self.circuit_breaker._record_failure()
+        if self.degradation is not None:
+            self.degradation.trigger_degradation(reason)
+        if self.circuit_breaker is not None:
+            self.circuit_breaker._record_failure()
 
         if self.on_alert:
             self.on_alert("IBKR_DEGRADATION", reason)
 
     def _attempt_recovery(self) -> None:
         """Attempt recovery after heartbeat resumes."""
+        if self.degradation is None:
+            return
         # INV-IBKR-FLAKEY-3: Validation before restore
         restored = self.degradation.restore(validate_first=True)
 
@@ -283,15 +292,15 @@ class IBKRSupervisor:
         if self.on_recovery:
             self.on_recovery()
 
-    def get_status(self) -> dict:
+    def get_status(self) -> dict[str, Any]:
         """Get comprehensive supervisor status."""
         with self._lock:
             return {
                 "state": self._state.value,
                 "running": self._running,
-                "heartbeat": self.heartbeat.get_status(),
-                "degradation": self.degradation.get_status(),
-                "circuit_breaker": self.circuit_breaker.get_metrics(),
+                "heartbeat": self.heartbeat.get_status() if self.heartbeat else {},
+                "degradation": self.degradation.get_status() if self.degradation else {},
+                "circuit_breaker": self.circuit_breaker.get_metrics() if self.circuit_breaker else {},
                 "metrics": {
                     "degradation_triggers": self._degradation_triggers,
                     "recovery_count": self._recovery_count,
@@ -377,7 +386,7 @@ def create_ibkr_supervisor(
         on_alert=on_alert,
     )
 
-    def on_supervisor_dead():
+    def on_supervisor_dead() -> None:
         if on_alert:
             on_alert("SUPERVISOR_DEAD", "IBKRSupervisor has stopped unexpectedly!")
 

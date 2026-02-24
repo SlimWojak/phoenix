@@ -28,6 +28,7 @@ import json
 import sys
 from datetime import UTC, datetime
 from pathlib import Path
+from typing import Any
 
 PHOENIX_ROOT = Path(__file__).parent.parent
 sys.path.insert(0, str(PHOENIX_ROOT))
@@ -135,15 +136,15 @@ class CSOObserver(GovernanceInterface):
     # INITIALIZATION
     # ==========================================================================
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__()
         self._bead_factory: BeadFactory | None = None
         self._beads_emitted: list[Bead] = []
-        self._knowledge_loaded: dict = {}
+        self._knowledge_loaded: dict[str, dict[str, str]] = {}
         self._comprehension_hashes: list[str] = []
         self._observation_count: int = 0
 
-    def initialize(self, config: dict | None = None) -> "InitResult":
+    def initialize(self, config: dict[str, Any] | None = None) -> "InitResult":
         """Initialize observer."""
         result = super().initialize(config)
 
@@ -169,7 +170,7 @@ class CSOObserver(GovernanceInterface):
     # OBSERVATION (PASSIVE)
     # ==========================================================================
 
-    def observe_bar(self, bar: dict) -> Bead | None:
+    def observe_bar(self, bar: dict[str, Any]) -> Bead | None:
         """
         Observe a single bar from the River.
 
@@ -187,7 +188,7 @@ class CSOObserver(GovernanceInterface):
         # Check for interesting patterns
         observation = self._detect_pattern(bar)
 
-        if observation:
+        if observation and self._bead_factory is not None:
             bead = self._bead_factory.create_observation_bead(
                 symbol=bar.get("symbol", "UNKNOWN"),
                 observation_type=observation["type"],
@@ -199,7 +200,7 @@ class CSOObserver(GovernanceInterface):
 
         return None
 
-    def _detect_pattern(self, bar: dict) -> dict | None:
+    def _detect_pattern(self, bar: dict[str, Any]) -> dict[str, Any] | None:
         """
         Detect notable patterns in bar.
 
@@ -280,7 +281,7 @@ class CSOObserver(GovernanceInterface):
     # COMPREHENSION
     # ==========================================================================
 
-    def emit_comprehension_hash(self, understanding: dict) -> str:
+    def emit_comprehension_hash(self, understanding: dict[str, Any]) -> str:
         """
         Emit comprehension hash for intertwine verification.
 
@@ -297,9 +298,12 @@ class CSOObserver(GovernanceInterface):
 
         return hash_val
 
-    def create_comprehension_bead(self, understanding: dict) -> Bead:
+    def create_comprehension_bead(self, understanding: dict[str, Any]) -> Bead:
         """Create a comprehension bead for intertwine."""
         self.check_halt()
+
+        if self._bead_factory is None:
+            raise CSONotReadyError("BeadFactory not initialized")
 
         bead = self._bead_factory.create_comprehension_bead(
             symbol="SYSTEM", understanding=understanding, state_hash=self.compute_state_hash()
@@ -312,7 +316,7 @@ class CSOObserver(GovernanceInterface):
     # KNOWLEDGE INTAKE
     # ==========================================================================
 
-    def load_knowledge(self, knowledge_path: Path) -> dict:
+    def load_knowledge(self, knowledge_path: Path) -> dict[str, str]:
         """
         Load knowledge file from intake.
 
@@ -403,7 +407,7 @@ class CSOObserver(GovernanceInterface):
     # TELEMETRY
     # ==========================================================================
 
-    def get_observer_stats(self) -> dict:
+    def get_observer_stats(self) -> dict[str, Any]:
         """Get observer statistics."""
         return {
             "observation_count": self._observation_count,

@@ -184,14 +184,11 @@ class BoundsSentinel(GovernanceSentinel):
                 check_latency_ns=elapsed_ns,
             )
 
-        except Exception as exc:
+        except Exception:
+            # INV-SENTINEL-FAIL-CLOSED-1: propagate to halt gate, never swallow
             elapsed_ns = time.perf_counter_ns() - start_ns
             self._record_execution(elapsed_ns)
-            return SentinelResult(
-                verdict=GovernanceVerdict.FAIL_BOUNDS_BREACH,
-                check_latency_ns=elapsed_ns,
-                breach_detail=f"Sentinel error: {exc}",
-            )
+            raise
 
     def get_last_execution_timestamp(self) -> datetime | None:
         """CTO ADDENDUM: External heartbeat read point."""

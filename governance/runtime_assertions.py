@@ -19,7 +19,8 @@ from __future__ import annotations
 
 import functools
 from contextlib import contextmanager
-from typing import Any, Callable, TypeVar
+from collections.abc import Generator
+from typing import Any, Callable, TypeVar, cast
 
 
 # =============================================================================
@@ -194,7 +195,7 @@ def assert_provenance(obj: Any, context: str, required: list[str] | None = None)
         raise ProvenanceMissing(context, missing)
 
 
-def assert_no_ranking(items: list | Any, context: str) -> None:
+def assert_no_ranking(items: list[Any] | Any, context: str) -> None:
     """
     Assert that items contain no ranking metadata.
 
@@ -255,7 +256,7 @@ def assert_no_grade(obj: Any, context: str) -> None:
 
 
 @contextmanager
-def constitutional_boundary(name: str, checks: list[str] | None = None):
+def constitutional_boundary(name: str, checks: list[str] | None = None) -> Generator[list[ConstitutionalViolation], None, None]:
     """
     Context manager for constitutional checkpoints.
 
@@ -292,7 +293,7 @@ T = TypeVar("T")
 def enforce_constitution(
     checks: list[str] | None = None,
     context: str | None = None,
-):
+) -> Callable[[Callable[..., T]], Callable[..., T]]:
     """
     Decorator to enforce constitutional checks on function return value.
 
@@ -311,7 +312,7 @@ def enforce_constitution(
         ctx = context or fn.__name__
 
         @functools.wraps(fn)
-        def wrapper(*args, **kwargs) -> T:
+        def wrapper(*args: Any, **kwargs: Any) -> T:
             result = fn(*args, **kwargs)
 
             # Run checks on result
@@ -373,11 +374,10 @@ def _extract_fields(obj: Any) -> dict[str, Any]:
 
     # Dataclass or object with __dict__
     if hasattr(obj, "__dict__"):
-        return vars(obj)
+        return cast(dict[str, Any], vars(obj))
 
-    # Named tuple
     if hasattr(obj, "_asdict"):
-        return obj._asdict()
+        return cast(dict[str, Any], obj._asdict())
 
     return {}
 

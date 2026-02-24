@@ -78,6 +78,8 @@ class Token:
     @property
     def is_expired(self) -> bool:
         """Check if token has expired."""
+        if self.expires_at is None:
+            return False
         return datetime.now(UTC) > self.expires_at
 
     @property
@@ -92,6 +94,8 @@ class Token:
     @property
     def ttl_remaining_sec(self) -> float:
         """Seconds until expiry."""
+        if self.expires_at is None:
+            return 0.0
         remaining = (self.expires_at - datetime.now(UTC)).total_seconds()
         return max(0.0, remaining)
 
@@ -115,7 +119,7 @@ class Token:
             "token_id": self.token_id,
             "intent_id": self.intent_id,
             "issued_at": self.issued_at.isoformat(),
-            "expires_at": self.expires_at.isoformat(),
+            "expires_at": self.expires_at.isoformat() if self.expires_at else None,
             "evidence_hash": self.evidence_hash,
             "used": self.used,
             "used_at": self.used_at.isoformat() if self.used_at else None,
@@ -359,7 +363,7 @@ class TokenStore:
             "event": event,
             "reason": reason,
             "evidence_hash": token.evidence_hash,
-            "expires_at": token.expires_at.isoformat(),
+            "expires_at": token.expires_at.isoformat() if token.expires_at else None,
             "timestamp_utc": datetime.now(UTC).isoformat(),
         }
 
