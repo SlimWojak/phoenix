@@ -122,7 +122,7 @@ class RiverStreamer:
         """Start streaming 1m bars from IBKR."""
         import random
 
-        from ib_insync import IB, Forex
+        from ib_insync import IB
 
         self._state = "STARTED"
         self._update_heartbeat()
@@ -188,7 +188,7 @@ class RiverStreamer:
         if self._bars_handle and len(self._bars_handle) > 0:
             last_seed = self._bars_handle[-1]
             self._last_bar_time = datetime.now(UTC)
-            self._last_bar_ts = pd.Timestamp(last_seed.date, tz="UTC")
+            self._last_bar_ts = pd.Timestamp(last_seed.date.timestamp(), unit="s", tz="UTC")
             logger.info(
                 "subscribe_seed_anchor",
                 last_seed_ts=str(self._last_bar_ts),
@@ -216,7 +216,11 @@ class RiverStreamer:
     # ------------------------------------------------------------------
 
     def _on_ib_error(
-        self, reqId: int, errorCode: int, errorString: str, contract: Any = None,
+        self,
+        reqId: int,
+        errorCode: int,
+        errorString: str,
+        contract: Any = None,
     ) -> None:
         """IB error/warning callback. Logs all events for observability."""
         contract_str = str(contract) if contract else "N/A"
@@ -255,7 +259,7 @@ class RiverStreamer:
 
         bar = bars[-1]
         kt = datetime.now(UTC)
-        bar_ts = pd.Timestamp(bar.date, tz="UTC")
+        bar_ts = pd.Timestamp(bar.date.timestamp(), unit="s", tz="UTC")
 
         if self._state != "STREAMING":
             self._state = "STREAMING"
@@ -290,7 +294,7 @@ class RiverStreamer:
             "knowledge_time": kt.isoformat(),
         }
 
-        bar_date = pd.Timestamp(bar.date).date()
+        bar_date = pd.Timestamp(bar.date.timestamp(), unit="s", tz="UTC").date()
         staging_file = self.staging_path(bar_date)
         staging_file.parent.mkdir(parents=True, exist_ok=True)
 
@@ -387,7 +391,9 @@ class RiverStreamer:
                 "subscribed": self._subscribed,
                 "pair": self._pair,
                 "pairs_active": [self._pair] if self._subscribed else [],
-                "pairs_failed": [] if self._subscribed else ([self._pair] if self._state == "DEGRADED" else []),
+                "pairs_failed": []
+                if self._subscribed
+                else ([self._pair] if self._state == "DEGRADED" else []),
                 "last_bar_time": self._last_bar_time.isoformat() if self._last_bar_time else None,
                 "last_update": datetime.now(UTC).isoformat(),
                 "resubscribe_attempts": self._resubscribe_attempts,
@@ -396,7 +402,8 @@ class RiverStreamer:
         )
 
         fd, tmp_path = tempfile.mkstemp(
-            dir=str(self.heartbeat_path.parent), suffix=".tmp",
+            dir=str(self.heartbeat_path.parent),
+            suffix=".tmp",
         )
         try:
             os.write(fd, payload.encode())
