@@ -14,12 +14,15 @@ DESIGN:
   - check_halt(): cooperative yield point
 """
 
+import json
+import logging
 import threading
 import time
 import uuid
 from collections.abc import Callable
 from dataclasses import dataclass, field
 from datetime import UTC, datetime
+from pathlib import Path
 from typing import Optional
 
 from .errors import HaltError
@@ -29,6 +32,76 @@ from .types import (
     HaltSignalSetResult,
     LifecycleState,
 )
+
+log = logging.getLogger(__name__)
+
+
+# =============================================================================
+# EXTERNAL HALT SIGNAL CHECK (INV-HALT-SIGNAL-CHECK, INV-HALT-FAIL-CLOSED)
+# =============================================================================
+
+
+@dataclass
+class HaltSignalResult:
+    """Result of checking the external HALT.signal file."""
+
+    halted: bool
+    source: str | None = None
+    reason: str | None = None
+    error: str | None = None
+
+
+def check_halt_signal(
+    swarm_path: Path | None = None,
+) -> HaltSignalResult:
+    """
+    Check for external HALT.signal file from phoenix-swarm.
+
+    INV-HALT-FAIL-CLOSED: Any error condition = HALTED, not bypassed.
+    INV-HALT-SIGNAL-CHECK: Called before every capital action.
+
+    Cases:
+      - HALT.signal absent           → halted=False (normal operation)
+      - HALT.signal valid JSON       → halted=True, source/reason populated
+      - HALT.signal corrupt JSON     → halted=True, error="corrupt signal"
+      - HALT.signal unreadable       → halted=True, error="unreadable"
+      - HALT.signal zero bytes       → halted=True, error="empty signal file"
+      - swarm_path missing           → halted=True, error="swarm path missing"
+    """
+    if swarm_path is None:
+        swarm_path = Path.home() / "phoenix-swarm"
+
+    if not swarm_path.is_dir():
+        log.warning("HALT FAIL-CLOSED: swarm path %s missing", swarm_path)
+        return HaltSignalResult(halted=True, error="swarm path missing")
+
+    signal_file = swarm_path / "HALT.signal"
+
+    if not signal_file.exists():
+        return HaltSignalResult(halted=False)
+
+    try:
+        raw = signal_file.read_text()
+    except OSError as e:
+        log.warning("HALT FAIL-CLOSED: cannot read %s: %s", signal_file, e)
+        return HaltSignalResult(halted=True, error=f"unreadable: {e}")
+
+    if not raw.strip():
+        log.warning("HALT FAIL-CLOSED: %s is empty", signal_file)
+        return HaltSignalResult(halted=True, error="empty signal file")
+
+    try:
+        data = json.loads(raw)
+    except json.JSONDecodeError as e:
+        log.warning("HALT FAIL-CLOSED: corrupt JSON in %s: %s", signal_file, e)
+        return HaltSignalResult(halted=True, error=f"corrupt signal: {e}")
+
+    return HaltSignalResult(
+        halted=True,
+        source=data.get("source"),
+        reason=data.get("reason"),
+    )
+
 
 # =============================================================================
 # HALT SIGNAL (Thread-safe, minimal latency)

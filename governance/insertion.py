@@ -26,6 +26,7 @@ Invariants:
 
 from __future__ import annotations
 
+import logging
 from dataclasses import dataclass
 from datetime import UTC, datetime
 from pathlib import Path
@@ -38,6 +39,7 @@ from .cartridge import (
     CartridgeRegistry,
     CartridgeValidationError,
 )
+from .halt import check_halt_signal
 from .lease import (
     LeaseManager,
     create_lease_from_cartridge,
@@ -48,6 +50,8 @@ from .lease_types import (
     LeaseBounds,
     TransitionResult,
 )
+
+log = logging.getLogger(__name__)
 
 # =============================================================================
 # INSERTION RESULT
@@ -315,6 +319,23 @@ class InsertionProtocol:
             duration_days=duration_days,
             bounds=bounds,
         )
+
+        # INV-HALT-SIGNAL-CHECK: Check external halt before capital action
+        halt_result = check_halt_signal()
+        if halt_result.halted:
+            self._registry.remove(
+                cartridge_ref,
+                "SYSTEM",
+                f"HALT active: {halt_result.source} — {halt_result.reason or halt_result.error}",
+            )
+            log.warning(
+                "Insertion blocked by HALT signal: source=%s reason=%s",
+                halt_result.source,
+                halt_result.reason or halt_result.error,
+            )
+            return InsertionResult.failure(
+                7, f"HALTED: {halt_result.source} — {halt_result.reason or halt_result.error}"
+            )
 
         # Step 7: Lease activation ceremony
         state_machine, result = self._lease_manager.activate_lease(lease)
