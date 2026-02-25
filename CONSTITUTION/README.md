@@ -50,4 +50,9 @@ CONSTITUTION/
 
 ---
 
+NOTE: Canonical invariant tracking moved to INVARIANT_REGISTRY.yaml (240 entries as of S54).
+This directory is a historical organizational artifact from S28.
+See: scripts/validate_registry.py for enforcement.
+
 *S52 Hardening — honest status documented. See DRIFT_LOG DELTA-7.*
+*S58 Hygiene — registry pointer updated (240 entries).*

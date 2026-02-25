@@ -216,15 +216,41 @@ status: FIXED
 commit_ref: "RIVER-P0P1P2 (000633a) — replaced with reqHistoricalData(keepUpToDate=True, barSizeSetting='1 min')"
 ```
 
+### DELTA-16: BEAD_FIELD_SPRINT Running Score Contradictory
+
+```yaml
+id: DELTA-16
+category: A_STALE_SPEC
+description: "BEAD_FIELD_SPRINT.md running-score contained duplicate YAML keys with contradictory values (invariants_proven: 12 vs 3, genesis_status: SIGNED vs NOT_STARTED)"
+disposition: FIXED_S58
+owner: DEXTER
+date_found: 2026-02-25
+status: FIXED
+commit_ref: "S58-T2 — removed stale duplicate entries, kept final (correct) values"
+```
+
+### DELTA-17: Dexter src/ Extraction Pipeline Missing
+
+```yaml
+id: DELTA-17
+category: B_MISSING_CODE
+description: "BEAD_FIELD_SPRINT.md says 'preserved: src/ (extraction pipeline, COMPLETE)' but ~/dexter/src/ does not exist"
+disposition: ACKNOWLEDGED
+owner: DEXTER
+date_found: 2026-02-25
+status: ACKNOWLEDGED
+note: "May have been in different repo structure or different machine. Investigate when M3 operational."
+```
+
 ---
 
 ## Summary
 
 | Status | Count |
 |--------|-------|
-| FIXED | 6 (DELTA-6, DELTA-8, DELTA-11, DELTA-13, DELTA-14, DELTA-15) |
+| FIXED | 7 (DELTA-6, DELTA-8, DELTA-11, DELTA-13, DELTA-14, DELTA-15, DELTA-16) |
 | MITIGATED | 1 (DELTA-7 — registry now tracks 240 INV-* IDs) |
 | LABELED | 5 (DELTA-2, DELTA-3, DELTA-4, DELTA-5, DELTA-9 — gate# or SUPERSEDED) |
-| ACKNOWLEDGED | 3 (DELTA-1, DELTA-10, DELTA-12) |
+| ACKNOWLEDGED | 4 (DELTA-1, DELTA-10, DELTA-12, DELTA-17) |
 
-*15 deltas tracked. S52: 2 fixed. S53: DELTA-11 fixed. S54: 3 fixed (DELTA-13/14/15), DELTA-7 mitigated.*
+*17 deltas tracked. S58: DELTA-16 fixed, DELTA-17 acknowledged.*
