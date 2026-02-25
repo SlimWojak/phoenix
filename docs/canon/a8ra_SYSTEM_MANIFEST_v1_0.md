@@ -2,13 +2,13 @@
 
 ```yaml
 document: SYSTEM_MANIFEST
-version: 1.5
-date: 2026-02-24
-status: CANONICAL — updated post S53.1 ORACLE_REMEDIATION
+version: 1.6
+date: 2026-02-25
+status: CANONICAL — updated post S54 TRUTH_SWEEP + RIVER_PATCH + MYPY
 purpose: Single M2M orientation for every Claude instance in the a8ra ecosystem
 update_discipline: Any session making a significant decision appends a MANIFEST DELTA
 owner: G (Sovereign Operator)
-supersedes: SYSTEM_MANIFEST v1.4
+supersedes: SYSTEM_MANIFEST v1.5
 ```
 
 ---
@@ -102,15 +102,16 @@ CONNECTIVITY:
 ### 4.1 Phoenix (Constitutional Trading System)
 
 ```yaml
-status: v0.1 SEALED + S53 JANK_NUKE IN PROGRESS
+status: v0.1 SEALED + S54 COMPLETE (ZERO TIER_1, ZERO TIER_2)
 repo: phoenix/ (private, tag: v0.1)
-current_sprint: S53 JANK_NUKE — seam correctness, wire partials, seal contracts
+current_sprint: S54 COMPLETE — TRUTH_SWEEP + RIVER_PATCH + MYPY_CAPITAL_PATH
 
 cumulative_metrics:
-  sprints_complete: 23 (S28-S44, S46-S53)
-  tests_passing: 1786 (validated by scripts/validate_manifest.py, 2026-02-24)
+  sprints_complete: 26 (S28-S44, S46-S54)
+  tests_passing: 1786 (validated by scripts/validate_manifest.py, 2026-02-25)
   chaos_vectors: 264/264 PASS
-  invariants_frozen: 167+ (163 pre-S53 + 4 new: SENTINEL-WIRED, SENTINEL-FAIL-CLOSED, CSE-EMIT-COMPLETENESS, E2E-DETERMINISTIC)
+  invariants_registered: 240 (validated by scripts/validate_registry.py, 2026-02-25)
+  mypy_strict_capital_path: 0 errors (governance/ execution/ cso/)
   bead_types: 17+
   gates_mapped: 48
   seal_date: 2026-02-22
@@ -193,7 +194,7 @@ river_phase_1:
                                                     ├──→ Daily Parquet Files
     IBKR Historical (reqHistoricalData, ~30 days) ──┤    ~/phoenix-river/{pair}/{year}/{mm}/{dd}.parquet
                                                     │
-    IBKR Live (reqRealTimeBars, 1m streaming) ──────┘
+    IBKR Live (reqHistoricalData keepUpToDate=True, 1m) ┘
         → Staging JSONL → Daily Parquet (at 17:00 NY forex day close)
                     │
                     ▼
@@ -248,7 +249,7 @@ river_phase_1:
   health_monitoring: |
     RIVER_HEALTH_REPORT: Daily automated integrity check (gap count, ghost count,
       staleness, hash sample verification, source distribution, seam zone)
-    Streamer heartbeat: ~/phoenix-river/.heartbeat (updated every bar, stale > 2min = alert)
+    Streamer heartbeat: ~/phoenix-river/.heartbeat.json (atomic JSON, state machine: STARTED→STREAMING→DEGRADED→STOPPED)
     INV-RIVER-FRESHNESS: market_state_builder refuses data older than threshold
     Real-time gap alert: consecutive ghost-eligible gaps during trading → immediate alert
 
@@ -502,6 +503,25 @@ PLANNED: [BRIDGE_SPEC.md, REFINERY_CONTRACT.yaml, PULSE_OPERATIONS.md]
     T4: Doc honesty — DRIFT_LOG (12 deltas), INVARIANT_REGISTRY (28 entries), genesis 981→789.
     55 new tests. 4 new invariants. All CTO addenda applied.
     New modules: governance/sentinel.py, execution/positions/paper.py.
+
+- date: 2026-02-24
+  office: OPUS_CURSOR
+  change: |
+    v1.5. S53.1 ORACLE_REMEDIATION. Blind oracle audit → 4 trivial fixes.
+    assert→raise on INV-HALT-1. 7 S53 invariants registered (30→37).
+    Manifest version 1.3→1.5. DEC-GENESIS-SNAPSHOT 981→789 corrected.
+
+- date: 2026-02-25
+  office: OPUS_CURSOR
+  change: |
+    v1.6. S54 TRUTH_SWEEP + RIVER_PATCH + MYPY_CAPITAL_PATH.
+    T1: Execution surface contract → 10-state canonical FSM (was stale 5-state S28.C).
+    T2: MOCK_5DRAWER added to CSE schema (enum drift fixed).
+    T3: Registry expansion — 203 INV-* stubs registered (37→240).
+    RIVER_PATCH: reqRealTimeBars→reqHistoricalData(keepUpToDate=True). IB error callback.
+      Watchdog + resubscribe (max 3, exponential backoff). Atomic JSON heartbeat.
+    T4: mypy --strict on governance/execution/cso/ → 0 errors (was 209, 37 files).
+    Sprints: 23→26. Invariants: 167→240. ZERO TIER_1. ZERO TIER_2.
 
 # --- APPEND BELOW ---
 ```

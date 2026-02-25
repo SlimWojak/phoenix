@@ -1,9 +1,9 @@
 # DRIFT_LOG — Documentation vs Reality Deltas
 
 ```yaml
-source: FORENSIC_AUDIT.md (2026-02-23, Opus audit)
+source: FORENSIC_AUDIT.md (2026-02-23, Opus audit) + S54 TRUTH_SWEEP (2026-02-25)
 triage: CTO + OWL/GPT/BOAR advisory panel
-last_updated: 2026-02-23
+last_updated: 2026-02-25
 ```
 
 ---
@@ -104,11 +104,12 @@ commit_ref: "S52 T1 — execution/position.py → ImportError guard, paper.py cr
 id: DELTA-7
 category: A_STALE_SPEC
 description: "CONSTITUTION/ directory captures <5% of 159+ invariants. Referenced scripts don't exist."
-disposition: ACKNOWLEDGED (invariants enforced in code, YAML tracking deferred)
+disposition: MITIGATED (INVARIANT_REGISTRY.yaml now tracks 240 code-referenced INV-* IDs)
 owner: PHOENIX
 date_found: 2026-02-23
-status: ACKNOWLEDGED
-commit_ref: null
+status: MITIGATED
+commit_ref: "S54-T3 (41b218f) — 203 INV-* stubs registered, validate_registry.py enforces count"
+note: "CONSTITUTION/ directory still skeletal, but INVARIANT_REGISTRY.yaml is now canonical tracking."
 ```
 
 ### DELTA-8: River __init__.py Missing Exports
@@ -156,11 +157,11 @@ commit_ref: null
 id: DELTA-11
 category: A_STALE_SPEC
 description: "SYSTEM_MANIFEST says 1690+, MASTER_PLAN says 1716. Docs updated at different times."
-disposition: COSMETIC
+disposition: FIXED (validate_manifest.py now auto-syncs manifest count with pytest)
 owner: PHOENIX
 date_found: 2026-02-23
-status: ACKNOWLEDGED
-commit_ref: null
+status: FIXED
+commit_ref: "S53 — scripts/validate_manifest.py enforces manifest=pytest count"
 ```
 
 ### DELTA-12: CSO Observer Module Status
@@ -176,14 +177,54 @@ status: ACKNOWLEDGED
 commit_ref: null
 ```
 
+### DELTA-13: Execution Surface Contract Stale
+
+```yaml
+id: DELTA-13
+category: A_STALE_SPEC
+description: "execution/contracts/execution_surface.yaml described 5-state S28.C lifecycle. Production uses 10-state FSM."
+disposition: FIXED_S54_T1
+owner: PHOENIX
+date_found: 2026-02-24
+status: FIXED
+commit_ref: "S54-T1 (cbd5a48) — contract updated to 10-state canonical FSM from execution/positions/states.py"
+```
+
+### DELTA-14: CSE Source Enum Drift
+
+```yaml
+id: DELTA-14
+category: A_STALE_SPEC
+description: "cse_schema.yaml source enum [CSO, HUNT_SURVIVOR, MANUAL] missing MOCK_5DRAWER used in consumer.py"
+disposition: FIXED_S54_T2
+owner: PHOENIX
+date_found: 2026-02-24
+status: FIXED
+commit_ref: "S54-T2 (c410424) — MOCK_5DRAWER added to canonical schema"
+```
+
+### DELTA-15: River Streamer Wrong Primitive
+
+```yaml
+id: DELTA-15
+category: C_REAL_BUG
+description: "RiverStreamer used reqRealTimeBars(barSize=5) delivering 5-second bars. Docstring said '1m bars'."
+disposition: FIXED_S54_RIVER_PATCH
+owner: PHOENIX
+date_found: 2026-02-24
+status: FIXED
+commit_ref: "RIVER-P0P1P2 (000633a) — replaced with reqHistoricalData(keepUpToDate=True, barSizeSetting='1 min')"
+```
+
 ---
 
 ## Summary
 
 | Status | Count |
 |--------|-------|
-| FIXED | 5 (DELTA-1, DELTA-6, DELTA-8 in S52; DELTA-4, DELTA-5 labeled in spec) |
-| LABELED | 5 (DELTA-2, DELTA-3, DELTA-4, DELTA-5, DELTA-9 — all have gate# or SUPERSEDED) |
-| ACKNOWLEDGED | 4 (DELTA-7, DELTA-10, DELTA-11, DELTA-12) |
+| FIXED | 6 (DELTA-6, DELTA-8, DELTA-11, DELTA-13, DELTA-14, DELTA-15) |
+| MITIGATED | 1 (DELTA-7 — registry now tracks 240 INV-* IDs) |
+| LABELED | 5 (DELTA-2, DELTA-3, DELTA-4, DELTA-5, DELTA-9 — gate# or SUPERSEDED) |
+| ACKNOWLEDGED | 3 (DELTA-1, DELTA-10, DELTA-12) |
 
-*All 12 forensic deltas tracked. S52 closure: genesis count fixed, spec language downgraded, all DESIGNED_NOT_BUILT features labeled with gate numbers.*
+*15 deltas tracked. S52: 2 fixed. S53: DELTA-11 fixed. S54: 3 fixed (DELTA-13/14/15), DELTA-7 mitigated.*
