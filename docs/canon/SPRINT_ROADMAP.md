@@ -5,7 +5,7 @@
 document: SPRINT_ROADMAP.md
 version: 3.0
 date: 2026-02-25
-status: CANONICAL — updated post S54 TRUTH_SWEEP + RIVER_PATCH + MYPY
+status: CANONICAL — updated post S58 HYGIENE (hardening complete)
 brand: a8ra (Phoenix is internal codename — see docs/canon/BRAND_IDENTITY.md)
 format: M2M_DENSE
 audience: Advisors (GPT, GROK, OWL, Opus)
@@ -16,8 +16,8 @@ audience: Advisors (GPT, GROK, OWL, Opus)
 ## CURRENT STATE
 
 ```yaml
-current_sprint: S54 COMPLETE — TRUTH_SWEEP + RIVER_PATCH + MYPY (2026-02-25)
-status: S54_COMPLETE | ZERO_TIER1 | ZERO_TIER2 | MYPY_CLEAN_CAPITAL_PATH
+current_sprint: S58 COMPLETE — HYGIENE (2026-02-25)
+status: S58_COMPLETE | ZERO_TIER1 | ZERO_TIER2 | HALT_OPERATIONAL | ORACLE_BOOTSTRAPPED
 s33_p2: BLOCKED (Olya CSO calibration) — CoE model accepted, not required for v0.1
 
 recent_completions:
@@ -43,13 +43,17 @@ recent_completions:
   s53_completion_date: 2026-02-24   # JANK_NUKE — seam correctness, sentinel wiring
   s53_1_completion_date: 2026-02-24 # Oracle audit remediation
   s54_completion_date: 2026-02-25   # TRUTH_SWEEP + RIVER_PATCH + MYPY
+  s55_completion_date: 2026-02-25   # HALT_WIRE — constitutional kill switch
+  s56_completion_date: 2026-02-25   # LOUD_FAILS — silent fail hardening
+  s57_completion_date: 2026-02-25   # ORACLE_BOOTSTRAP — Three-Surface Cockpit
+  s58_completion_date: 2026-02-25   # HYGIENE — dead code, doc fixes, cleanup
 
-certification: v0.1_SEALED | RIVER_PHASE_1_COMPLETE | WARBOAR_CERTIFIED | LIVE_GATEWAY_VALIDATED | CSO_PRODUCTION_READY | S46_CANONICAL | HUD_INTEGRATED | S44_FOUNDATION_VALIDATED | S47_LEASE_PROVEN | MC_v0.2_LOCKED | BEAD_FIELD_GATE_1 | S51_DRIVESHAFT_DELIVERED | S52_HARDENED | S53_JANK_NUKED | S54_TRUTH_SWEPT | MYPY_CAPITAL_PATH_CLEAN
+certification: v0.1_SEALED | RIVER_PHASE_1_COMPLETE | WARBOAR_CERTIFIED | LIVE_GATEWAY_VALIDATED | CSO_PRODUCTION_READY | S46_CANONICAL | HUD_INTEGRATED | S44_FOUNDATION_VALIDATED | S47_LEASE_PROVEN | MC_v0.2_LOCKED | BEAD_FIELD_GATE_1 | S51_DRIVESHAFT_DELIVERED | S52_HARDENED | S53_JANK_NUKED | S54_TRUTH_SWEPT | MYPY_CAPITAL_PATH_CLEAN | S55_HALT_WIRED | S56_LOUD_FAILS | S57_ORACLE_BOOTSTRAPPED | S58_HYGIENE
 cumulative:
-  sprints_complete: 26 (S28-S44, S46-S54)
-  tests_passing: 1786 (validated by scripts/validate_manifest.py)
-  chaos_vectors: 264/264 PASS
-  invariants_registered: 240 (validated by scripts/validate_registry.py)
+  sprints_complete: 30 (S28-S44, S46-S58)
+  tests_passing: 1815+ (1786 + 29 new from S55-S56)
+  chaos_vectors: 269/269 PASS (264 + 5 halt chaos vectors)
+  invariants_registered: 245 (240 + 5 new from S55-S56)
   bead_types: 17+
   runbooks: 8
   gate_glossary: 48 gates mapped
@@ -1225,6 +1229,115 @@ tier_status:
 
 ### Exit Gate
 "Zero TIER_1. Zero TIER_2. mypy --strict clean on capital path. River streamer uses correct primitive. 240 invariants registered. All truth-sync gates pass."
+
+---
+
+## S55: HALT_WIRE — COMPLETE ✅
+
+```yaml
+status: COMPLETE ✓
+completion_date: 2026-02-25
+theme: "Constitutional kill switch — Olya can halt, Phoenix refuses, G clears."
+effort: "¾ day"
+origin: "Forensic audit T1 risk: HALT.signal DESIGNED_NOT_BUILT"
+
+tracks:
+  T1_HALT_WRITE: "halt.sh — source-validated, idempotent, audit-logged, atomic (tmp+mv)"
+  T2_EXECUTION_GATE: "check_halt_signal() — fail-closed on 5 error cases. Wired into insertion.py Step 7."
+  T3_RESTART_GUARD: "clear_halt.sh — interactive-only (rejects piped/cron), logs clear event"
+  T4_ORACLE_SURFACE: "Oracle CLAUDE.md — HALT authority section + boot sequence updated"
+  T5_CHAOS_VECTORS: "5 chaos vectors (corrupt, concurrent, unknown schema, missing fields, zero bytes) + active interrupt design"
+
+new_tests: 19
+new_invariants: [INV-HALT-SIGNAL-CHECK, INV-HALT-CLEAR-LOGGED, INV-HALT-FAIL-CLOSED, INV-HALT-ENTROPY-PROOF]
+regressions: 0
+commits: [f63ab28 (phoenix-swarm), b08de2c (phoenix)]
+```
+
+---
+
+## S56: LOUD_FAILS — COMPLETE ✅
+
+```yaml
+status: COMPLETE ✓
+completion_date: 2026-02-25
+theme: "Convert silent failures to loud failures across all repos."
+effort: "¾ day (parallel with S55)"
+origin: "Forensic audit: except Exception → pass on capital-adjacent paths"
+
+tracks:
+  T1_EXCEPTION_SCAN: "14 hits classified (5 capital-adjacent, 3 data-integrity, 6 benign). Documented in exception_scan.yaml."
+  T2_KILL_MANAGER: "4 silent except-pass → log.error + raise on writes, log.error on reads. halt.py cascade logs warnings. t2/tokens.py audit bead logs errors."
+  T3_SWARM_SCRIPTS: "launch_office.sh (dep checks, path validation, API abort). session_end_hook.sh (mkdir lock, local fallback). status.sh (yq check, HALT display, staleness flag)."
+  T4_CONFIG_VALIDATION: "ExecutionMode enum + validate_boot(). Paper/live require IB creds. Invalid paths fail loud."
+
+new_tests: 10
+new_invariants: [INV-CONFIG-VALID-ON-BOOT]
+regressions: 0
+commits: [1927792 (phoenix-swarm), a3c9f60 (phoenix)]
+```
+
+---
+
+## BOOT_GATE — PASS ✅
+
+```yaml
+status: PASS ✓
+completion_date: 2026-02-25
+theme: "Cold boot validation after S55+S56 hardening."
+effort: "30 min (4 automated + 1 manual)"
+
+steps:
+  A_STATUS: "PASS — status.sh clean, all offices OFFLINE, no HALT"
+  B_LAUNCH: "PASS — launch_office.sh boots, fails loud on missing Keychain (correct)"
+  C_HALT_WRITE: "PASS — halt.sh writes valid HALT.signal"
+  D_HALT_CHECK: "PASS — check_halt_signal returns halted=True, source=OLYA"
+  E_CLEAR: "PASS — G cleared manually, interactive confirmed"
+
+constitutional_proof: "Write → check → refuse → clear → resume. End-to-end proven."
+```
+
+---
+
+## S57: ORACLE_BOOTSTRAP — COMPLETE ✅
+
+```yaml
+status: COMPLETE ✓
+completion_date: 2026-02-25
+theme: "Build Olya's Three-Surface Cockpit to operational Phase 1."
+effort: "1 day"
+dependency: "S55 (HALT must be wired)"
+
+tracks:
+  T1_CLAUDE_MD: "Full rewrite — Three-Surface Cockpit, Phase 1 honest labeling, capability mapping, HALT authority"
+  T2_DIRECTORIES: "~/oracle/memory/ + archive.md + patterns.md created"
+  T3_DATA_PROOF: "3 example scripts (first_query.sh, gate_status.sh, dry_run.sh)"
+  T4_BROADCAST: "BROADCAST.md updated from S49 era to post-S58 state"
+  T5_DRY_RUN: "Olya confidence-building rehearsal script (actually halts system)"
+
+commits: [00f82e0 (phoenix-swarm)]
+note: "Oracle not yet a git repo — CLAUDE.md + examples saved to disk."
+```
+
+---
+
+## S58: HYGIENE — COMPLETE ✅
+
+```yaml
+status: COMPLETE ✓
+completion_date: 2026-02-25
+theme: "Dead code, stale docs, cleanup."
+effort: "½ day"
+
+tracks:
+  T1_DEAD_CODE: "widget/ and narrator/ confirmed ACTIVE (not dead — skip archival). CONSTITUTION/README.md pointer to 240-entry registry."
+  T2_DOC_FIXES: "BEAD_FIELD_SPRINT.md contradictions fixed (DELTA-16). DRIFT_LOG +2 entries (DELTA-16 FIXED, DELTA-17 ACKNOWLEDGED)."
+  T3_SRC_VERIFY: "~/dexter/src/ does not exist. Documented as DELTA-17."
+  T4_PUSH_LOCK: "Already done in S56 T3 (session_end_hook.sh mkdir lock pattern)."
+  T5_DEPRECATION: "No moves needed — active code stays in place."
+
+commits: [b6914fd (phoenix), ae577e6 (dexter), 367f294 (phoenix-swarm)]
+```
 
 ---
 

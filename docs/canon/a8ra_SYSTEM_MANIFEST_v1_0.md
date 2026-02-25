@@ -2,9 +2,9 @@
 
 ```yaml
 document: SYSTEM_MANIFEST
-version: 1.6
+version: 1.7
 date: 2026-02-25
-status: CANONICAL — updated post S54 TRUTH_SWEEP + RIVER_PATCH + MYPY
+status: CANONICAL — updated post S58 HYGIENE (hardening complete)
 purpose: Single M2M orientation for every Claude instance in the a8ra ecosystem
 update_discipline: Any session making a significant decision appends a MANIFEST DELTA
 owner: G (Sovereign Operator)
@@ -102,16 +102,17 @@ CONNECTIVITY:
 ### 4.1 Phoenix (Constitutional Trading System)
 
 ```yaml
-status: v0.1 SEALED + S54 COMPLETE (ZERO TIER_1, ZERO TIER_2)
+status: v0.1 SEALED + S58 COMPLETE (ZERO TIER_1, ZERO TIER_2, HALT OPERATIONAL)
 repo: phoenix/ (private, tag: v0.1)
-current_sprint: S54 COMPLETE — TRUTH_SWEEP + RIVER_PATCH + MYPY_CAPITAL_PATH
+current_sprint: S58 COMPLETE — HYGIENE (hardening S55-S58 complete)
 
 cumulative_metrics:
-  sprints_complete: 26 (S28-S44, S46-S54)
-  tests_passing: 1786 (validated by scripts/validate_manifest.py, 2026-02-25)
-  chaos_vectors: 264/264 PASS
-  invariants_registered: 240 (validated by scripts/validate_registry.py, 2026-02-25)
+  sprints_complete: 30 (S28-S44, S46-S58)
+  tests_passing: 1815+ (1786 + 29 from S55-S56)
+  chaos_vectors: 269/269 PASS (264 + 5 halt chaos vectors)
+  invariants_registered: 245 (240 + 5 from S55-S56)
   mypy_strict_capital_path: 0 errors (governance/ execution/ cso/)
+  halt_mechanism: OPERATIONAL (constitutional, chaos-proven, boot-gate validated)
   bead_types: 17+
   gates_mapped: 48
   seal_date: 2026-02-22
@@ -382,6 +383,17 @@ INV-ANCESTRAL-PRESERVED: "789 Genesis beads (curated from 1178 extractions) = Ge
 INV-SOVEREIGN-ANCHOR: "Daily ledger root signed offline HSM"
 ```
 
+### Halt (S55 Constitutional Hardening)
+```yaml
+INV-HALT-SIGNAL-CHECK: "Execution gate checks HALT.signal before every capital action"
+INV-HALT-CLEAR-LOGGED: "Every HALT clear event logged with timestamp and operator"
+INV-HALT-FAIL-CLOSED: "Corrupted/unreadable HALT.signal = HALTED, not bypassed"
+INV-HALT-ENTROPY-PROOF: "Halt mechanism survives 5 chaos vectors without silent fail"
+INV-OLYA-HALT-AUTHORITY: "Olya can trigger halt_cascade at any time without G approval"
+INV-HALT-HUMAN-ONLY-RESTART: "No agent/daemon/cron can clear HALT. G manual action only."
+INV-CONFIG-VALID-ON-BOOT: "Boot-time config validation fails loud on missing critical config"
+```
+
 ### Operational
 ```yaml
 INV-HALT-1: "halt_local < 50ms"
@@ -522,6 +534,23 @@ PLANNED: [BRIDGE_SPEC.md, REFINERY_CONTRACT.yaml, PULSE_OPERATIONS.md]
       Watchdog + resubscribe (max 3, exponential backoff). Atomic JSON heartbeat.
     T4: mypy --strict on governance/execution/cso/ → 0 errors (was 209, 37 files).
     Sprints: 23→26. Invariants: 167→240. ZERO TIER_1. ZERO TIER_2.
+
+- date: 2026-02-25
+  office: OPUS_CURSOR
+  change: |
+    v1.7. S55-S58 HARDENING BLOCK (forensic audit remediation).
+    S55 HALT_WIRE: Constitutional kill switch operational. halt.sh + check_halt_signal()
+      + clear_halt.sh. Fail-closed on 5 error cases. Wired into insertion.py Step 7.
+      5 chaos vectors. 19 new tests. 4 new invariants.
+    S56 LOUD_FAILS: 14 exception hits classified. kill_manager silent-pass → loud error.
+      Swarm scripts hardened (dep checks, lock pattern, staleness flags).
+      Config boot validation (INV-CONFIG-VALID-ON-BOOT). 10 new tests.
+    BOOT_GATE: 5-step cold boot validation PASS (G confirmed Step E manually).
+    S57 ORACLE_BOOTSTRAP: Three-Surface Cockpit (CLAUDE.md rewrite, Phase 1 honest
+      labeling, 3 example scripts, BROADCAST updated).
+    S58 HYGIENE: BEAD_FIELD_SPRINT contradictions fixed (DELTA-16). dexter src/
+      missing documented (DELTA-17). CONSTITUTION pointer updated.
+    Sprints: 26→30. Tests: 1786→1815+. Invariants: 240→245. Chaos: 264→269.
 
 # --- APPEND BELOW ---
 ```
