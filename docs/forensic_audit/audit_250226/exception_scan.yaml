@@ -1,0 +1,121 @@
+# S56 Track 1: Global Exception Scan
+# Date: 2026-02-25
+# Scope: phoenix/, phoenix-swarm/, dexter/dexter/bead_field/
+
+scan_summary:
+  total_hits: 14
+  class_A_benign: 6
+  class_B_capital_adjacent: 5
+  class_C_data_integrity: 3
+
+# ─── CLASS B: CAPITAL_ADJACENT (FIXED in S56) ───
+
+PHX-EE-02:
+  file: governance/halt.py
+  line: 279
+  pattern: "except Exception: continue (retry loop)"
+  class: B
+  risk: "Halt cascade retry swallows ALL exceptions with zero logging"
+  fix: "Added log.warning with exc_info on each retry failure"
+  status: FIXED_S56
+
+PHX-EE-04:
+  file: monitoring/kill_manager.py
+  lines: [132, 203, 256, 308]
+  pattern: "except Exception: pass (4 instances)"
+  class: B
+  risk: "Kill state bead writes silently swallowed — kill flag may not persist"
+  fix: "set/lift: log.error + raise (caller must know). query: log.error (read path, degrade gracefully)"
+  status: FIXED_S56
+
+PHX-EE-06:
+  file: governance/t2/tokens.py
+  line: 372
+  pattern: "except Exception: pass"
+  class: B
+  risk: "T2 audit bead emission silently lost — governance audit trail gap"
+  fix: "log.error with exc_info (non-blocking but visible)"
+  status: FIXED_S56
+
+# ─── CLASS B: CAPITAL_ADJACENT (ALREADY CORRECT) ───
+
+PHX-EE-05:
+  file: execution/halt_gate.py
+  line: 182
+  pattern: "except Exception as exc: log + BreachBead + re-raise"
+  class: B
+  risk: NONE
+  note: "Gold standard fail-closed pattern. Sentinel crash → SentinelHaltError."
+  status: CORRECT
+
+PHX-EE-07:
+  file: governance/circuit_breaker.py
+  line: 167
+  pattern: "except Exception: record + re-raise"
+  class: B
+  risk: NONE
+  note: "Catch-record-reraise. Correct by design."
+  status: CORRECT
+
+# ─── CLASS A: BENIGN_BEST_EFFORT (NO ACTION) ───
+
+PHX-EE-01:
+  file: governance/halt.py
+  line: 206
+  pattern: "except Exception: retry"
+  class: A
+  note: "Cascade retry with backoff — acceptable pattern, now has logging"
+  status: ACCEPTABLE
+
+PHX-EE-03:
+  file: monitoring/kill_manager.py
+  lines: [256, 308]
+  pattern: "except Exception: pass (query paths)"
+  class: A
+  note: "Read-only query paths. Now log.error but don't raise (graceful degradation)."
+  status: FIXED_S56
+
+PHX-EE-08:
+  file: surfaces/dashboard/app.py
+  pattern: "bare except:"
+  class: A
+  note: "Dashboard rendering — best-effort display"
+  status: ACCEPTABLE
+
+PHX-EE-09:
+  file: surfaces/dashboard/app.py
+  pattern: "bare except:"
+  class: A
+  note: "Dashboard callback — best-effort"
+  status: ACCEPTABLE
+
+PHX-EE-10:
+  file: daemons/tmux_control.py
+  pattern: "bare except: (2 instances)"
+  class: A
+  note: "tmux_control deprecated (STACK_KILLS: tmux_hive_ops DEAD)"
+  status: ACCEPTABLE_DEPRECATED
+
+# ─── CLASS C: DATA_INTEGRITY (DEXTER — FROZEN) ───
+
+DEX-EE-01:
+  file: dexter/bead_field/integrity/signing.py
+  pattern: "except Exception"
+  class: C
+  note: "DEC-SUBSTRATE-FREEZE active. Documented, not modified."
+  status: FROZEN
+
+DEX-EE-02:
+  file: dexter/bead_field/ingestion/pipeline.py
+  line: 128
+  pattern: "except Exception as e"
+  class: C
+  note: "DEC-SUBSTRATE-FREEZE active. Broad catch on store insert."
+  status: FROZEN
+
+DEX-EE-03:
+  file: dexter/bead_field/integrity/signing.py
+  pattern: "except Exception"
+  class: C
+  note: "DEC-SUBSTRATE-FREEZE active. Verification path."
+  status: FROZEN

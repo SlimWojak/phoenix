@@ -14,6 +14,7 @@ INV-CONFIG-2: Startup validates config
 
 from __future__ import annotations
 
+from enum import Enum
 from pathlib import Path
 
 from pydantic import BaseModel, Field, field_validator
@@ -129,14 +130,29 @@ class CSOConfig(BaseModel):
 # =============================================================================
 
 
+class ExecutionMode(str, Enum):
+    """Execution mode — determines which config fields are required."""
+
+    PAPER = "paper"
+    LIVE = "live"
+    OFFLINE = "offline"
+
+
 class PhoenixConfig(BaseModel):
     """
     Root Phoenix configuration.
 
     All config sections are optional with sensible defaults.
     This enables virgin VM startup with zero configuration.
+
+    INV-CONFIG-VALID-ON-BOOT: Boot-time validation fails loud on missing
+    critical config for the active execution mode.
     """
 
+    execution_mode: ExecutionMode = Field(
+        default=ExecutionMode.OFFLINE,
+        description="Execution mode (paper/live require IB creds)",
+    )
     ibkr: IBKRConfig = Field(default_factory=IBKRConfig)
     river: RiverConfig = Field(default_factory=RiverConfig)
     governance: GovernanceConfig = Field(default_factory=GovernanceConfig)
@@ -147,4 +163,28 @@ class PhoenixConfig(BaseModel):
     class Config:
         """Pydantic config."""
 
-        extra = "forbid"  # Reject unknown fields
+        extra = "forbid"
+
+    def validate_boot(self) -> list[str]:
+        """
+        INV-CONFIG-VALID-ON-BOOT: Validate config for current execution mode.
+
+        Returns list of errors. Empty = valid.
+        Raises ValueError if critical config missing for active mode.
+        """
+        errors: list[str] = []
+
+        if self.execution_mode in (ExecutionMode.PAPER, ExecutionMode.LIVE):
+            if not self.ibkr.account_id:
+                errors.append(f"ibkr.account_id required for {self.execution_mode.value} mode")
+
+        river_path = Path(self.river.data_path).expanduser()
+        if not river_path.parent.exists():
+            errors.append(f"river.data_path parent does not exist: {river_path.parent}")
+
+        if errors:
+            raise ValueError(
+                f"INV-CONFIG-VALID-ON-BOOT: {len(errors)} config errors: " + "; ".join(errors)
+            )
+
+        return errors

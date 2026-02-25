@@ -85,11 +85,7 @@ class Token:
     @property
     def is_valid(self) -> bool:
         """Check if token is valid for use."""
-        return (
-            not self.used
-            and not self.is_expired
-            and self.status == TokenStatus.ISSUED
-        )
+        return not self.used and not self.is_expired and self.status == TokenStatus.ISSUED
 
     @property
     def ttl_remaining_sec(self) -> float:
@@ -369,8 +365,15 @@ class TokenStore:
 
         try:
             self._emit_bead(bead_data)
-        except Exception:  # noqa: S110
-            pass  # Non-blocking - audit is important but not critical path
+        except Exception:
+            # BEST-EFFORT: audit bead emission logged but non-blocking
+            import logging
+
+            logging.getLogger(__name__).error(
+                "T2 audit bead emission failed for token %s",
+                token.token_id,
+                exc_info=True,
+            )
 
 
 def create_token_validator(
@@ -397,9 +400,7 @@ def create_token_validator(
             "side": getattr(order, "side", ""),
             "quantity": getattr(order, "quantity", 0),
         }
-        evidence_hash = hashlib.sha256(
-            str(sorted(evidence.items())).encode()
-        ).hexdigest()
+        evidence_hash = hashlib.sha256(str(sorted(evidence.items())).encode()).hexdigest()
 
         return store.validate(token_id, intent_id, evidence_hash)
 

@@ -12,10 +12,13 @@ from __future__ import annotations
 
 import hashlib
 import json
+import logging
 import uuid
 from dataclasses import dataclass, field
 from datetime import UTC, datetime
 from typing import Any
+
+log = logging.getLogger(__name__)
 
 # =============================================================================
 # DATA CLASSES
@@ -129,8 +132,9 @@ class KillManager:
         if self._bead_store:
             try:
                 self._bead_store.write_dict(bead_dict)
-            except Exception:  # noqa: S110
-                pass
+            except Exception:
+                log.error("Kill bead write failed for %s", strategy_id, exc_info=True)
+                raise
 
         # Update cache
         self._cache[strategy_id] = flag
@@ -200,8 +204,9 @@ class KillManager:
         if self._bead_store:
             try:
                 self._bead_store.write_dict(bead_dict)
-            except Exception:  # noqa: S110
-                pass
+            except Exception:
+                log.error("Kill lift bead write failed for %s", strategy_id, exc_info=True)
+                raise
 
         # Update cache
         self._cache[strategy_id] = flag
@@ -253,8 +258,8 @@ class KillManager:
                 self._cache[strategy_id] = flag
                 return flag
 
-        except Exception:  # noqa: S110
-            pass
+        except Exception:
+            log.error("Kill flag query failed for %s", strategy_id, exc_info=True)
 
         return None
 
@@ -305,8 +310,8 @@ class KillManager:
                     active.append(flag)
                     self._cache[sid] = flag
 
-        except Exception:  # noqa: S110
-            pass
+        except Exception:
+            log.error("Active kills query failed", exc_info=True)
 
         return active
 

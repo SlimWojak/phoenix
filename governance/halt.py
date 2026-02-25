@@ -277,6 +277,13 @@ class HaltManager:
                 return ack
 
             except Exception:
+                log.warning(
+                    "Halt cascade to %s failed (attempt %d/%d)",
+                    dep_id,
+                    attempt + 1,
+                    self.MAX_RETRIES + 1,
+                    exc_info=True,
+                )
                 if attempt < self.MAX_RETRIES:
                     time.sleep(self.BACKOFF_MS / 1000)
                 continue
