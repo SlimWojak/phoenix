@@ -52,42 +52,51 @@ class ScanResult:
             lines.append("READY:")
             for sr in self.ready_setups:
                 setup = sr.setup
+                reasons_str = ", ".join(r.value for r in sr.readiness_reasons)
                 if setup:
                     lines.append(
-                        f"  {sr.pair} ({sr.quality_score:.2f}): "
+                        f"  {sr.pair} [{reasons_str}]: "
                         f"{setup.setup_type.value} {setup.direction.value}"
                     )
 
         if self.forming_setups:
             lines.append("FORMING:")
             for sr in self.forming_setups:
-                lines.append(f"  {sr.pair} ({sr.quality_score:.2f}): {sr.reason}")
+                reasons_str = ", ".join(r.value for r in sr.readiness_reasons)
+                lines.append(f"  {sr.pair} [{reasons_str}]: {sr.reason}")
 
         if self.none_setups:
             lines.append("NONE:")
             for sr in self.none_setups:
-                lines.append(f"  {sr.pair} ({sr.quality_score:.2f})")
+                reasons_str = (
+                    ", ".join(r.value for r in sr.readiness_reasons)
+                    if sr.readiness_reasons
+                    else "none"
+                )
+                lines.append(f"  {sr.pair} [{reasons_str}]")
 
         return "\n".join(lines)
 
 
 @dataclass
 class CSESignal:
-    """Canonical Signal Envelope for Shadow."""
+    """Canonical Signal Envelope for Shadow.
+
+    INV-CSO-NO-SCALAR-DECISIONS: readiness_reasons replaces confidence.
+    No float/int score fields in emitted signals.
+    """
 
     signal_id: str
     timestamp: datetime
     pair: str
     source: str
     setup_type: str
-    confidence: float
+    readiness_reasons: list[str]
     parameters: dict[str, float]
     evidence_hash: str
 
-    # INV-CSE-VERSION-SINGLE-SOURCE-1
     cse_version: str = CSE_VERSION
 
-    # S52 T3 — River provenance (REQUIRED per INV-CSE-PROVENANCE-1)
     river_latest_bar_timestamp: str | None = None
     river_knowledge_time: str | None = None
     river_bar_hash_sample: str | None = None
@@ -100,7 +109,7 @@ class CSESignal:
             "pair": self.pair,
             "source": self.source,
             "setup_type": self.setup_type,
-            "confidence": self.confidence,
+            "readiness_reasons": self.readiness_reasons,
             "parameters": self.parameters,
             "evidence_hash": self.evidence_hash,
             "river_latest_bar_timestamp": self.river_latest_bar_timestamp,
@@ -203,7 +212,7 @@ class CSOScanner:
             return SetupResult(
                 pair=pair,
                 status=SetupStatus.NONE,
-                quality_score=0.0,
+                readiness_reasons=[],
                 reason="No market data available",
             )
 
@@ -217,28 +226,21 @@ class CSOScanner:
         # Detect setup
         result = self._core.detect_setup(pair, htf_structure, ltf_structure, current_price)
 
-        # Apply pair weight
-        weight = self._params.pair_weights.get(pair, 1.0)
-        result.quality_score *= weight
-
         return result
 
-    def get_ready_setups(self, threshold: float | None = None) -> list[Setup]:
+    def get_ready_setups(self, min_reasons: int | None = None) -> list[Setup]:
         """
         Get all ready setups.
 
         Args:
-            threshold: Override ready threshold
-
-        Returns:
-            List of Setup objects
+            min_reasons: Minimum readiness reasons required (default: all READY)
         """
         result = self.scan_all_pairs()
 
         setups = []
         for sr in result.ready_setups:
             if sr.setup:
-                if threshold is None or sr.quality_score >= threshold:
+                if min_reasons is None or len(sr.readiness_reasons) >= min_reasons:
                     setups.append(sr.setup)
 
         return setups
@@ -312,7 +314,7 @@ class CSOScanner:
             pair=setup.pair,
             source="CSO",
             setup_type=setup.setup_type.value,
-            confidence=setup.confidence,
+            readiness_reasons=[r.value for r in result.readiness_reasons],
             parameters={
                 "entry": setup.entry_price,
                 "stop": setup.stop_price,
@@ -321,9 +323,7 @@ class CSOScanner:
             },
             evidence_hash=setup.evidence.evidence_hash,
             cse_version=CSE_VERSION,
-            river_latest_bar_timestamp=self._current_provenance.get(
-                "river_latest_bar_timestamp"
-            ),
+            river_latest_bar_timestamp=self._current_provenance.get("river_latest_bar_timestamp"),
             river_knowledge_time=self._current_provenance.get("river_knowledge_time"),
             river_bar_hash_sample=self._current_provenance.get("river_bar_hash_sample"),
         )
@@ -331,9 +331,7 @@ class CSOScanner:
         # INV-CSE-EMIT-COMPLETENESS-1: validate before emission
         validation = self._emit_validator.validate(cse.to_dict())
         if not validation.valid:
-            raise ValueError(
-                f"INV-CSE-EMIT-COMPLETENESS-1: invalid CSE: {validation.errors}"
-            )
+            raise ValueError(f"INV-CSE-EMIT-COMPLETENESS-1: invalid CSE: {validation.errors}")
 
         # WIRING: Send to Shadow
         if self._shadow is not None:
@@ -349,7 +347,7 @@ class CSOScanner:
                     stop=cse.parameters["stop"],
                     target=cse.parameters["target"],
                     risk_percent=cse.parameters["risk_percent"],
-                    confidence=cse.confidence,
+                    confidence=len(cse.readiness_reasons) / 5.0,
                     source=cse.source,
                     evidence_hash=cse.evidence_hash,
                 )
@@ -357,8 +355,8 @@ class CSOScanner:
             except Exception:  # noqa: S110
                 pass  # Non-blocking
 
-        # WIRING: Send to Telegram (READY setups only)
-        if self._telegram is not None and setup.confidence >= 0.8:
+        # WIRING: Send to Telegram (READY setups with >=4 reasons)
+        if self._telegram is not None and len(cse.readiness_reasons) >= 4:
             try:
                 self._telegram.send_sync(
                     message=self._format_setup_alert(setup),
@@ -379,7 +377,6 @@ class CSOScanner:
 <b>Pair:</b> {setup.pair}
 <b>Type:</b> {setup.setup_type.value}
 <b>Direction:</b> {direction}
-<b>Confidence:</b> {setup.confidence:.1%}
 <b>Entry:</b> {setup.entry_price:.5f}
 <b>Stop:</b> {setup.stop_price:.5f}
 <b>Target:</b> {setup.target_price:.5f}

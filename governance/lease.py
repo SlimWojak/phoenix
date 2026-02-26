@@ -164,12 +164,27 @@ class LeaseStateMachine:
         """
         Transition DRAFT → ACTIVE.
 
+        INV-ACTIVATION-ONLY-VIA-GUARD: Checks sovereign gate before activation.
+        HALT.signal present → REJECT. Gate check exception → REJECT (fail-closed).
+
         Args:
             expected_hash: Prior state hash for race protection
 
         Returns:
             TransitionResult indicating success or failure reason
         """
+        from .sovereign_gate import SovereignGateError, check_sovereign_gate
+
+        try:
+            check_sovereign_gate(require_active_lease=False)
+        except SovereignGateError:
+            self._emit_state_lock_bead(
+                self.state,
+                "DRAFT→ACTIVE",
+                TransitionResult.REJECTED_INVALID_TRANSITION,
+            )
+            return TransitionResult.REJECTED_INVALID_TRANSITION
+
         with self._lock:
             # Verify valid transition
             if self.state != LeaseState.DRAFT:

@@ -2,25 +2,36 @@
 Bead CFP Adapter — Query Execution Against Bead Store
 =====================================================
 
+DEPRECATED_BY_BRIDGE: This module uses legacy state/beads.json backend.
+Will be replaced by bridge query at Gate 2. Import requires LEGACY_BACKEND=true.
+
 S35 TRACK B DELIVERABLE
 Created: 2026-01-29 (Day 2)
-
-Executes CFP queries against the bead store.
-For S35: PERFORMANCE_BEAD queries only (complexity deferred to S37).
 
 INVARIANTS:
   - INV-BEAD-CHAIN-1: prev_bead_id must reference existing bead or be null
   - INV-ATTR-PROVENANCE: All results include provenance
+  - INV-LEGACY-FALLBACK-GATED: Legacy paths require explicit flag
 """
 
 from __future__ import annotations
 
 import hashlib
 import json
+import os
+import warnings
 from dataclasses import dataclass
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
+
+if os.environ.get("LEGACY_BACKEND") != "true":
+    warnings.warn(
+        "cfp.bead_adapter is DEPRECATED (legacy JSON backend). "
+        "Set LEGACY_BACKEND=true to use. Will be replaced by bridge query at Gate 2.",
+        DeprecationWarning,
+        stacklevel=2,
+    )
 
 # =============================================================================
 # CONSTANTS

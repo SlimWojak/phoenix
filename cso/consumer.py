@@ -193,12 +193,12 @@ class CSEValidator:
         if cse.get("source") not in valid_sources:
             errors.append(f"source must be one of {valid_sources}")
 
-        # confidence
-        confidence = cse.get("confidence")
-        if not isinstance(confidence, (int, float)):
-            errors.append("confidence must be numeric")
-        elif not 0.0 <= confidence <= 1.0:
-            errors.append(f"confidence must be 0-1, got {confidence}")
+        # readiness_reasons (S59: replaces confidence per INV-CSO-NO-SCALAR-DECISIONS)
+        readiness = cse.get("readiness_reasons")
+        if not isinstance(readiness, list):
+            errors.append("readiness_reasons must be a list")
+        elif not all(isinstance(r, str) for r in readiness):
+            errors.append("readiness_reasons entries must be strings")
 
         # parameters
         params = cse.get("parameters", {})
@@ -387,17 +387,48 @@ class CSOConsumer:
         validator: CSEValidator | None = None,
         resolver: EvidenceResolver | None = None,
         approval_handler: ApprovalHandler | None = None,
+        rejection_store_path: Path | None = None,
     ) -> None:
-        """Initialize consumer."""
+        """Initialize consumer.
+
+        Args:
+            rejection_store_path: If set, rejections persist to JSONL at this path.
+                S60 pre-bridge preparation: durable rejection records.
+        """
         self._validator = validator or CSEValidator()
         self._resolver = resolver or EvidenceResolver()
         self._approval_handler = approval_handler
         self._rejections: list[CSERejectionRecord] = []
+        self._rejection_store_path = rejection_store_path
 
     @property
     def rejections(self) -> list[CSERejectionRecord]:
         """Structured rejection history."""
         return list(self._rejections)
+
+    def _persist_rejection(self, rejection: CSERejectionRecord) -> None:
+        """Persist rejection to durable JSONL store (S60 pre-bridge prep)."""
+        if self._rejection_store_path is None:
+            return
+
+        import json
+        import os
+
+        record = {
+            "cse_id": rejection.cse_id,
+            "reason": rejection.reason.value,
+            "missing_fields": rejection.missing_fields,
+            "timestamp": rejection.timestamp.isoformat(),
+        }
+        line = json.dumps(record, sort_keys=True) + "\n"
+
+        self._rejection_store_path.parent.mkdir(parents=True, exist_ok=True)
+        fd = os.open(str(self._rejection_store_path), os.O_WRONLY | os.O_CREAT | os.O_APPEND, 0o644)
+        try:
+            os.write(fd, line.encode("utf-8"))
+            os.fsync(fd)
+        finally:
+            os.close(fd)
 
     @staticmethod
     def _classify_rejection(errors: list[str]) -> RejectionReason:
@@ -436,6 +467,7 @@ class CSOConsumer:
                 missing_fields=missing,
                 timestamp=datetime.now(UTC),
             )
+            self._persist_rejection(rejection)
             self._rejections.append(rejection)
             logger.warning(
                 "CSE %s rejected: reason=%s errors=%s",

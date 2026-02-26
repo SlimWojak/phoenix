@@ -119,6 +119,16 @@ from .runtime_assertions import (
     validate_output,
 )
 
+# Sovereign Gate (S59)
+from .sovereign_gate import (
+    CeremonyOverdueError,
+    HaltActiveError,
+    LeaseNotActiveError,
+    SovereignGateError,
+    check_sovereign_gate,
+    sovereign_gate,
+)
+
 # Stale gate
 from .stale_gate import StaleCheckResult, StaleGate
 
@@ -261,6 +271,13 @@ __all__ = [
     "cfp_output",
     "hunt_output",
     "RuntimeConstitutionalChecker",
+    # Sovereign Gate (S59)
+    "SovereignGateError",
+    "HaltActiveError",
+    "LeaseNotActiveError",
+    "CeremonyOverdueError",
+    "sovereign_gate",
+    "check_sovereign_gate",
     # Lease System (S47)
     "AllowedMode",
     "BoundsBreachError",

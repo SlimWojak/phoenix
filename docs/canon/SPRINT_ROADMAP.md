@@ -2129,3 +2129,83 @@ new_tests: 55
 new_invariants: 4
 regressions: 0
 ```
+
+---
+
+## S59: LEASE_WIRE — COMPLETE ✅
+
+```yaml
+sprint: S59
+codename: LEASE_WIRE
+status: COMPLETE
+date: 2026-02-25
+mission: Push S55 halt hardening from ceremonial gate to execution spine
+
+tracks:
+  T1_CAPITAL_GUARD:
+    status: COMPLETE
+    fix: "@sovereign_gate decorator — single chokepoint for all capital mutations"
+    new_file: governance/sovereign_gate.py
+    invariants: [INV-HALT-APPLIES-TO-ALL-CAPITAL-MUTATIONS, INV-ACTIVATION-ONLY-VIA-GUARD]
+  T2_WRITE_AHEAD_GOVERNANCE:
+    status: COMPLETE
+    fix: "DurableBeadEmitter — JSONL append-only, fsync, idempotent, orphan detection"
+    new_file: governance/bead_emitter.py
+    invariants: [INV-GOVERNANCE-MUTATION-ATOMIC, INV-GOV-BEAD-IDEMPOTENT]
+  T3_PROJECTION_HONESTY:
+    status: COMPLETE
+    fix: "manifest_writer fails closed — RED/ERROR/-1 on exception, never GREEN/ABSENT"
+    invariants: [INV-PROJECTION-NEVER-OPTIMISTIC]
+  T4_CSO_SCALAR_DECAPITATION:
+    status: COMPLETE
+    fix: "quality_score/confidence → ReadinessReason enum. CI lint enforcement."
+    invariants: [INV-CSO-NO-SCALAR-DECISIONS, INV-CSO-NO-SCALAR-CONSUMPTION]
+  T5_CEREMONY_STUB:
+    status: COMPLETE
+    fix: "next_review_due tick check wired into sovereign_gate CHECK 3"
+    invariants: [INV-CEREMONY-BLOCKS-ACTIVE]
+  T6_ISOLATION_GUARDS:
+    status: COMPLETE
+    fix: "scripts/check_economy_isolation.py + Makefile target"
+    invariants: [INV-ECONOMY-ISOLATION-ENFORCED]
+
+new_tests: 51
+new_invariants: 15
+chaos_vectors: 4 (CV1-CV4)
+regressions: 0
+```
+
+---
+
+## S60: CEREMONY_AND_HYGIENE — COMPLETE ✅
+
+```yaml
+sprint: S60
+codename: CEREMONY_AND_HYGIENE
+status: COMPLETE
+date: 2026-02-25
+mission: Full ceremony engine + architectural debt cleanup
+prerequisite: S59 LEASE_WIRE (all exit gates PASS)
+
+tracks:
+  T1_CEREMONY_ENGINE:
+    status: COMPLETE
+    fix: "Full attestation lifecycle — schedule, attest, advance, bounds-monotonic, evidence hash"
+    new_file: governance/ceremony.py
+    invariants: [INV-CEREMONY-ATTESTATION-DURABLE, INV-CEREMONY-BOUNDS-MONOTONIC]
+  T2_CSO_REJECTION_DURABILITY:
+    status: COMPLETE
+    fix: "CSERejectionRecord persists to JSONL (pre-bridge prep)"
+  T3_LEGACY_DEPRECATION_GUARDS:
+    status: COMPLETE
+    fix: "cfp/bead_adapter deprecation warning + hunt/executor synthetic metadata"
+    invariants: [INV-LEGACY-FALLBACK-GATED, INV-SYNTHETIC-DATA-ISOLATION]
+  T4_REGISTRY_DOC_HYGIENE:
+    status: COMPLETE
+    fix: "leases/README state diagram, CAPITAL_PATH_COVERAGE.md, SYSTEM_MANIFEST v1.9"
+
+new_tests: 21
+new_invariants: 4
+regressions: 0
+unlocks: GATE_3 (Bridge v0 — Notary boundary implementation)
+```

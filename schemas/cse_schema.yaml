@@ -70,15 +70,14 @@ cse_fields:
     max_length: 100
 
   # -------------------------------------------------------------------------
-  # CONFIDENCE
+  # READINESS REASONS (S59: replaces confidence per INV-CSO-NO-SCALAR-DECISIONS)
   # -------------------------------------------------------------------------
-  confidence:
-    type: float
-    min: 0.0
-    max: 1.0
-    description: Signal confidence score
+  readiness_reasons:
+    type: list
+    items: string
+    description: Boolean readiness conditions that passed for this signal
     required: true
-    note: "0.0 = no confidence, 1.0 = maximum confidence"
+    note: "String enum values from ReadinessReason. No scalar scores."
 
   # -------------------------------------------------------------------------
   # TRADE PARAMETERS
@@ -216,7 +215,7 @@ example:
   pair: "EURUSD"
   source: "CSO"
   setup_type: "FVG_RETEST"
-  confidence: 0.75
+  readiness_reasons: ["trend_aligned", "fvg_present", "liquidity_swept", "bos_confirmed"]
   parameters:
     entry: 1.0850
     stop: 1.0820

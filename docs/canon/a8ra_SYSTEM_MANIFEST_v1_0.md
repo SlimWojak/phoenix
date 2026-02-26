@@ -2,13 +2,13 @@
 
 ```yaml
 document: SYSTEM_MANIFEST
-version: 1.7
+version: 1.9
 date: 2026-02-25
-status: CANONICAL — updated post S58 HYGIENE (hardening complete)
+status: CANONICAL — updated post S60 CEREMONY_AND_HYGIENE
 purpose: Single M2M orientation for every Claude instance in the a8ra ecosystem
 update_discipline: Any session making a significant decision appends a MANIFEST DELTA
 owner: G (Sovereign Operator)
-supersedes: SYSTEM_MANIFEST v1.5
+supersedes: SYSTEM_MANIFEST v1.7
 ```
 
 ---
@@ -551,6 +551,22 @@ PLANNED: [BRIDGE_SPEC.md, REFINERY_CONTRACT.yaml, PULSE_OPERATIONS.md]
     S58 HYGIENE: BEAD_FIELD_SPRINT contradictions fixed (DELTA-16). dexter src/
       missing documented (DELTA-17). CONSTITUTION pointer updated.
     Sprints: 26→30. Tests: 1786→1815+. Invariants: 240→245. Chaos: 264→269.
+
+- date: 2026-02-25
+  office: OPUS_CURSOR
+  change: |
+    v1.9. S59 LEASE_WIRE + S60 CEREMONY_AND_HYGIENE.
+    S59: Sovereign gate (single chokepoint for all capital mutations). DurableBeadEmitter
+      (write-ahead governance, fsync, idempotent). Projection honesty (manifest_writer fails
+      closed, never GREEN/ABSENT on exception). CSO scalar decapitation (quality_score/confidence
+      → ReadinessReason enum, CI lint). Ceremony stub (next_review_due blocks capital).
+      Economy isolation CI guard.
+    S60: Ceremony engine (schedule, attest, advance, bounds-monotonic, evidence hash).
+      CSO rejection durability (JSONL persistence for bridge prep). Legacy deprecation
+      guards (cfp/bead_adapter warning, hunt synthetic metadata). Registry/doc hygiene
+      (leases README state diagram fixed, CAPITAL_PATH_COVERAGE.md created).
+    Tests: 51 (S59) + 21 (S60) = 72 new. Invariants: 15 (S59) + 4 (S60) = 19 new.
+    Sprints: 30→32. Total invariants: 264. ZERO regressions.
 
 # --- APPEND BELOW ---
 ```

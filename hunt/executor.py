@@ -22,7 +22,6 @@ from typing import Any
 from hunt.grid import GridExpander, Variant
 from hunt.hypothesis import Hypothesis, HypothesisValidator
 
-
 # =============================================================================
 # ENUMS
 # =============================================================================
@@ -129,6 +128,12 @@ class HuntResult:
 
     # Budget tracking
     compute_time_seconds: float = 0.0
+
+    # INV-SYNTHETIC-DATA-ISOLATION: Pre-Gate-5 outputs self-identify
+    synthetic: bool = True
+    generator: str = "RNG_STUB"
+    mode: str = "EXPLORATORY"
+    do_not_use_for_decisions: bool = True
 
     # FORBIDDEN fields (never present)
     # - top_variants
@@ -292,7 +297,8 @@ class HuntExecutor:
             computed_dims[dim.dimension] = {
                 "min": dim.values[0] if dim.values else None,
                 "max": dim.values[len(rows) // max(1, len(hypothesis.grid.dimensions)) - 1]
-                if dim.values else None,
+                if dim.values
+                else None,
             }
 
         # Uncomputed region (simplified)
@@ -300,7 +306,8 @@ class HuntExecutor:
         for dim in hypothesis.grid.dimensions:
             uncomputed_dims[dim.dimension] = {
                 "min": dim.values[len(rows) // max(1, len(hypothesis.grid.dimensions))]
-                if dim.values else None,
+                if dim.values
+                else None,
                 "max": dim.values[-1] if dim.values else None,
             }
 

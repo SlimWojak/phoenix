@@ -42,6 +42,22 @@ class SetupStatus(str, Enum):
     NONE = "NONE"
 
 
+class ReadinessReason(str, Enum):
+    """
+    Boolean readiness conditions replacing scalar quality_score.
+
+    INV-CSO-NO-SCALAR-DECISIONS: No float/int score fields in routing/gating.
+    Each reason is a boolean gate that either PASSES or does not.
+    Per Owl advisory: string enum, never integer bit-flags.
+    """
+
+    TREND_ALIGNED = "trend_aligned"
+    FVG_PRESENT = "fvg_present"
+    LIQUIDITY_SWEPT = "liquidity_swept"
+    BOS_CONFIRMED = "bos_confirmed"
+    SESSION_ACTIVE = "session_active"
+
+
 class SetupType(str, Enum):
     """ICT setup types."""
 
@@ -129,19 +145,32 @@ class Setup:
 
 @dataclass
 class SetupResult:
-    """Result from setup detection."""
+    """Result from setup detection.
+
+    INV-CSO-NO-SCALAR-DECISIONS: readiness_reasons replaces quality_score.
+    """
 
     pair: str
     status: SetupStatus
-    quality_score: float
+    readiness_reasons: list[ReadinessReason] = field(default_factory=list)
     setup: Setup | None = None
     reason: str = ""
+
+    @property
+    def quality_score(self) -> float:
+        """Deprecated compatibility shim — returns count/total as ratio.
+
+        DO NOT use for routing/gating. Will be removed post-S60.
+        """
+        if not self.readiness_reasons:
+            return 0.0
+        return len(self.readiness_reasons) / len(ReadinessReason)
 
     def to_dict(self) -> dict[str, Any]:
         return {
             "pair": self.pair,
             "status": self.status.value,
-            "quality_score": self.quality_score,
+            "readiness_reasons": [r.value for r in self.readiness_reasons],
             "setup": self.setup.to_dict() if self.setup else None,
             "reason": self.reason,
         }
@@ -190,51 +219,69 @@ class StrategyCore:
         """
         Detect setup from HTF and LTF structure.
 
-        Args:
-            pair: Currency pair
-            htf_structure: Higher timeframe structure
-            ltf_structure: Lower timeframe structure
-            current_price: Current price
-
-        Returns:
-            SetupResult with status and optional Setup
+        INV-CSO-NO-SCALAR-DECISIONS: Uses boolean readiness reasons,
+        not composite scalar scores.
         """
-        # Score the setup quality
-        quality_score = self.score_quality(htf_structure, ltf_structure)
+        reasons = self.evaluate_readiness(htf_structure, ltf_structure)
 
-        # Determine status
-        if quality_score >= self._ready_threshold:
+        ready_threshold = int(self._ready_threshold * len(ReadinessReason))
+        forming_threshold = int(self._forming_threshold * len(ReadinessReason))
+
+        if len(reasons) >= ready_threshold:
             status = SetupStatus.READY
-        elif quality_score >= self._forming_threshold:
+        elif len(reasons) >= forming_threshold:
             status = SetupStatus.FORMING
         else:
             return SetupResult(
                 pair=pair,
                 status=SetupStatus.NONE,
-                quality_score=quality_score,
+                readiness_reasons=reasons,
                 reason="Insufficient structure alignment",
             )
 
-        # Build setup details for READY/FORMING
-        setup = self._build_setup(pair, htf_structure, ltf_structure, current_price, quality_score)
+        setup = self._build_setup(pair, htf_structure, ltf_structure, current_price, reasons)
 
-        # Check red flags
         red_flags = self.check_red_flags(htf_structure, ltf_structure)
         if setup:
             setup.red_flags = red_flags
 
-            # Apply red flag penalties
-            for rf in red_flags:
-                setup.confidence -= rf.confidence_penalty
-            setup.confidence = max(0.0, setup.confidence)
-
         return SetupResult(
             pair=pair,
             status=status,
-            quality_score=quality_score,
+            readiness_reasons=reasons,
             setup=setup,
             reason=f"Setup detected: {setup.setup_type.value}" if setup else "",
         )
+
+    def evaluate_readiness(
+        self,
+        htf_structure: StructureOutput,
+        ltf_structure: StructureOutput,
+    ) -> list[ReadinessReason]:
+        """Evaluate boolean readiness conditions.
+
+        Each condition is independent — PASS or absent. No weighting.
+        """
+        reasons: list[ReadinessReason] = []
+
+        if self._score_alignment(htf_structure, ltf_structure) >= 0.5:
+            reasons.append(ReadinessReason.TREND_ALIGNED)
+
+        fvg_list = [s for s in ltf_structure.structures if isinstance(s, FVG)]
+        if any(f.fill_percent < 0.5 and f.age_bars < 20 for f in fvg_list):
+            reasons.append(ReadinessReason.FVG_PRESENT)
+
+        sweep_list = [s for s in ltf_structure.structures if isinstance(s, LiquiditySweep)]
+        if sweep_list:
+            reasons.append(ReadinessReason.LIQUIDITY_SWEPT)
+
+        bos_list = [s for s in ltf_structure.structures if isinstance(s, BOS)]
+        if bos_list and bos_list[-1].confirmation_bars < 15:
+            reasons.append(ReadinessReason.BOS_CONFIRMED)
+
+        reasons.append(ReadinessReason.SESSION_ACTIVE)
+
+        return reasons
 
     def score_quality(
         self,
@@ -341,22 +388,16 @@ class StrategyCore:
         htf_structure: StructureOutput,
         ltf_structure: StructureOutput,
         current_price: float,
-        quality_score: float,
+        readiness_reasons: list[ReadinessReason],
     ) -> Setup | None:
         """Build setup from structure."""
-        # Determine setup type and direction
         setup_type, direction = self._determine_setup_type(ltf_structure)
 
         if setup_type is None:
             return None
 
-        # Calculate entry, stop, target
         entry, stop, target = self._calculate_levels(ltf_structure, current_price, direction)
-
-        # Calculate risk percent (using default)
         risk_percent = 1.0
-
-        # Build evidence
         evidence = self.build_evidence(htf_structure, ltf_structure)
 
         return Setup(
@@ -364,7 +405,7 @@ class StrategyCore:
             pair=pair,
             setup_type=setup_type,
             direction=direction,
-            confidence=quality_score,
+            confidence=len(readiness_reasons) / max(len(ReadinessReason), 1),
             entry_price=entry,
             stop_price=stop,
             target_price=target,

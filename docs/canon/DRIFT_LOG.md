@@ -253,4 +253,28 @@ note: "May have been in different repo structure or different machine. Investiga
 | LABELED | 5 (DELTA-2, DELTA-3, DELTA-4, DELTA-5, DELTA-9 — gate# or SUPERSEDED) |
 | ACKNOWLEDGED | 4 (DELTA-1, DELTA-10, DELTA-12, DELTA-17) |
 
-*17 deltas tracked. S58: DELTA-16 fixed, DELTA-17 acknowledged.*
+### DELTA-18: Leases README State Diagram Incorrect
+
+```yaml
+id: DELTA-18
+category: A_DOC_DRIFT
+description: "leases/README.md showed HALTED as terminal and REVOKED→HALTED path. Both wrong."
+disposition: FIXED
+owner: OPUS
+date_found: 2026-02-25
+status: FIXED
+commit_ref: "S60-T4 — state diagram corrected: HALTED is non-terminal, only → REVOKED"
+```
+
+---
+
+## Summary
+
+| Status | Count |
+|--------|-------|
+| FIXED | 8 (DELTA-6, DELTA-8, DELTA-11, DELTA-13, DELTA-14, DELTA-15, DELTA-16, DELTA-18) |
+| MITIGATED | 1 (DELTA-7 — registry now tracks 259 INV-* IDs, S59/S60 additions) |
+| LABELED | 5 (DELTA-2, DELTA-3, DELTA-4, DELTA-5, DELTA-9 — gate# or SUPERSEDED) |
+| ACKNOWLEDGED | 4 (DELTA-1, DELTA-10, DELTA-12, DELTA-17) |
+
+*18 deltas tracked. S60: DELTA-18 fixed.*

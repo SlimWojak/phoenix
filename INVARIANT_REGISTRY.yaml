@@ -1,8 +1,8 @@
 # INVARIANT_REGISTRY.yaml — Canonical Invariant List
 # Source: FORENSIC_AUDIT.md Section 3 (2026-02-23) + S52/S53 additions
 # Status: PROVEN = test evidence, ENFORCED = code enforces, UNTESTED = no test, DESIGNED = spec only
-# Last updated: S54 TRUTH_SWEEP (2026-02-24)
-# Declared count: 240 (validated by scripts/validate_registry.py)
+# Last updated: S60 CEREMONY_AND_HYGIENE (2026-02-25)
+# Declared count: 259 (S54 baseline 240 + S55-S56 backfill 5 + S59 additions 10 + S60 additions 4)
 
 invariants:
 
@@ -2156,3 +2156,187 @@ invariants:
     proven_by: ./validation/__init__.py
     test_refs: []
     last_verified: S54
+
+  # =========================================================================
+  # S55-S56 HALT HARDENING (previously unregistered)
+  # =========================================================================
+
+  - id: INV-HALT-SIGNAL-CHECK
+    tier: HALT
+    domain: governance
+    status: PROVEN
+    proven_by: governance/halt.py (check_halt_signal)
+    test_refs:
+      - tests/test_halt_signal.py
+    last_verified: S55
+
+  - id: INV-HALT-CLEAR-LOGGED
+    tier: HALT
+    domain: governance
+    status: PROVEN
+    proven_by: scripts/clear_halt.sh
+    test_refs:
+      - tests/test_halt_signal.py
+    last_verified: S55
+
+  - id: INV-HALT-FAIL-CLOSED
+    tier: HALT
+    domain: governance
+    status: PROVEN
+    proven_by: governance/halt.py (5 error cases)
+    test_refs:
+      - tests/test_halt_signal.py
+    last_verified: S55
+
+  - id: INV-HALT-ENTROPY-PROOF
+    tier: HALT
+    domain: governance
+    status: PROVEN
+    proven_by: governance/halt.py
+    test_refs:
+      - tests/test_halt_signal.py
+    last_verified: S55
+
+  - id: INV-CONFIG-VALID-ON-BOOT
+    tier: OPERATIONAL
+    domain: config
+    status: PROVEN
+    proven_by: config/schema.py (validate_boot)
+    test_refs: []
+    last_verified: S56
+
+  # =========================================================================
+  # S59 LEASE_WIRE
+  # =========================================================================
+
+  - id: INV-HALT-APPLIES-TO-ALL-CAPITAL-MUTATIONS
+    tier: GOVERNANCE
+    domain: governance
+    status: PROVEN
+    proven_by: governance/sovereign_gate.py
+    test_refs:
+      - tests/test_sovereign_gate.py
+      - tests/chaos/test_bunny_s59.py
+    last_verified: S59
+
+  - id: INV-ACTIVATION-ONLY-VIA-GUARD
+    tier: GOVERNANCE
+    domain: governance
+    status: PROVEN
+    proven_by: governance/sovereign_gate.py, governance/lease.py
+    test_refs:
+      - tests/test_sovereign_gate.py
+    last_verified: S59
+
+  - id: INV-GUARD-AT-LOWEST-CAPITAL-LAYER
+    tier: GOVERNANCE
+    domain: execution
+    status: DESIGNED
+    proven_by: null
+    test_refs: []
+    note: "Enforcement expands as order placement primitives are built"
+    last_verified: S59
+
+  - id: INV-GOVERNANCE-MUTATION-ATOMIC
+    tier: GOVERNANCE
+    domain: governance
+    status: PROVEN
+    proven_by: governance/bead_emitter.py
+    test_refs:
+      - tests/test_durable_beads.py
+    last_verified: S59
+
+  - id: INV-GOV-BEAD-IDEMPOTENT
+    tier: GOVERNANCE
+    domain: governance
+    status: PROVEN
+    proven_by: governance/bead_emitter.py (_compute_bead_id)
+    test_refs:
+      - tests/test_durable_beads.py
+    last_verified: S59
+
+  - id: INV-PROJECTION-NEVER-OPTIMISTIC
+    tier: MONITORING
+    domain: state
+    status: PROVEN
+    proven_by: state/manifest_writer.py
+    test_refs:
+      - tests/test_manifest_projection.py
+    last_verified: S59
+
+  - id: INV-CSO-NO-SCALAR-DECISIONS
+    tier: CSO
+    domain: cso
+    status: PROVEN
+    proven_by: cso/strategy_core.py (ReadinessReason enum)
+    test_refs:
+      - tests/test_cso_scalar_ban.py
+    last_verified: S59
+
+  - id: INV-CEREMONY-BLOCKS-ACTIVE
+    tier: GOVERNANCE
+    domain: governance
+    status: PROVEN
+    proven_by: governance/sovereign_gate.py (CHECK 3)
+    test_refs:
+      - tests/test_ceremony_stub.py
+      - tests/test_sovereign_gate.py
+    last_verified: S59
+
+  - id: INV-CSO-NO-SCALAR-CONSUMPTION
+    tier: CSO
+    domain: cso
+    status: PROVEN
+    proven_by: tests/test_cso_scalar_ban.py (CI lint)
+    test_refs:
+      - tests/test_cso_scalar_ban.py
+    last_verified: S59
+
+  - id: INV-ECONOMY-ISOLATION-ENFORCED
+    tier: ARCHITECTURE
+    domain: system
+    status: PROVEN
+    proven_by: scripts/check_economy_isolation.py
+    test_refs:
+      - scripts/check_economy_isolation.py
+    last_verified: S59
+
+  # =========================================================================
+  # S60 CEREMONY_AND_HYGIENE
+  # =========================================================================
+
+  - id: INV-CEREMONY-ATTESTATION-DURABLE
+    tier: GOVERNANCE
+    domain: governance
+    status: PROVEN
+    proven_by: governance/ceremony.py
+    test_refs:
+      - tests/test_ceremony.py
+    last_verified: S60
+
+  - id: INV-CEREMONY-BOUNDS-MONOTONIC
+    tier: GOVERNANCE
+    domain: governance
+    status: PROVEN
+    proven_by: governance/ceremony.py (_check_bounds_monotonic)
+    test_refs:
+      - tests/test_ceremony.py
+    last_verified: S60
+
+  - id: INV-LEGACY-FALLBACK-GATED
+    tier: ARCHITECTURE
+    domain: system
+    status: PROVEN
+    proven_by: cfp/bead_adapter.py (deprecation warning)
+    test_refs:
+      - tests/test_legacy_guards.py
+    last_verified: S60
+
+  - id: INV-SYNTHETIC-DATA-ISOLATION
+    tier: DATA
+    domain: hunt
+    status: PROVEN
+    proven_by: hunt/executor.py (HuntResult synthetic fields)
+    test_refs:
+      - tests/test_legacy_guards.py
+    last_verified: S60

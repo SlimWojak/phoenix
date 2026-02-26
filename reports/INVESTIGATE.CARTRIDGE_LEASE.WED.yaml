@@ -1,0 +1,300 @@
+spec_vs_actual:
+  - feature: FSM_states_transitions
+    spec_says: "DRAFT->ACTIVE->(EXPIRED|REVOKED|HALTED), HALTED->REVOKED, terminal=[EXPIRED,REVOKED]."
+    actual: "VALID_TRANSITIONS in governance/lease.py matches design exactly; terminal set is EXPIRED+REVOKED."
+    status: REAL
+    evidence:
+      - docs/canon/designs/CARTRIDGE_AND_LEASE_DESIGN_v1.0.md:667-755
+      - governance/lease.py:76-84
+      - tests/test_lease/test_state_machine.py:76-160
+
+  - feature: FSM_documentation_consistency
+    spec_says: "HALTED is non-terminal and only transitions to REVOKED."
+    actual: "leases/README shows 'REVOKED -> HALTED (terminal)' which conflicts with runtime FSM."
+    status: STALE_DOC
+    evidence:
+      - leases/README.md:26-34
+      - governance/lease.py:76-84
+
+  - feature: insertion_step_1_2_3
+    spec_says: "Load YAML, schema validation, hash verification."
+    actual: "CartridgeLoader.validate performs Pydantic schema + required invariants + hash verify/auto-compute."
+    status: REAL
+    evidence:
+      - governance/insertion.py:1-27
+      - governance/cartridge.py:138-173
+      - tests/test_lease/test_insertion.py:164-235
+
+  - feature: insertion_step_2b_dependency_hash_check
+    spec_says: "Environment/dependency hash validation before slot."
+    actual: "No dependency/environment hash check in runtime insertion path."
+    status: DESIGNED_NOT_BUILT
+    evidence:
+      - docs/canon/designs/CARTRIDGE_AND_LEASE_DESIGN_v1.0.md:788-794
+      - governance/insertion.py:248-342
+      - governance/cartridge.py:138-173
+
+  - feature: insertion_step_3_4_6_guard_scans
+    spec_says: "Forbidden pattern scan + cabinet validation + guard_dog full_scan as separate steps."
+    actual: "Collapsed into CartridgeLinter.lint() called once at step 4."
+    status: REAL_COLLAPSED
+    evidence:
+      - docs/canon/designs/CARTRIDGE_AND_LEASE_DESIGN_v1.0.md:796-833
+      - governance/insertion.py:271-276
+      - governance/cartridge.py:273-329
+
+  - feature: insertion_step_5_index_update
+    spec_says: "Update index.yaml."
+    actual: "CartridgeRegistry maintains in-memory dict/list; no index.yaml exists under cartridges/."
+    status: DIVERGED
+    evidence:
+      - docs/canon/designs/CARTRIDGE_AND_LEASE_DESIGN_v1.0.md:819-822
+      - governance/cartridge.py:188-246
+      - cartridges tree: no index.yaml
+
+  - feature: insertion_step_7_calibration_smoke
+    spec_says: "Auto-shadow calibration and emit CALIBRATION_BEAD."
+    actual: "CalibrationBead type exists but no runtime creation path or tests."
+    status: DESIGNED_NOT_BUILT
+    evidence:
+      - docs/canon/designs/CARTRIDGE_AND_LEASE_DESIGN_v1.0.md:834-848
+      - governance/lease_types.py:533-548
+      - tests/test_lease/*: no calibration references
+
+  - feature: insertion_step_7_halt_gate_S55
+    spec_says: "S55 requires HALT.signal check before capital action."
+    actual: "insertion._complete_insertion calls check_halt_signal() before activate_lease; rollback on halt."
+    status: REAL
+    evidence:
+      - governance/insertion.py:324-342
+      - tests/test_halt_signal.py:138-166
+      - git governance/insertion.py: b08de2c (2026-02-25)
+
+  - feature: insertion_step_8_ready_beads
+    spec_says: "Insertion completion emits insertion and activation beads."
+    actual: "CartridgeInsertionBead and LeaseActivationBead are emitted, but only to in-memory emitters/collections."
+    status: PARTIAL
+    evidence:
+      - governance/cartridge.py:236-246
+      - governance/lease.py:202-211
+      - governance/lease.py:58-73
+
+  - feature: ceremony_weekly_review_attestation
+    spec_says: "next_review_due and attestation/ceremony enforceable; overdue blocks execution."
+    actual: "Fields exist in LeaseGovernance schema, but no enforcement logic and no ceremony engine."
+    status: STUB_SCHEMA_ONLY
+    evidence:
+      - docs/canon/designs/CARTRIDGE_AND_LEASE_DESIGN_v1.0.md:552-588
+      - docs/canon/designs/CARTRIDGE_AND_LEASE_DESIGN_v1.0.md:1045-1110
+      - governance/lease_types.py:406-417
+      - tests/test_lease/*: no ceremony/attestation tests
+
+  - feature: PERISH_BY_DEFAULT
+    spec_says: "renewal_type must be PERISH; no auto-renew."
+    actual: "LeaseDuration.renewal_type is Literal[RenewalType.PERISH]; registry marks ENFORCED with no tests."
+    status: REAL_SCHEMA_ENFORCED
+    evidence:
+      - governance/lease_types.py:376-378
+      - INVARIANT_REGISTRY.yaml:178-185
+
+  - feature: lease_persistence_layout
+    spec_says: "leases active/expired/revoked structure for audit trail."
+    actual: "leases/ has README only; no persistence directories/files and no serializer in code."
+    status: DESIGNED_NOT_BUILT
+    evidence:
+      - leases/README.md:7-13
+      - leases tree: README only
+      - governance/lease.py:539-599
+
+fsm_coverage:
+  states: [DRAFT, ACTIVE, EXPIRED, REVOKED, HALTED]
+  transitions_tested:
+    - DRAFT_to_ACTIVE: tests/test_lease/test_state_machine.py:76-92
+    - ACTIVE_to_EXPIRED: tests/test_lease/test_state_machine.py:93-103
+    - ACTIVE_to_REVOKED: tests/test_lease/test_state_machine.py:104-117
+    - ACTIVE_to_HALTED: tests/test_lease/test_state_machine.py:118-133
+    - HALTED_to_REVOKED: tests/test_lease/test_state_machine.py:134-147
+    - invalid_paths_and_terminals: tests/test_lease/test_state_machine.py:154-248
+    - state_lock_hash_mismatch_and_bypass: tests/test_lease/test_state_machine.py:257-320
+    - halt_override_concurrency: tests/test_lease/test_halt_override.py:246-320
+  gaps:
+    - "Runtime FSM strong; documentation drift in leases/README state diagram."
+    - "No direct test that LeaseStateMachine.activate() checks HALT.signal (it does not)."
+
+insertion_steps:
+  - step: 1_load_cartridge
+    implemented: true
+    tested: true
+    notes: "insert_from_file/load_from_file path."
+    evidence:
+      - governance/insertion.py:198-224
+
+  - step: 2_schema_validation
+    implemented: true
+    tested: true
+    notes: "Pydantic + required invariants required."
+    evidence:
+      - governance/cartridge.py:138-161
+      - tests/test_lease/test_insertion.py:164-235
+
+  - step: 3_hash_verification
+    implemented: true
+    tested: partial
+    notes: "Hash verified if provided; auto-computed otherwise. No dedicated insertion-level mismatch test."
+    evidence:
+      - governance/cartridge.py:162-173
+
+  - step: 4_linter_guard_scan
+    implemented: true
+    tested: true
+    notes: "Single lint call collapses design steps 3+4+6."
+    evidence:
+      - governance/insertion.py:271-276
+      - governance/cartridge.py:273-329
+
+  - step: 5_slot_registry
+    implemented: true
+    tested: true
+    notes: "Single active cartridge enforced; in-memory registry."
+    evidence:
+      - governance/cartridge.py:188-246
+      - tests/test_lease/test_insertion.py:285-356
+
+  - step: 6_create_lease_and_ceiling
+    implemented: true
+    tested: true
+    notes: "LeaseBounds parsing + INV-LEASE-CEILING + rollback."
+    evidence:
+      - governance/insertion.py:284-322
+      - tests/test_lease/test_insertion.py:363-429
+      - tests/test_lease/test_insertion.py:435-456
+
+  - step: 7_halt_check
+    implemented: true
+    tested: true
+    notes: "check_halt_signal before lease activation; fail returns step 7 HALTED."
+    evidence:
+      - governance/insertion.py:324-342
+      - tests/test_halt_signal.py:138-166
+
+  - step: 7_calibration_smoke_design
+    implemented: false
+    tested: false
+    notes: "Design step not implemented."
+    evidence:
+      - docs/canon/designs/CARTRIDGE_AND_LEASE_DESIGN_v1.0.md:834-848
+      - governance/lease_types.py:533-548
+
+  - step: 8_finalize
+    implemented: true
+    tested: true
+    notes: "Returns success_result step_reached=8; beads emitted but transient."
+    evidence:
+      - governance/insertion.py:352-357
+      - tests/test_lease/test_insertion.py:103-161
+
+silent_fails:
+  - file: state/manifest_writer.py
+    line: 333
+    risk: MEDIUM
+    description: "_lease_color() catches Exception and returns GREEN fallback; can hide lease subsystem failures."
+
+  - file: state/manifest_writer.py
+    line: 358
+    risk: LOW
+    description: "_calculate_age_seconds() catches Exception and returns 9999 fallback; parse errors masked."
+
+  - file: state/manifest_writer.py
+    line: 381
+    risk: MEDIUM
+    description: "get_next_seq() catches Exception and returns 1; sequence corruption can be hidden."
+
+  - file: state/manifest_writer.py
+    line: 466
+    risk: HIGH
+    description: "get_lease_state() catches ImportError/Exception and returns ABSENT; lease failures look like no active lease."
+
+  - file: governance/halt.py
+    line: 279
+    risk: LOW
+    description: "_call_with_retry swallows callback exceptions and continues; designed best-effort but can mask dependency failures."
+
+bead_field_connection:
+  exists: false
+  mechanism:
+    internal: "Lease/cartridge beads emitted to NullBeadEmitter.beads and CartridgeRegistry._beads (in-memory lists)."
+    external: "No write path to memory/bead_store SQLite and no bridge to dexter/bead_field."
+    policy_bead_awareness: "No POLICY bead usage in cartridge/lease runtime modules."
+  status: GOVERNANCE_ONLY_NO_ANALYTICAL_TRAIL
+  evidence:
+    - governance/lease.py:58-73
+    - governance/lease.py:539-599
+    - governance/cartridge.py:188-246
+    - memory/bead_store.py:46-54
+    - docs/canon/DRIFT_LOG.md:128-133
+
+halt_integration:
+  wired: PARTIAL
+  evidence:
+    insertion_step7_check:
+      status: WIRED
+      refs:
+        - governance/insertion.py:324-342
+        - tests/test_halt_signal.py:138-166
+    lease_state_machine_activate_check:
+      status: NOT_WIRED
+      refs:
+        - governance/lease.py:165-211
+        - search(governance/lease.py, check_halt_signal)=0
+    lease_manager_activate_path:
+      status: NOT_WIRED
+      refs:
+        - governance/lease.py:579-599
+    asia_scalp_entry_path:
+      status: NOT_WIRED
+      refs:
+        - execution/asia_scalp.py:1-120
+        - search(execution/asia_scalp.py, halt)=docstring only
+    halt_gate_layer:
+      status: ABSTRACT_INJECTED
+      refs:
+        - execution/halt_gate.py:100-155
+        - tests/test_halt_before_exec.py:20-153
+    S55_requirement_gap:
+      status: PRESENT
+      refs:
+        - docs/build_docs/OPUS_BRIEF_HARDENING_S55_S58.md:185-191
+
+test_coverage:
+  total:
+    test_lease_suite: 112
+    halt_suite: 30
+    chaos_s47: 16
+    combined_focus_tests: 158
+  real_behavior:
+    - "FSM transition integrity and race behavior are heavily exercised with real LeaseStateMachine/LeaseManager objects."
+    - "Insertion 8-step happy/failure paths (schema/lint/slot/ceiling/rollback) are covered."
+    - "HALT.signal fail-closed parser behavior is covered across malformed/missing/unreadable cases."
+  synthetic:
+    - "test_halt_before_exec uses lambda halt_signal_fn stubs; no binding to governance.halt.check_halt_signal."
+    - "test_halt_active_interrupt explicitly labeled 'DESIGNED AND TESTED, NOT wired into daemon loop'."
+    - "test_lease_activation_refuses_when_halted only checks check_halt_signal result; does not invoke LeaseStateMachine.activate()."
+  gaps:
+    - "No tests for ceremony enforcement, next_review_due blocking, or attestation workflow."
+    - "No tests for calibration smoke and CALIBRATION_BEAD generation."
+    - "No tests for persistence of lease/cartridge beads or lease file storage."
+    - "No test proving LeaseStateMachine.activate() halt guard (currently absent)."
+
+summary:
+  real_count: 7
+  stub_count: 4
+  t1_risks:
+    - "S55 gap: LeaseStateMachine.activate() does not call check_halt_signal despite explicit brief requirement."
+    - "Capital path gap: execution/asia_scalp.py declares halt invariant but has no halt gate call."
+    - "Ceremony governance (attestation/next_review_due blocking) is schema-only; no runtime enforcement."
+    - "Lease/cartridge forensic beads are transient (in-memory only), undermining durable auditability."
+  t2_risks:
+    - "Design step 2b dependency hash and step 7 calibration smoke are not implemented."
+    - "Design 'index.yaml' slot model diverges from in-memory registry implementation."
+    - "leases/README state diagram is stale/misleading vs runtime FSM."
+    - "manifest_writer fallback paths can mask lease subsystem faults as ABSENT/GREEN."

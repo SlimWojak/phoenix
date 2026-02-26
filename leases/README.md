@@ -27,12 +27,15 @@ See `schemas/lease.yaml` for full schema.
 ## State Machine
 
 ```
-DRAFT → ACTIVE → EXPIRED
+DRAFT → ACTIVE → EXPIRED (terminal)
               ↓
-           REVOKED
+           HALTED → REVOKED (terminal)
               ↓
-           HALTED (terminal, no resurrection)
+           REVOKED (terminal)
 ```
+
+Terminal states: EXPIRED, REVOKED.
+HALTED is NOT terminal — transitions to REVOKED only (human must revoke; no resurrection to ACTIVE).
 
 ## Rules
 

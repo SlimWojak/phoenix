@@ -29,7 +29,7 @@ def _make_valid_cse(
         "pair": "EURUSD",
         "source": "CSO",
         "setup_type": "asia_range_scalp",
-        "confidence": 0.85,
+        "readiness_reasons": ["trend_aligned", "fvg_present", "bos_confirmed"],
         "parameters": {
             "entry": 1.0850,
             "stop": 1.0840,

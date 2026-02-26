@@ -26,6 +26,7 @@ Invariants:
 from __future__ import annotations
 
 import json
+import logging
 import os
 import sys
 import tempfile
@@ -33,6 +34,8 @@ from datetime import UTC
 from datetime import datetime as dt
 from pathlib import Path
 from typing import Any
+
+log = logging.getLogger(__name__)
 
 # Constants
 STATE_DIR = Path(__file__).parent
@@ -334,7 +337,7 @@ def _get_lease_component_color() -> str:
         active_sm = manager.active_lease
 
         if active_sm is None:
-            return "GREEN"  # No lease = no problem
+            return "GREEN"
 
         state = active_sm.state
         color_map = {
@@ -347,16 +350,23 @@ def _get_lease_component_color() -> str:
         return color_map.get(state, "YELLOW")
 
     except Exception:
-        return "GREEN"  # Graceful fallback
+        log.error(
+            "Lease subsystem error in projection — degrading to RED "
+            "(INV-PROJECTION-NEVER-OPTIMISTIC)"
+        )
+        return "RED"
 
 
 def _calculate_age_seconds(timestamp_str: str) -> int:
-    """Calculate seconds since timestamp."""
+    """Calculate seconds since timestamp.
+
+    INV-PROJECTION-NEVER-OPTIMISTIC: Returns -1 on error (detectable sentinel),
+    never a plausible value like 9999 that could be mistaken for valid stale data.
+    """
     if not timestamp_str:
-        return 9999
+        return -1
 
     try:
-        # Handle various ISO formats
         if "+" in timestamp_str:
             ts = dt.fromisoformat(timestamp_str)
         elif timestamp_str.endswith("Z"):
@@ -367,7 +377,8 @@ def _calculate_age_seconds(timestamp_str: str) -> int:
         age = dt.now(UTC) - ts
         return int(age.total_seconds())
     except Exception:
-        return 9999
+        log.error("Failed to parse timestamp '%s' — returning sentinel -1", timestamp_str)
+        return -1
 
 
 # ═══════════════════════════════════════════════════════════════════════════
@@ -376,7 +387,11 @@ def _calculate_age_seconds(timestamp_str: str) -> int:
 
 
 def get_next_seq() -> int:
-    """Get and increment manifest sequence number."""
+    """Get and increment manifest sequence number.
+
+    INV-PROJECTION-NEVER-OPTIMISTIC: Returns -1 on error (detectable),
+    never silently resets to 1 which could mask sequence corruption.
+    """
     try:
         if SEQ_FILE.exists():
             seq = int(SEQ_FILE.read_text().strip())
@@ -387,7 +402,8 @@ def get_next_seq() -> int:
         SEQ_FILE.write_text(str(next_seq))
         return next_seq
     except Exception:
-        return 1
+        log.error("Sequence file corrupt or unwritable — returning sentinel -1")
+        return -1
 
 
 # ═══════════════════════════════════════════════════════════════════════════
@@ -408,7 +424,7 @@ def get_lease_state() -> dict[str, Any]:
     S47: INV-HALT-OVERRIDES-LEASE reflected in status
     """
     try:
-        from governance.lease import LeaseInterpreter, LeaseManager, LeaseStateMachine
+        from governance.lease import LeaseInterpreter, LeaseManager
         from governance.lease_types import LeaseState
 
         manager = LeaseManager()
@@ -461,17 +477,20 @@ def get_lease_state() -> dict[str, Any]:
         }
 
     except ImportError:
-        # Lease system not available (import error)
+        log.error(
+            "Lease subsystem import failed — projecting ERROR "
+            "(INV-PROJECTION-NEVER-OPTIMISTIC)"
+        )
         return {
-            "status": "ABSENT",
+            "status": "ERROR",
             "strategy": None,
             "time_remaining": None,
             "expires_at": None,
         }
     except Exception:
-        # Graceful fallback on any error
+        log.error("Lease subsystem exception — projecting ERROR (INV-PROJECTION-NEVER-OPTIMISTIC)")
         return {
-            "status": "ABSENT",
+            "status": "ERROR",
             "strategy": None,
             "time_remaining": None,
             "expires_at": None,
