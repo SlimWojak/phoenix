@@ -198,7 +198,7 @@ codemap:
 path: ~/spitfire
 purpose: Read-only codebase intelligence + bead field analyst (Dexter character)
 branch: main
-head: a97ce43
+head: 3da08b4
 status: OPERATIONAL
 engine: OpenClaw + Codex 5.3 + Opus daily inspection
 hardware: VPS (physically isolated from core infrastructure)
