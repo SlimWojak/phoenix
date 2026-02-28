@@ -25,6 +25,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
 if TYPE_CHECKING:
+    from .governance_log import GovernanceLog
     from .lease_types import BeadType
 
 log = logging.getLogger(__name__)
@@ -59,9 +60,14 @@ class DurableBeadEmitter:
     On failure: raises (never silently drops beads).
     """
 
-    def __init__(self, bead_dir: Path | None = None) -> None:
+    def __init__(
+        self,
+        bead_dir: Path | None = None,
+        governance_log: GovernanceLog | None = None,
+    ) -> None:
         self._bead_dir = bead_dir or DEFAULT_GOV_BEAD_DIR
         self._bead_dir.mkdir(parents=True, exist_ok=True)
+        self._governance_log = governance_log
         self.beads: list[BeadType] = []
 
     def emit(self, bead: BeadType) -> None:
@@ -96,6 +102,15 @@ class DurableBeadEmitter:
 
         self.beads.append(bead)
         log.info("Governance bead persisted: type=%s id=%s path=%s", bead_type, bead_id, jsonl_path)
+
+        if self._governance_log is not None:
+            try:
+                self._governance_log.append_bead(bead_type, bead_data)
+            except Exception:
+                log.exception(
+                    "Governance log append failed for %s (per-type write succeeded)",
+                    bead_type,
+                )
 
     def _bead_id_exists(self, jsonl_path: Path, bead_id: str) -> bool:
         """Check if bead_id already exists in the JSONL file (idempotency guard)."""
