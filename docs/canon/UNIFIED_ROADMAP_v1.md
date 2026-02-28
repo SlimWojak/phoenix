@@ -290,7 +290,61 @@ retire:
 
 ---
 
-## 6. HARDWARE DEPLOYMENT SEQUENCE
+## 6. DEXTER SURFACE LAYER
+
+```yaml
+DEXTER_SURFACE:
+  identity: |
+    "Dexter" is the researcher behind the glass. He can see everything
+    in the repos and bead field, but cannot open the door. He observes,
+    analyses, hypothesises, and taps the glass when something's interesting.
+    He cannot write beads, modify code, or promote his own ideas.
+
+  engine: Spitfire (OpenClaw on VPS)
+  repo: ~/spitfire
+  models: Codex 5.3 (primary analysis) + Opus (daily inspection/review)
+  access: READ_ONLY OAuth to phoenix, phoenix-swarm, dexter
+  hardware: VPS (physically isolated from core infrastructure)
+  status: OPERATIONAL
+
+  glass_wall:
+    physical: VPS — cannot touch office hardware
+    access: READ_ONLY OAuth — cannot write to any repo
+    output: ALL output = CLAIM (INV-SEMANTIC-FIREWALL applies)
+    promotion: NONE — ideas route through G/Olya for consideration
+
+  modes:
+    on_demand: "G or Olya asks Dexter a question — pattern check, contradiction scan, lineage walk"
+    autonomous: "Periodic passes over bead exports — surfaces anomalies, flags drift, spots patterns"
+    exploration: "Olya browses beads through Dexter's lens (recognition over recall)"
+
+  current_capability:
+    - Repo-level forensic architecture review (all 3 repos visible)
+    - Bead field analysis (via exported snapshots)
+    - Pattern mining across bead types, drawers, regimes
+    - Contradiction and drift detection
+    - Hypothesis drafts with evidence references
+
+  future_expansion:
+    gate_2: "Gate 2 query layer gives Dexter richer structured queries"
+    bridge: "Bridge gives Dexter cross-economy visibility"
+    shadow_field: "Gate 4+ Shadow Field accumulation gives Dexter failure trajectories to mine"
+
+  constitutional_position:
+    - Dexter is a TOOL, not an office (no new coordination surface)
+    - No CLAUDE.md, no heartbeat, no TASK_QUEUE integration yet
+    - Earns formalization through proven value over weeks
+    - If Spitfire engine disappoints, swap it — Dexter character persists
+    - Zero architectural debt — read-only observer with advisory output
+
+  does_not_change:
+    - Gate sequence (S61-S65+)
+    - Bridge spec work
+    - Dream Cycle architecture (Dexter is complementary, not replacement)
+    - Any constitutional invariant
+    - Write authority on any repo
+```
+## 7. HARDWARE DEPLOYMENT SEQUENCE
 
 ```yaml
 FRIDAY_2026_02_27:
@@ -316,7 +370,7 @@ DGX_ACTIVATION:
 
 ---
 
-## 7. NEXT SESSION
+## 8. NEXT SESSION
 
 ```yaml
 focus: S61 — BRIDGE_SPEC v0.1 + Gate 2 Scope
