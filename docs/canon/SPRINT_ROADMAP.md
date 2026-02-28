@@ -16,8 +16,8 @@ audience: Advisors (GPT, GROK, OWL, Opus)
 ## CURRENT STATE
 
 ```yaml
-current_sprint: S58 COMPLETE — HYGIENE (2026-02-25)
-status: S58_COMPLETE | ZERO_TIER1 | ZERO_TIER2 | HALT_OPERATIONAL | ORACLE_BOOTSTRAPPED
+current_sprint: S62 COMPLETE — BRIDGE_BUILD + GATE_2 (2026-02-28)
+status: S62_COMPLETE | ZERO_TIER1 | ZERO_TIER2 | HALT_OPERATIONAL | ORACLE_BOOTSTRAPPED | BRIDGE_OPERATIONAL
 s33_p2: BLOCKED (Olya CSO calibration) — CoE model accepted, not required for v0.1
 
 recent_completions:
@@ -47,13 +47,16 @@ recent_completions:
   s56_completion_date: 2026-02-25   # LOUD_FAILS — silent fail hardening
   s57_completion_date: 2026-02-25   # ORACLE_BOOTSTRAP — Three-Surface Cockpit
   s58_completion_date: 2026-02-25   # HYGIENE — dead code, doc fixes, cleanup
+  s59_completion_date: 2026-02-25   # LEASE_WIRE — sovereign gate, write-ahead governance
+  s60_completion_date: 2026-02-25   # CEREMONY_AND_HYGIENE — ceremony engine, debt cleanup
+  s62_completion_date: 2026-02-28   # BRIDGE_BUILD + GATE_2 — notary pipeline + query layer
 
-certification: v0.1_SEALED | RIVER_PHASE_1_COMPLETE | WARBOAR_CERTIFIED | LIVE_GATEWAY_VALIDATED | CSO_PRODUCTION_READY | S46_CANONICAL | HUD_INTEGRATED | S44_FOUNDATION_VALIDATED | S47_LEASE_PROVEN | MC_v0.2_LOCKED | BEAD_FIELD_GATE_1 | S51_DRIVESHAFT_DELIVERED | S52_HARDENED | S53_JANK_NUKED | S54_TRUTH_SWEPT | MYPY_CAPITAL_PATH_CLEAN | S55_HALT_WIRED | S56_LOUD_FAILS | S57_ORACLE_BOOTSTRAPPED | S58_HYGIENE
+certification: v0.1_SEALED | RIVER_PHASE_1_COMPLETE | WARBOAR_CERTIFIED | LIVE_GATEWAY_VALIDATED | CSO_PRODUCTION_READY | S46_CANONICAL | HUD_INTEGRATED | S44_FOUNDATION_VALIDATED | S47_LEASE_PROVEN | MC_v0.2_LOCKED | BEAD_FIELD_GATE_1 | S51_DRIVESHAFT_DELIVERED | S52_HARDENED | S53_JANK_NUKED | S54_TRUTH_SWEPT | MYPY_CAPITAL_PATH_CLEAN | S55_HALT_WIRED | S56_LOUD_FAILS | S57_ORACLE_BOOTSTRAPPED | S58_HYGIENE | S59_LEASE_WIRE | S60_CEREMONY | S62_BRIDGE_AND_GATE2
 cumulative:
-  sprints_complete: 30 (S28-S44, S46-S58)
-  tests_passing: 1815+ (1786 + 29 new from S55-S56)
-  chaos_vectors: 269/269 PASS (264 + 5 halt chaos vectors)
-  invariants_registered: 245 (240 + 5 new from S55-S56)
+  sprints_complete: 33 (S28-S44, S46-S60, S62)
+  tests_passing: 1887+ Phoenix | 455 Dexter (post-S62)
+  chaos_vectors: 273/273 PASS
+  invariants_registered: 259 Phoenix + 7 Bridge + 1 DEC-FREEZE-INDEX-CARVEOUT
   bead_types: 17+
   runbooks: 8
   gate_glossary: 48 gates mapped
@@ -1867,9 +1870,9 @@ RATIONALE: "Binary states. Rich metadata. GPT wins on state machine, OWL wins on
 ### S43-S50 (Path to v0.1)
 - INV-RESEARCH-RAW-DEFAULT (S45)
 
-**Total: 154+ invariants frozen (INVARIANT_REGISTRY.yaml)**
-**Tests: 1716 passing (25 xfailed)**
-**Chaos vectors: 264 handled**
+**Total: 259+ invariants registered (INVARIANT_REGISTRY.yaml) + 7 Bridge invariants**
+**Tests: 1887+ Phoenix | 455 Dexter (post-S62)**
+**Chaos vectors: 273 handled**
 
 ---
 
@@ -1928,11 +1931,11 @@ s46_design_locked: 2026-01-31
 s47_completion_date: 2026-02-04
 s48_completion_date: 2026-01-31
 
-current_sprint: S51 COMPLETE — DRIVESHAFT (2026-02-22)
+current_sprint: S62 COMPLETE — BRIDGE_BUILD + GATE_2 (2026-02-28)
 
-total_tests: 1716 (25 xfailed)
-total_bunny_vectors: 264
-total_invariants: 150+ frozen
+total_tests: 1887+ Phoenix | 455 Dexter
+total_bunny_vectors: 273
+total_invariants: 259 Phoenix + 7 Bridge + 1 freeze carve-out
 total_gates_mapped: 48
 
 s35_s39_theme: "CONSTITUTIONAL CEILING"
@@ -2076,7 +2079,7 @@ parallel_systems: |
   - INV-NO-CORE-REWRITES-POST-S44: ACTIVE
 ```
 
-*S28-S44, S46-S52 COMPLETE. v0.1 SEALED + S52 HARDENING. 264 chaos vectors. 163+ invariants. First strategy (Asia Range Scalp) wired end-to-end.*
+*S28-S44, S46-S60, S62 COMPLETE. v0.1 SEALED. Bridge OPERATIONAL. Gate 2 query layer BUILT. 273 chaos vectors. 259+ invariants. 11.4M synthetic beads validated.*
 
 ---
 
@@ -2209,3 +2212,80 @@ new_invariants: 4
 regressions: 0
 unlocks: GATE_3 (Bridge v0 — Notary boundary implementation)
 ```
+
+---
+
+## S62: BRIDGE_BUILD + GATE_2 — COMPLETE ✅
+
+```yaml
+sprint: S62
+codename: BRIDGE_BUILD_AND_GATE_2
+status: COMPLETE
+date: 2026-02-28
+mission: "Inter-economy Bridge notary + Gate 2 query layer + synthetic bead field validation"
+
+tracks:
+  TRACK_A_BRIDGE:
+    status: COMPLETE
+    modules:
+      phoenix:
+        governance/governance_log.py: "Provenance root — emits append-only JSONL governance events (145 lines, 28 tests)"
+      dexter:
+        bridge/types.py: "Envelope schema — GovernanceEvent + NotarizedEnvelope Pydantic models"
+        bridge/verification.py: "6-operation whitelist + signature + hash chain + replay + monotonic GT + version"
+        bridge/state_store.py: "Cursor + checkpoint persistence for reliable pull-based polling"
+        bridge/reader.py: "Pull-based JSONL reader with cursor tracking"
+        bridge/envelope.py: "Notary seal — wraps verified event in cryptographic envelope"
+        bridge/orchestrator.py: "Poll loop — read → verify → seal → project pipeline"
+        bead_field/ingestion/governance_mapper.py: "FACT projection — governance events → structural FACT beads"
+    tests: 191 (bridge 163 + governance mapper 28)
+    invariants: 7/7 proven
+    phoenix_commit: 2ed5821 (tag: s62-governance-emitter)
+    dexter_commit: 7099707 (tag: s62-gate2-query-layer)
+
+  TRACK_B_QUERY_LAYER:
+    status: COMPLETE
+    modules:
+      bead_field/query/timestamps.py: "Canonical timestamp normalization (bare ISO → YYYY-MM-DDTHH:MM:SS+00:00)"
+      bead_field/query/chain.py: "walk_chain — CTE backward traversal, 10K steps in 21ms, link verification"
+      bead_field/query/verify.py: "verify_bead — hash + chain + Merkle integrity in one call"
+      bead_field/query/temporal.py: "known_at — bi-temporal query (WT range + KT cutoff)"
+      bead_field/query/field_query.py: "FieldQuery — ThreadPoolExecutor cross-pair parallel fan-out"
+      bead_field/query/__init__.py: "Public API surface"
+    tests: 44
+    performance:
+      chain_walk_10k: "21ms median (was ~2 hours without index)"
+      index_created: "idx_beads_hash_self on all 6 synthetic DBs"
+
+  SYNTHETIC_FIELD:
+    status: VALIDATED
+    beads: 11,387,568
+    pairs: 6 (EURUSD, GBPUSD, USDJPY, USDCHF, AUDUSD, USDCAD)
+    range: "2020-2025 (5 years)"
+    storage: "66GB across 6 SQLite databases"
+    location: "~/dexter/tools/synthetic/"
+
+  OBSERVATION:
+    status: COMPLETE
+    deliverable: "DEXTER_PHASE_1_OBSERVATION_REPORT.md"
+    method: "Evidence-based query design from actual field exploration"
+
+new_tests: ~235 (191 bridge + 44 query layer)
+total_dexter_tests: 455
+new_invariants: 7 bridge + 1 DEC-FREEZE-INDEX-CARVEOUT
+regressions: 0
+
+decisions:
+  DEC-BRIDGE-PULL-NOTARY: "Bridge is pull-based notary (Option D — reader polls JSONL, no push)"
+  DEC-FREEZE-INDEX-CARVEOUT: "Read-performance indices allowed under DEC-SUBSTRATE-FREEZE"
+  DEC-TIMESTAMP-CANON: "Single canonical form YYYY-MM-DDTHH:MM:SS+00:00 for all query layer timestamps"
+  DEC-FIELDQUERY-ONLY: "Parallel fan-out is the only supported cross-pair query path (no ATTACH)"
+  DEC-CHAIN-BACKWARD-ONLY: "Forward chain traversal intentionally not supported (append-only invariant)"
+
+commits:
+  phoenix: "2ed5821 (tag: s62-governance-emitter)"
+  dexter: "7099707 (tag: s62-gate2-query-layer)"
+```
+
+### Exit Gate
+"Bridge notary: full pipeline emit → read → verify → seal → project → FACT bead. Query layer: chain walk 10K < 1s, timestamp normalization, bi-temporal queries, cross-pair fan-out. 455 tests. 7/7 bridge invariants. Zero regressions."

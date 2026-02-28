@@ -43,9 +43,9 @@ PHOENIX (Governance Economy):
 
 DEXTER (Analytical Economy):
   repo: ~/dexter
-  version: Bead Field Gate 1 PASS
-  branch: main @ 5127e4f
-  tests: 274/274
+  version: Gate 1 PASS + Gate 2 QUERY LAYER BUILT + Bridge OPERATIONAL
+  branch: main @ 7099707 (tag: s62-gate2-query-layer)
+  tests: 455 (332 bead_field + 79 bridge + 44 query layer)
   genesis: 789 beads (788 CLAIMs + 1 METHODOLOGY_DELTA)
   genesis_merkle_root: 5c4d63f29f667d0b80348e3dfc87204aea6488d034c70dd6ae354a57036e963c
   pqc: ML-DSA-65 Dilithium3 (real, ARM64)
@@ -53,11 +53,14 @@ DEXTER (Analytical Economy):
   integrity: SHA-256 chain + Merkle tree + dual PQC/ECDSA signing
   store: SQLite bi-temporal (DB-level immutability triggers)
   clock: HLC (microsecond, thread-safe, merge-ready for multi-node)
-  freeze: DEC-SUBSTRATE-FREEZE active (expires ~2026-03-24, bug fixes only)
+  freeze: DEC-SUBSTRATE-FREEZE active (expires ~2026-03-24, index carve-out granted)
   extraction: 789 curated from 1178. Olya v0.3 corrections honored.
+  synthetic_field: 11,387,568 beads, 6 pairs, 5 years, 66GB (validated)
+  bridge: 7 modules, 191 tests, 7/7 invariants (pull-based notary)
+  query_layer: 6 modules, 44 tests (chain walk, verify, temporal, cross-pair)
 
 BRIDGE (Inter-System):
-  status: ARCHITECTURE_DECIDED | NOT_BUILT
+  status: S62_BUILT | OPERATIONAL (pull-based notary architecture)
   decisions_locked:
     - Bridge = Notary boundary (proof-bearing container, sig verification)
     - Semantic Firewall (all external data enters Economy 1 as CLAIM, never FACT)
@@ -106,25 +109,32 @@ S61: BRIDGE_SPEC + GATE_2_SCOPE
   exit_gate: "BRIDGE_SPEC reviewed by 3 advisors, Gate 2 scope defined"
   hardware: ANY (planning, not compute)
 
-S62: BRIDGE_BUILD + GATE_2_QUERIES
-  track_a: BRIDGE_MINIMAL
+S62: BRIDGE_BUILD + GATE_2_QUERIES — COMPLETE ✅ (2026-02-28)
+  track_a: BRIDGE_NOTARY — COMPLETE
     what: |
-      Notary envelope spine (sig verification, temporal snapshot, provenance layering)
-      Phoenix → Bead Field projection (governance events → FACT beads)
-      Dexter → Phoenix CLAIM ingress (semantic firewall enforced)
-    tests: 7 banked invariants become passing tests
-    phoenix_change: MINIMAL (emit events, bridge handles enrichment)
-    dexter_change: MINIMAL (expose signed beads for promotion)
-  track_b: GATE_2_QUERY_LAYER
-    what: Lineage walks, temporal slicing, bead relationship queries
-    store: Query interfaces on existing SQLite bi-temporal store
-    why_parallel: Bridge projects INTO the store. Gate 2 makes it QUERYABLE.
-                  Both needed before anything can consume bridge output.
+      Pull-based notary: Phoenix emits governance_log.py → Bridge reads, verifies
+      (6-op whitelist, sig, hash chain, replay, monotonic GT, version), seals envelope,
+      projects as FACT bead. 7 modules. Full pipeline proven end-to-end.
+    tests: 191 (bridge 163 + governance mapper 28)
+    invariants: 7/7 proven
+    phoenix_commit: 2ed5821 (tag: s62-governance-emitter)
+    dexter_commit: 7099707 (tag: s62-gate2-query-layer)
+  track_b: GATE_2_QUERY_LAYER — COMPLETE
+    what: |
+      T1: idx_beads_hash_self (chain walk 10K: 21ms, was ~2 hours)
+      T2: Timestamp normalizer (bare ISO → canonical +00:00, misuse impossible)
+      T3: walk_chain() — CTE backward traversal with link verification
+      T4: verify_bead() — hash + chain + Merkle integrity in one call
+      T5: known_at() — bi-temporal query with auto timestamp normalization
+      T6: FieldQuery — parallel fan-out to 6 DBs, auto timestamp normalization
+    tests: 44
+  synthetic_field: 11,387,568 beads, 6 pairs, 5 years, 66GB — VALIDATED
+  observation: DEXTER_PHASE_1_OBSERVATION_REPORT.md (evidence-based query design)
   exit_gate: |
-    "Phoenix governance event → Bridge → FACT bead in Bead Field → queryable via Gate 2"
-    "Dexter CLAIM → Semantic Firewall → Phoenix consumption path verified"
-    All 7 bridge invariants PASS.
-  hardware: M3 Ultra (Bead Field) + M4 Max (Phoenix)
+    "Chain walk 10K < 1s cold. Bare timestamps impossible.
+     walk_chain + verify_bead + known_at + FieldQuery exist and pass.
+     All 7 bridge invariants PASS. 455 tests green. Zero regressions."
+  hardware: M4 Max (both tracks built here)
 
 S63: GATE_3_AIR (Agent Integrity Runtime)
   what: |
@@ -287,7 +297,6 @@ retire:
   DRIFT_LOG.md: "Keep in repo for audit trail. Not needed in advisor context."
   MISSION_CONTROL_DESIGN_v0_2.md: "Largely superseded by SYSTEM_MANIFEST + UNIFIED_ROADMAP."
 ```
-
 ---
 
 ## 6. DEXTER SURFACE LAYER
@@ -326,8 +335,8 @@ DEXTER_SURFACE:
     - Hypothesis drafts with evidence references
 
   future_expansion:
-    gate_2: "Gate 2 query layer gives Dexter richer structured queries"
-    bridge: "Bridge gives Dexter cross-economy visibility"
+    gate_2: "DONE — Gate 2 query layer gives Dexter richer structured queries (S62 Track B)"
+    bridge: "DONE — Bridge gives Dexter cross-economy visibility (S62 Track A)"
     shadow_field: "Gate 4+ Shadow Field accumulation gives Dexter failure trajectories to mine"
 
   constitutional_position:
@@ -373,18 +382,14 @@ DGX_ACTIVATION:
 ## 8. NEXT SESSION
 
 ```yaml
-focus: S61 — BRIDGE_SPEC v0.1 + Gate 2 Scope
-mode: Architectural planning (CTO drafts, then Joist Pattern)
-input:
-  - This document (orientation)
-  - 7 banked bridge invariants (Section 3)
-  - CARTRIDGE_AND_LEASE_DESIGN_v1_0.md (governance events to project)
-  - BEAD_FIELD_SPEC_v0_3.md (target substrate schema)
-  - S59/S60 patterns (sovereign gate, write-ahead, projection honesty)
-output:
-  - BRIDGE_SPEC_v0.1.md (notary envelope, mapper contracts, test strategy)
-  - GATE_2_QUERY_CONTRACT.md (interface spec for query layer)
-  - Advisory brief for Joist Pattern hardening (OWL + GPT + BOAR)
+S62_COMPLETE: |
+  Sprint 62 delivered: Bridge notary (13 modules, 191 tests, 7/7 invariants)
+  + Gate 2 query layer (6 modules, 44 tests) + 11.4M synthetic field.
+  455 total Dexter tests. Zero regressions.
+next_sprint_pending: |
+  S63 AIR (Agent Integrity Runtime) — sequencing decision pending.
+  Bridge is now the reference for AIR envelope alignment.
+  Alternative: Dexter Phase 2 deeper analytics or Spitfire retarget.
 ```
 
 ---

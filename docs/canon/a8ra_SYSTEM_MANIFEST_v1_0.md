@@ -2,9 +2,9 @@
 
 ```yaml
 document: SYSTEM_MANIFEST
-version: 1.9
-date: 2026-02-25
-status: CANONICAL — updated post S60 CEREMONY_AND_HYGIENE
+version: 2.0
+date: 2026-02-28
+status: CANONICAL — updated post S62 BRIDGE_BUILD + GATE_2
 purpose: Single M2M orientation for every Claude instance in the a8ra ecosystem
 update_discipline: Any session making a significant decision appends a MANIFEST DELTA
 owner: G (Sovereign Operator)
@@ -278,34 +278,69 @@ river_phase_1:
       - "data/river_reader.py (RIVER_SOURCE bridge — parquet default, legacy fallback)"
       - "docs/canon/ICT_DATA_CONTRACT.md (§7.2-7.5 ghost bar amendment + invariants)"
 
+s62_governance_emitter:
+  file: governance/governance_log.py
+  purpose: "Bridge provenance root — append-only JSONL emitter for governance events"
+  commit: 2ed5821 (tag: s62-governance-emitter)
+  tests: 28
+  note: "Phoenix-side of the inter-economy Bridge. Dexter bridge/reader.py polls this."
+
 key_blockers:
   s45: BLOCKED (Olya CSO calibration — CoE model accepted, not required for v0.1)
   rule: INV-NO-CORE-REWRITES-POST-S44 ACTIVE
   note: v0.1 shipped without S45. S45 is post-v0.1 enhancement.
 
 integration_with_bead_field:
-  status: DESIGNED_NOT_BUILT (Gate 3+)
-  pattern: Projection, not participation (proven in S48 HUD for state projection)
-  mechanism: Phoenix governance events → Bridge → FACT beads in analytical store
-  phoenix_change: Minimal (emit, bridge enriches)
-  timeline: Post Phoenix v0.1, post Bead Field Gate 1
-  note: "Bridge code does not exist. Phoenix and Dexter are currently isolated. See DRIFT_LOG DELTA-9."
+  status: S62_BUILT — BRIDGE OPERATIONAL (2026-02-28)
+  pattern: Projection, not participation (proven in S48 HUD, now built for Bridge)
+  mechanism: "governance_log.py emit → Bridge reader → verify → seal → FACT bead"
+  phoenix_change: "governance/governance_log.py (145 lines, 28 tests)"
+  dexter_modules: "bridge/ (7 modules, 191 tests, 7/7 invariants)"
+  pipeline_proven: "Full end-to-end: emit → read → verify → seal → project → FACT bead in Bead Field"
 ```
 
 ### 4.2 Dexter (Sovereign Evidence Refinery)
 
 ```yaml
-status: GATE_1_PASS (2026-02-22)
+status: GATE_1_PASS + GATE_2_QUERY_LAYER_BUILT + BRIDGE_OPERATIONAL (2026-02-28)
 repo: dexter/ (private)
+head: 7099707 (tag: s62-gate2-query-layer)
 
 extraction: COMPLETE (789 Genesis beads curated from 1178 extractions, 73 bundles, 363 tests)
 bead_field_spec: v0.3 (OPEN_SOURCE enum added)
 bead_field:
-  tests: 274/274
+  tests: 455 (332 bead_field + 79 bridge + 44 query layer)
   genesis_beads: 789 (curated from 1178 extractions)
   genesis_merkle_root: 5c4d63f29f667d0b80348e3dfc87204aea6488d034c70dd6ae354a57036e963c
   pqc: ML-DSA-65 Dilithium3 (real, ARM64)
-  substrate_freeze: 30 days (expires ~2026-03-24)
+  substrate_freeze: 30 days (expires ~2026-03-24, index carve-out granted)
+
+bridge:
+  status: OPERATIONAL (S62 Track A)
+  modules: 7 (types, verification, state_store, reader, envelope, orchestrator, governance_mapper)
+  tests: 191
+  invariants: 7/7 proven
+  pattern: Pull-based notary (reader polls governance JSONL, verifies, seals, projects)
+  pipeline: "governance_log.py emit → reader → verify (6 checks) → seal envelope → project FACT bead"
+
+query_layer:
+  status: BUILT (S62 Track B)
+  modules: 6 (timestamps, chain, verify, temporal, field_query, __init__)
+  tests: 44
+  capabilities:
+    - "walk_chain: CTE backward traversal, 10K steps in 21ms"
+    - "verify_bead: hash + chain + Merkle integrity"
+    - "known_at: bi-temporal query (WT range + KT cutoff)"
+    - "FieldQuery: parallel cross-pair fan-out (ThreadPoolExecutor)"
+    - "Timestamp normalization: canonical YYYY-MM-DDTHH:MM:SS+00:00"
+
+synthetic_field:
+  status: VALIDATED (2026-02-28)
+  beads: 11,387,568
+  pairs: 6 (EURUSD, GBPUSD, USDJPY, USDCHF, AUDUSD, USDCAD)
+  range: 2020-2025 (5 years)
+  storage: 66GB (6 SQLite databases)
+  location: ~/dexter/tools/synthetic/
 
 architecture:
   pipeline: Theorist→Auditor→Bundler→CLAIM_BEADs
@@ -455,6 +490,13 @@ DEC-RIVER-GHOST-HYBRID: "Raw = FLAG_ONLY. Materialized = ghost bars (is_ghost=Tr
 DEC-RIVER-BITEMPORAL: "Every bar has WT + KT. Prevents temporal hallucination in backtesting."
 DEC-COE: "Olya validates (recognition), not extracts (recall)"
 DEC-PHYSICS-EXPERIMENT: "Bead Field = physics experiment, not log"
+
+# S62 Bridge + Gate 2
+DEC-BRIDGE-PULL-NOTARY: "Bridge is pull-based notary (reader polls JSONL, not push-based)"
+DEC-FREEZE-INDEX-CARVEOUT: "Read-performance indices allowed under DEC-SUBSTRATE-FREEZE (2026-02-28)"
+DEC-TIMESTAMP-CANON: "Single canonical form YYYY-MM-DDTHH:MM:SS+00:00 for all query layer timestamps"
+DEC-FIELDQUERY-ONLY: "Parallel fan-out is the only supported cross-pair query path (no ATTACH)"
+DEC-CHAIN-BACKWARD-ONLY: "Forward chain traversal intentionally not supported (append-only invariant)"
 ```
 
 ---
@@ -480,7 +522,8 @@ GOVERNANCE: [INVARIANT_REGISTRY.yaml, ACCEPTANCE_CHECKLIST_v0.1.md, SEAL_v0.1.md
 OPERATIONAL: [SYSTEM_MANIFEST.md, SPRINT_ROADMAP.md, PHOENIX_MANIFEST.md]
 PHOENIX: [conditions.yaml, methodology_template.yaml, schemas/beads.yaml, governance/lease.py, governance/cartridge.py]
 COORDINATION: [phoenix-swarm/AGENTS.md, TASK_QUEUE.yaml, BROADCAST.md]
-PLANNED: [BRIDGE_SPEC.md, REFINERY_CONTRACT.yaml, PULSE_OPERATIONS.md]
+BUILT: [BRIDGE_SPEC_v0.2.md (Dexter), governance_log.py (Phoenix)]
+PLANNED: [REFINERY_CONTRACT.yaml, PULSE_OPERATIONS.md]
 ```
 
 ---
@@ -567,6 +610,24 @@ PLANNED: [BRIDGE_SPEC.md, REFINERY_CONTRACT.yaml, PULSE_OPERATIONS.md]
       (leases README state diagram fixed, CAPITAL_PATH_COVERAGE.md created).
     Tests: 51 (S59) + 21 (S60) = 72 new. Invariants: 15 (S59) + 4 (S60) = 19 new.
     Sprints: 30→32. Total invariants: 264. ZERO regressions.
+
+- date: 2026-02-28
+  office: OPUS_CURSOR
+  change: |
+    v2.0. S62 BRIDGE_BUILD + GATE_2 — both tracks COMPLETE.
+    Track A (Bridge): Pull-based notary. Phoenix governance_log.py emitter (2ed5821).
+      Dexter bridge/ — 7 modules (types, verification, state_store, reader, envelope,
+      orchestrator, governance_mapper). 191 tests. 7/7 invariants proven.
+      Full pipeline: emit → read → verify → seal → project → FACT bead.
+    Track B (Gate 2 Query Layer): 6 modules (timestamps, chain, verify, temporal,
+      field_query, __init__). 44 tests. Chain walk 10K in 21ms (was ~2h without index).
+      Timestamp normalization. Merkle verification. Cross-pair parallel fan-out.
+    Synthetic field: 11,387,568 beads, 6 pairs, 5 years, 66GB — VALIDATED.
+    Observation: DEXTER_PHASE_1_OBSERVATION_REPORT.md (evidence-based design).
+    Dexter head: 7099707 (tag: s62-gate2-query-layer). Dexter tests: 455. Zero regressions.
+    Decisions: DEC-FREEZE-INDEX-CARVEOUT, DEC-TIMESTAMP-CANON, DEC-FIELDQUERY-ONLY,
+      DEC-CHAIN-BACKWARD-ONLY, DEC-BRIDGE-PULL-NOTARY.
+    Sprints: 32→33. Next: S63 AIR pending sequencing decision.
 
 # --- APPEND BELOW ---
 ```

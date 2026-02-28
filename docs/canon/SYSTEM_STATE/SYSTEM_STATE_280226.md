@@ -111,6 +111,7 @@ codemap:
     governance/halt.py: "Constitutional halt mechanism"
     governance/ceremony.py: "Ceremony engine lifecycle"
     governance/sovereign_gate.py: "Single chokepoint for all capital mutations"
+    governance/governance_log.py: "Bridge provenance root — append-only JSONL governance event emitter (S62)"
     execution/contracts/execution_surface.yaml: "Execution surface contract"
     state/manifest_writer.py: "health.yaml → manifest.json bridge"
 ```
@@ -121,9 +122,13 @@ codemap:
 path: ~/dexter
 purpose: Sovereign evidence refinery — analytical economy engine + bead field
 branch: main
-head: ae577e6 "S58-T2: Fix BEAD_FIELD_SPRINT running-score contradictions"
-status: GATE_1_PASS (substrate frozen, DEC-SUBSTRATE-FREEZE expires ~2026-03-24)
-tests: 274 (bead_field) + 357 (extraction, 6 skipped) = 631 total
+head: 7099707 "S62: Gate 2 query layer + Bridge notary" (tag: s62-gate2-query-layer)
+status: |
+  Gate 1: PASS (substrate frozen)
+  Gate 2: QUERY LAYER BUILT (chain walk, verify, temporal, cross-pair)
+  Bridge: OPERATIONAL (notary pipeline, 7/7 invariants)
+  Synthetic field: 11.4M beads, 66GB, validated
+tests: 455 (332 bead_field + 79 bridge + 44 query layer)
 genesis_beads: 789 (788 CLAIMs + 1 METHODOLOGY_DELTA)
 genesis_merkle_root: 5c4d63f29f667d0b80348e3dfc87204aea6488d034c70dd6ae354a57036e963c
 hardware: Mac Mini (current) → M3 Ultra (production target)
@@ -137,7 +142,11 @@ codemap:
     bead_field/clock/: "Hybrid Logical Clock (microsecond, thread-safe)"
     bead_field/ingestion/: "Validate → UUID → HLC → hash → sign → store → Merkle trigger"
     bead_field/genesis/: "Genesis ceremony tooling + 789 curated beads"
-    bead_field/tests/: "274 tests covering all Gate 1 exit criteria"
+    bead_field/query/: "Gate 2 query layer (timestamps, chain, verify, temporal, field_query)"
+    bead_field/tests/: "332 tests covering Gate 1 + Gate 2 exit criteria"
+    bridge/: "Inter-economy notary (types, verification, state_store, reader, envelope, orchestrator)"
+    bridge/tests/: "79 bridge tests"
+    bead_field/ingestion/governance_mapper.py: "FACT projection from governance events"
     bundles/: "Extraction output bundles"
     core/: "Extraction pipeline (Theorist→Auditor→Bundler)"
     corpus/: "Source material for extraction"
@@ -145,6 +154,7 @@ codemap:
     roles/: "Agent role definitions"
     scripts/: "Operational scripts"
     skills/: "Extraction skill definitions"
+    tools/synthetic/: "Synthetic bead field (11.4M beads, 6 DBs, 66GB)"
     docs/: "Bead field plans, sprint docs, role contracts"
 
   key_files:
@@ -155,7 +165,10 @@ codemap:
     bead_field/integrity/merkle.py: "Binary Merkle tree + inclusion proofs"
     bead_field/clock/hlc.py: "Hybrid Logical Clock"
     bead_field/ingestion/pipeline.py: "Ingestion pipeline orchestrator"
+    bead_field/query/__init__.py: "Gate 2 query layer public API"
+    bridge/orchestrator.py: "Bridge poll loop — read → verify → seal → project"
     docs/ROLE_CONTRACTS.md: "Agent role contracts"
+    docs/beadfields_plan/BRIDGE_SPEC_v0.2.md: "Bridge specification (canonical)"
     docs/beadfields_plan/DREAM_CYCLE_DESIGN_INTENT_v0_1.md: "Gate 5+ design fence"
 ```
 
@@ -271,10 +284,10 @@ flows:
     rule: INV-RIVER-IMMUTABLE, INV-RIVER-BITEMPORAL
 
   phoenix_to_bridge_to_dexter:
-    path: "Phoenix governance events → Bridge (NOT BUILT) → FACT beads in Bead Field"
-    type: PROJECTION (one-way, Phoenix emits, Bridge enriches)
-    status: ARCHITECTURE_DECIDED, NOT_IMPLEMENTED
-    rule: DEC-PROJECTION-NOT-PARTICIPATION
+    path: "Phoenix governance_log.py → Bridge reader → verify → seal → FACT bead in Bead Field"
+    type: PROJECTION (one-way, Phoenix emits, Bridge reads and enriches)
+    status: OPERATIONAL (S62 — pull-based notary, 7 modules, 191 tests, 7/7 invariants)
+    rule: DEC-PROJECTION-NOT-PARTICIPATION, DEC-BRIDGE-PULL-NOTARY
 
   dexter_to_oracle_to_phoenix:
     path: "Dexter CLAIM beads → Oracle/Olya review → PROMOTE/REJECT → Phoenix conditions"
@@ -340,8 +353,28 @@ constraints:
 
   - name: DEC-SUBSTRATE-FREEZE
     scope: dexter/bead_field/
-    rule: "No schema changes. Bug fixes only."
+    rule: "No schema changes. Bug fixes only. Read-performance indices allowed (DEC-FREEZE-INDEX-CARVEOUT)."
     expires: ~2026-03-24
+
+  - name: DEC-FREEZE-INDEX-CARVEOUT
+    scope: dexter/bead_field/
+    rule: "Read-performance indices allowed under DEC-SUBSTRATE-FREEZE"
+    expires: ~2026-03-24
+
+  - name: DEC-TIMESTAMP-CANON
+    scope: dexter/bead_field/query/
+    rule: "Single canonical form YYYY-MM-DDTHH:MM:SS+00:00 for all query layer timestamps"
+    expires: PERMANENT
+
+  - name: DEC-FIELDQUERY-ONLY
+    scope: dexter/bead_field/query/
+    rule: "Parallel fan-out is the only supported cross-pair query path (no ATTACH)"
+    expires: PERMANENT
+
+  - name: DEC-CHAIN-BACKWARD-ONLY
+    scope: dexter/bead_field/query/
+    rule: "Forward chain traversal intentionally not supported (append-only invariant)"
+    expires: PERMANENT
 
   - name: INV-DEXTER-ALWAYS-CLAIM
     scope: dexter → phoenix boundary
