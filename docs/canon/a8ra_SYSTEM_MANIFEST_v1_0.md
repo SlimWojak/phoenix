@@ -70,7 +70,7 @@ NODE_DGX — NVIDIA DGX Spark (Grace-Blackwell):
   office: DEXTER_OFFICE
 
 NODE_M3 — Mac Studio M3 Ultra (512GB):
-  status: INCOMING (expected ~March 2026)
+  status: SMOKE_TESTED (332/332 PASS @ 0.48s, 2026-03-01) — rack install 2026-03-02
   role: Knowledge Substrate + Control Plane
   office: DEXTER_OFFICE (knowledge + control)
 
@@ -102,15 +102,15 @@ CONNECTIVITY:
 ### 4.1 Phoenix (Constitutional Trading System)
 
 ```yaml
-status: v0.1 SEALED + S58 COMPLETE (ZERO TIER_1, ZERO TIER_2, HALT OPERATIONAL)
+status: v0.1 SEALED + S62 COMPLETE (ZERO TIER_1, ZERO TIER_2, HALT OPERATIONAL, BRIDGE OPERATIONAL)
 repo: phoenix/ (private, tag: v0.1)
-current_sprint: S58 COMPLETE — HYGIENE (hardening S55-S58 complete)
+current_sprint: S62 COMPLETE — BRIDGE_BUILD + GATE_2 (2026-02-28)
 
 cumulative_metrics:
-  sprints_complete: 30 (S28-S44, S46-S58)
-  tests_passing: 1815+ (1786 + 29 from S55-S56)
-  chaos_vectors: 269/269 PASS (264 + 5 halt chaos vectors)
-  invariants_registered: 245 (240 + 5 from S55-S56)
+  sprints_complete: 33 (S28-S44, S46-S60, S62)
+  tests_passing: 1887+
+  chaos_vectors: 273/273 PASS
+  invariants_registered: 259 Phoenix + 7 Bridge + 1 DEC-FREEZE-INDEX-CARVEOUT
   mypy_strict_capital_path: 0 errors (governance/ execution/ cso/)
   halt_mechanism: OPERATIONAL (constitutional, chaos-proven, boot-gate validated)
   bead_types: 17+
@@ -118,6 +118,9 @@ cumulative_metrics:
   seal_date: 2026-02-22
   s52_hardening_date: 2026-02-23
   river_phase_1: COMPLETE (2026-02-22)
+  s59_completion_date: 2026-02-25   # LEASE_WIRE
+  s60_completion_date: 2026-02-25   # CEREMONY_AND_HYGIENE
+  s62_completion_date: 2026-02-28   # BRIDGE_BUILD + GATE_2
 
 architecture:
   governance: |
@@ -628,6 +631,28 @@ PLANNED: [REFINERY_CONTRACT.yaml, PULSE_OPERATIONS.md]
     Decisions: DEC-FREEZE-INDEX-CARVEOUT, DEC-TIMESTAMP-CANON, DEC-FIELDQUERY-ONLY,
       DEC-CHAIN-BACKWARD-ONLY, DEC-BRIDGE-PULL-NOTARY.
     Sprints: 32→33. Next: S63 AIR pending sequencing decision.
+
+- date: 2026-03-01
+  office: CTO_SYNTHESIS
+  change: |
+    S63 reframed: AIR → FIELD_ACTIVATION. M3 Ultra smoke tested (332/332 PASS).
+    Advisor poll: GPT+OWL+BOAR unanimous on field-first sequencing.
+    Sprint numbering shift: S63=FIELD_ACTIVATION, S64=AIR(was S63),
+    S65=SWARM(was S64), S66+=DREAM_CYCLE(was S65+). Gate numbers unchanged.
+
+- date: 2026-03-01
+  office: OPUS_CURSOR
+  change: |
+    v2.1. Section 3 NODE_M3: INCOMING → SMOKE_TESTED.
+    Section 4.1 Phoenix body: S58→S62, metrics aligned to SPRINT_ROADMAP v4.0.
+    sprints 30→33, tests 1815→1887+, chaos 269→273, invariants 245→267.
+
+- date: 2026-03-01
+  office: OPUS_CURSOR
+  change: |
+    T5 Proto-AIR Header v0.2 committed to canon.
+    Attestation envelope schema: 5 groups, 6 invariants,
+    8 anomaly classes. Bridge-aligned. Schema only, no runtime.
 
 # --- APPEND BELOW ---
 ```

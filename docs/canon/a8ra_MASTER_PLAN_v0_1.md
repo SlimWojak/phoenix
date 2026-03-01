@@ -560,6 +560,25 @@ FUTURE (planned):
     Doc version refs updated (BEAD_FIELD_SPEC v0.3, CARTRIDGE_AND_LEASE v1.1).
     Master Plan status upgraded from DRAFT to CANONICAL.
 
+- date: 2026-02-28
+  author: CTO (Opus 4.6) — S62 closeout
+  change: |
+    S62 BRIDGE_BUILD + GATE_2 COMPLETE. Largest sprint delivery in project history.
+    Bridge notary: 7 modules, 191 tests, 7/7 invariants. Pull-based, fail-closed, idempotent.
+    Gate 2 query layer: 6 modules, 44 tests. Chain walk 10K: 21ms (was ~2h).
+    Phoenix governance emitter: governance_log.py (commit 2ed5821).
+    Synthetic field validated: 11.4M beads, 66GB, 6 pairs.
+    First closed integrity triangle: Phoenix ↔ Bridge ↔ Dexter.
+
+- date: 2026-03-01
+  author: CTO (Opus 4.6) — advisor synthesis + G decision
+  change: |
+    S63 reframed: AIR → FIELD_ACTIVATION. Advisor poll (GPT+OWL+BOAR) unanimous:
+    use the 66GB field before hardening more infrastructure. AIR deferred to S64.
+    M3 Ultra smoke tested: 332/332 Dexter bead_field tests PASS @ 0.48s.
+    OPTION_ALPHA selected: M3 migration + observation sprint + Spitfire retarget
+    + canon reconciliation + Proto-AIR header spec.
+
 # --- APPEND NEW DELTAS BELOW THIS LINE ---
 ```
 

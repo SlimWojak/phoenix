@@ -25,7 +25,7 @@ NODE_DGX_SPARK:
 
 NODE_M3_ULTRA:
   role: Phoenix Execution + Library (Knowledge Substrate, Control Plane)
-  status: ARRIVED — deploying (cluster install in progress)
+  status: SMOKE_TESTED | Dexter 332/332 PASS @ 0.48s | rack install 2026-03-02
   specs: 32-core CPU, 80-core GPU, 512GB unified RAM
   runs: [phoenix runtime, river live data, bead field store, coordination services]
   note: Production home for Bead Field once deployed

@@ -3,9 +3,9 @@
 
 ```yaml
 document: SPRINT_ROADMAP.md
-version: 3.0
-date: 2026-02-25
-status: CANONICAL — updated post S58 HYGIENE (hardening complete)
+version: 4.0
+date: 2026-03-01
+status: CANONICAL — updated post S62 BRIDGE_BUILD + GATE_2 + S63 reframe
 brand: a8ra (Phoenix is internal codename — see docs/canon/BRAND_IDENTITY.md)
 format: M2M_DENSE
 audience: Advisors (GPT, GROK, OWL, Opus)
@@ -2289,3 +2289,20 @@ commits:
 
 ### Exit Gate
 "Bridge notary: full pipeline emit → read → verify → seal → project → FACT bead. Query layer: chain walk 10K < 1s, timestamp normalization, bi-temporal queries, cross-pair fan-out. 455 tests. 7/7 bridge invariants. Zero regressions."
+
+---
+
+## S63: FIELD_ACTIVATION — IN PROGRESS
+
+```yaml
+status: IN PROGRESS
+started: 2026-03-01
+theme: "Use the field before hardening more infrastructure."
+codename: FIELD_ACTIVATION
+reframed_from: GATE_3_AIR (advisor poll 2026-03-01, G approved)
+
+partial_completion:
+  T1_smoke: PASS (M3 Ultra 332/332 @ 0.48s, 2026-03-01)
+  T4_canon: APPLIED (12/12 deltas, 2026-03-01)
+  T5_PROTO_AIR: PASS (v0.2 drafted, Joist Round 1 complete, 2026-03-01)
+```

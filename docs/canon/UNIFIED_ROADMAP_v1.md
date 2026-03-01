@@ -1,13 +1,13 @@
 # UNIFIED_ROADMAP_v1.md
-# a8ra — Post-S60 Forward Path
+# a8ra — Post-S62 Forward Path
 # Single orientation surface for CTO, Advisors, and G
 
 ```yaml
 document: UNIFIED_ROADMAP_v1.md
 version: 1.0
-date: 2026-02-26
+date: 2026-03-01
 status: CANONICAL
-author: CTO (synthesized from Phoenix S60 + Dexter Gate 1 + Investigation INV-1/2/3)
+author: CTO (synthesized from S62 Bridge + Gate 2 + advisor sequencing poll)
 audience: Fresh CTO, any advisor, G
 supersedes: Forward-looking sections of SPRINT_ROADMAP.md
 format: M2M_DENSE
@@ -88,7 +88,7 @@ HARDWARE:
 # All architectural. All defining how the system COMPOSES.
 # ═══════════════════════════════════════════════════════════════
 
-S61: BRIDGE_SPEC + GATE_2_SCOPE
+S61: BRIDGE_SPEC + GATE_2_SCOPE — COMPLETE ✅ (spec phase, delivered as input to S62)
   track_a: BRIDGE_SPEC_v0.1
     what: Notary envelope contract, temporal snapshot rules, sig verification,
           projection direction (Phoenix→BeadField), ingress direction (Dexter→Phoenix),
@@ -136,23 +136,46 @@ S62: BRIDGE_BUILD + GATE_2_QUERIES — COMPLETE ✅ (2026-02-28)
      All 7 bridge invariants PASS. 455 tests green. Zero regressions."
   hardware: M4 Max (both tracks built here)
 
-S63: GATE_3_AIR (Agent Integrity Runtime)
+S63: FIELD_ACTIVATION (reframed from AIR — advisor poll 2026-03-01)
+  what: |
+    T1: M3 Ultra migration — 66GB field transfer, production benchmark
+    T2: Observation sprint — 789 CLAIMs against 11.4M synthetic beads
+    T3: Spitfire retarget — read-only analyst on Gate 2 codebase
+    T4: Canon reconciliation — docs reflect S62 shipped reality
+    T5: Proto-AIR header — minimal attestation spec (SPEC ONLY, no code)
+  why_reframe: |
+    Advisor poll (GPT+OWL+BOAR) unanimous: signing on unmined substrate = premature.
+    Field is 66GB idle asset. Prove methodology↔data fit before agent infrastructure.
+    AIR deferred to S64, informed by observation friction.
+  partial_completion:
+    T1_smoke: PASS (M3 Ultra 332/332 @ 0.48s, 2026-03-01)
+    T4_deltas: APPLIED (12/12 canon deltas, 2026-03-01)
+    T5_proto_air: PASS (v0.2 — 2 rounds advisor input, 6 invariants, 2026-03-01)
+  exit_gate: |
+    "M3 production benchmark ≤ M4 baseline.
+     5+ observation patterns/failures documented.
+     Spitfire operational on codebase.
+     Canon docs honest.
+     Proto-AIR header drafted."
+  hardware: M3 Ultra (field + benchmark) + M4 Max (dev) + VPS (Spitfire)
+
+S64: GATE_3_AIR (Agent Integrity Runtime) — was S63
   what: |
     PQC+ECDSA dual signing on all agent actions.
     Attestation bundle format ALIGNED with Bridge notary envelope.
     Code hash verification against approved builds.
     Unsigned mutation rejection + security event logging.
-  why_after_bridge: |
-    AIR's attestation envelope inherits Bridge's signing semantics,
-    provenance layering, and temporal snapshot format.
-    Same contract. Same verification path. Natural alignment.
+  why_after_field: |
+    Observation sprint produces lived friction that shapes AIR spec.
+    Proto-AIR header from S63.T5 becomes input to full AIR design.
+    "Don't build the passport office until the citizens have something to say."
   exit_gate: |
     "Unsigned mutation rejected and logged"
     "Any bead inspectable with full attestation bundle"
     "Local verification: hash chain + Merkle proof + signature"
   hardware: M3 Ultra
 
-S64: GATE_4_SWARM_AGENTS
+S65: GATE_4_SWARM_AGENTS — was S64
   what: |
     Director, Librarian, Researcher, Executor agents operational.
     Event bus (NATS/Kafka on M3 Ultra).
@@ -173,7 +196,7 @@ S64: GATE_4_SWARM_AGENTS
 # Not before. Hardware waits for the system to need it.
 # ═══════════════════════════════════════════════════════════════
 
-S65+: GATE_5_DREAM_CYCLE_v1 (Counterfactuals)
+S66+: GATE_5_DREAM_CYCLE_v1 (Counterfactuals)
   what: |
     EnvModels trained on historical FACT beads.
     Counterfactual simulation for PROPOSAL_REJECTED beads.
@@ -383,13 +406,14 @@ DGX_ACTIVATION:
 
 ```yaml
 S62_COMPLETE: |
-  Sprint 62 delivered: Bridge notary (13 modules, 191 tests, 7/7 invariants)
+  Sprint 62 delivered: Bridge notary (7 modules, 191 tests, 7/7 invariants)
   + Gate 2 query layer (6 modules, 44 tests) + 11.4M synthetic field.
   455 total Dexter tests. Zero regressions.
-next_sprint_pending: |
-  S63 AIR (Agent Integrity Runtime) — sequencing decision pending.
-  Bridge is now the reference for AIR envelope alignment.
-  Alternative: Dexter Phase 2 deeper analytics or Spitfire retarget.
+S63_ACTIVE: |
+  FIELD_ACTIVATION (reframed from AIR — advisor poll 2026-03-01, G approved).
+  T1: M3 Ultra smoke tested (332/332 PASS @ 0.48s), rack install 2026-03-02.
+  T2-T5: Observation sprint, Spitfire retarget, canon reconciliation, Proto-AIR header.
+  AIR deferred to S64, informed by observation friction.
 ```
 
 ---
