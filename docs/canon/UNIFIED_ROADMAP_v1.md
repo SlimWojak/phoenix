@@ -4,10 +4,10 @@
 
 ```yaml
 document: UNIFIED_ROADMAP_v1.md
-version: 1.0
-date: 2026-03-01
-status: CANONICAL
-author: CTO (synthesized from S62 Bridge + Gate 2 + advisor sequencing poll)
+version: 2.0
+date: 2026-03-03
+status: CANONICAL — updated post S63 FIELD_ACTIVATION complete
+author: CTO (synthesized from S62 Bridge + S63 Field Activation + S64 sprint spec)
 audience: Fresh CTO, any advisor, G
 supersedes: Forward-looking sections of SPRINT_ROADMAP.md
 format: M2M_DENSE
@@ -43,8 +43,8 @@ PHOENIX (Governance Economy):
 
 DEXTER (Analytical Economy):
   repo: ~/dexter
-  version: Gate 1 PASS + Gate 2 QUERY LAYER BUILT + Bridge OPERATIONAL
-  branch: main @ 7099707 (tag: s62-gate2-query-layer)
+  version: Gate 1 PASS + Gate 2 BUILT + Bridge OPERATIONAL + S63 FIELD_ACTIVATION COMPLETE
+  branch: main @ 21b48a4 (tag: s63-field-activation)
   tests: 455 (332 bead_field + 79 bridge + 44 query layer)
   genesis: 789 beads (788 CLAIMs + 1 METHODOLOGY_DELTA)
   genesis_merkle_root: 5c4d63f29f667d0b80348e3dfc87204aea6488d034c70dd6ae354a57036e963c
@@ -53,11 +53,14 @@ DEXTER (Analytical Economy):
   integrity: SHA-256 chain + Merkle tree + dual PQC/ECDSA signing
   store: SQLite bi-temporal (DB-level immutability triggers)
   clock: HLC (microsecond, thread-safe, merge-ready for multi-node)
-  freeze: DEC-SUBSTRATE-FREEZE active (expires ~2026-03-24, index carve-out granted)
-  extraction: 789 curated from 1178. Olya v0.3 corrections honored.
-  synthetic_field: 11,387,568 beads, 6 pairs, 5 years, 66GB (validated)
+  freeze: DEC-SUBSTRATE-FREEZE active (expires ~2026-03-24, index carve-out granted, ~21 days remaining)
+  extraction: 789 curated from 1178. Olya v0.4 methodology (VI amendment incorporated).
+  synthetic_field: 11,387,568 FACTs, 0 CLAIMs, 6 pairs, 5 years, 69GB (field-deployed on M3)
   bridge: 7 modules, 191 tests, 7/7 invariants (pull-based notary)
   query_layer: 6 modules, 44 tests (chain walk, verify, temporal, cross-pair)
+  spitfire_audit: 14 findings (0 CRITICAL, 3 HIGH — queued for S64 Track A)
+  model_stack: 5 validated (gemma3:27b, kimi-k2, qwen3:32b, llama3.3:70b, deepseek-r1:32b), 1 disqualified
+  analytical_state: "11.4M FACTs, 0 CLAIMs — analytical void. CLAIM pipeline is #1 priority."
 
 BRIDGE (Inter-System):
   status: S62_BUILT | OPERATIONAL (pull-based notary architecture)
@@ -72,7 +75,7 @@ BRIDGE (Inter-System):
 
 HARDWARE:
   m4_max: OPERATIONAL (Phoenix execution, 64GB)
-  m3_ultra: ARRIVED (deploying this week — 512GB, knowledge substrate + control plane)
+  m3_ultra: FIELD_DEPLOYED (512GB, 69GB field, 455/455 PASS, SSH mesh operational)
   dgx_spark: ARRIVED (standing by — Grace-Blackwell, Dream Cycle compute)
   mac_minis: OPERATIONAL (development, G sovereign sessions)
   cluster_install: 2026-02-27 (network switch, UPS, office wiring)
@@ -136,37 +139,60 @@ S62: BRIDGE_BUILD + GATE_2_QUERIES — COMPLETE ✅ (2026-02-28)
      All 7 bridge invariants PASS. 455 tests green. Zero regressions."
   hardware: M4 Max (both tracks built here)
 
-S63: FIELD_ACTIVATION (reframed from AIR — advisor poll 2026-03-01)
+S63: FIELD_ACTIVATION — COMPLETE ✅ (2026-03-03)
   what: |
-    T1: M3 Ultra migration — 66GB field transfer, production benchmark
-    T2: Observation sprint — 789 CLAIMs against 11.4M synthetic beads
-    T3: Spitfire retarget — read-only analyst on Gate 2 codebase
-    T4: Canon reconciliation — docs reflect S62 shipped reality
-    T5: Proto-AIR header — minimal attestation spec (SPEC ONLY, no code)
+    T1: M3 Ultra migration — 69GB field deployed, 455/455 PASS, SSH mesh
+    T2: Observation report — 11 patterns, field is 100% FACT, analytical void confirmed
+    T3A: Spitfire audit — 14 findings, 0 CRITICAL, container sound
+    T3B: CLAIM_PIPELINE_SPEC v0.1 — Joist-hardened, 6 types, 7 questions resolved
+    T4: Canon reconciliation — 12/12 deltas applied
+    T5: Proto-AIR v0.2 — schema only, 6 INV-AIR-* invariants
   why_reframe: |
     Advisor poll (GPT+OWL+BOAR) unanimous: signing on unmined substrate = premature.
     Field is 66GB idle asset. Prove methodology↔data fit before agent infrastructure.
-    AIR deferred to S64, informed by observation friction.
-  partial_completion:
-    T1_migration: COMPLETE (69GB field deployed, 455/455 PASS, 2026-03-03)
-    T4_deltas: APPLIED (12/12 canon deltas, 2026-03-01)
-    T5_proto_air: PASS (v0.2 — 2 rounds advisor input, 6 invariants, 2026-03-01)
-  exit_gate: |
-    "M3 production benchmark ≤ M4 baseline.
-     5+ observation patterns/failures documented.
-     Spitfire operational on codebase.
-     Canon docs honest.
-     Proto-AIR header drafted."
-  hardware: M3 Ultra (field + benchmark) + M4 Max (dev) + VPS (Spitfire)
+  outcome: |
+    Field deployed on M3. Analytical void confirmed (11.4M FACTs, 0 CLAIMs).
+    Container audited sound. CLAIM pipeline spec ready. AIR header drafted.
+    5 local models validated, 1 disqualified.
+  dexter_commit: 21b48a4 (tag: s63-field-activation)
+  hardware: M3 Ultra (field) + M4 Max (dev) + VPS (Spitfire)
 
-S64: GATE_3_AIR (Agent Integrity Runtime) — was S63
+S64: CLAIM_PIPELINE Phase 1 — NEXT
+  what: |
+    Track A: Container hardening (SPF-005, SPF-006, SPF-012 — 3 HIGH findings)
+    Track B: 6 deterministic CLAIM producers
+      (SWING_POINT, FVG, VI, SESSION_BOUNDARY, ASIA_RANGE, PDH_PDL)
+    Track C: CSO validation (Olya on 6 golden windows)
+  why_now: |
+    11.4M FACTs, 0 CLAIMs = analytical void. The field exists. The miners do not.
+    Phase 1 producers are purely geometric — zero LLM, zero ambiguity.
+    Methodology source: SYNTHETIC_OLYA_METHOD v0.4 (sole reference).
+  exit_gate: |
+    "All 3 tracks PASS. ≥70K CLAIMs produced. CSO validates ≥90%.
+     Hash chain + Merkle pass on heterogeneous FACT+CLAIM field.
+     Zero schema mutations. Zero LLM. Zero hardcoded values."
+  spec: S64_SPRINT_SPEC.md
+  hardware: M4 Max (build) + M3 Ultra (production field)
+
+S65: CLAIM_PIPELINE Phase 2
+  what: |
+    Composite CLAIMs (ORDER_FLOW, MSS, DEALING_RANGE, OTE_ZONE).
+    Tier 1 CLAIMs as inputs → Tier 2 analytical beads.
+    Mirror Test reboot (now meaningful with ≥1000 CLAIMs).
+  prerequisite: Phase 1 CLAIMs proven correct by CSO (S64 Track C PASS)
+  exit_gate: |
+    "Tier 2 CLAIMs produced. Mirror Test informative.
+     CLAIM:FACT compression ratio measurable."
+  hardware: M4 Max + M3 Ultra
+
+S66: GATE_3_AIR (Agent Integrity Runtime) — was S64
   what: |
     PQC+ECDSA dual signing on all agent actions.
     Attestation bundle format ALIGNED with Bridge notary envelope.
     Code hash verification against approved builds.
     Unsigned mutation rejection + security event logging.
-  why_after_field: |
-    Observation sprint produces lived friction that shapes AIR spec.
+  why_after_pipeline: |
+    S63-S65 observation + production friction shapes AIR spec.
     Proto-AIR header from S63.T5 becomes input to full AIR design.
     "Don't build the passport office until the citizens have something to say."
   exit_gate: |
@@ -175,7 +201,7 @@ S64: GATE_3_AIR (Agent Integrity Runtime) — was S63
     "Local verification: hash chain + Merkle proof + signature"
   hardware: M3 Ultra
 
-S65: GATE_4_SWARM_AGENTS — was S64
+S67: GATE_4_SWARM_AGENTS — was S65
   what: |
     Director, Librarian, Researcher, Executor agents operational.
     Event bus (NATS/Kafka on M3 Ultra).
@@ -196,7 +222,7 @@ S65: GATE_4_SWARM_AGENTS — was S64
 # Not before. Hardware waits for the system to need it.
 # ═══════════════════════════════════════════════════════════════
 
-S66+: GATE_5_DREAM_CYCLE_v1 (Counterfactuals)
+S68+: GATE_5_DREAM_CYCLE_v1 (Counterfactuals)
   what: |
     EnvModels trained on historical FACT beads.
     Counterfactual simulation for PROPOSAL_REJECTED beads.
@@ -370,7 +396,7 @@ DEXTER_SURFACE:
     - Zero architectural debt — read-only observer with advisory output
 
   does_not_change:
-    - Gate sequence (S61-S65+)
+    - Gate sequence (S61-S68+)
     - Bridge spec work
     - Dream Cycle architecture (Dexter is complementary, not replacement)
     - Any constitutional invariant
@@ -395,7 +421,7 @@ WEEKEND:
 
 DGX_ACTIVATION:
   trigger: Gate 4 operational + Shadow Field accumulating volume
-  not_before: S64 complete
+  not_before: S67 complete (Gate 4 Swarm Agents)
   first_use: Gate 5 Dream Cycle v1 (EnvModel training + counterfactual simulation)
   note: "Standing by is not waste. It's discipline."
 ```
@@ -405,15 +431,17 @@ DGX_ACTIVATION:
 ## 8. NEXT SESSION
 
 ```yaml
-S62_COMPLETE: |
-  Sprint 62 delivered: Bridge notary (7 modules, 191 tests, 7/7 invariants)
-  + Gate 2 query layer (6 modules, 44 tests) + 11.4M synthetic field.
-  455 total Dexter tests. Zero regressions.
-S63_ACTIVE: |
-  FIELD_ACTIVATION (reframed from AIR — advisor poll 2026-03-01, G approved).
-  T1: M3 Ultra smoke tested (332/332 PASS @ 0.48s), rack install 2026-03-02.
-  T2-T5: Observation sprint, Spitfire retarget, canon reconciliation, Proto-AIR header.
-  AIR deferred to S64, informed by observation friction.
+S63_COMPLETE: |
+  FIELD_ACTIVATION delivered (2026-03-03). M3 field-deployed (69GB, 455/455 PASS).
+  11 observations documented. Spitfire audit: 14 findings, 0 CRITICAL, container sound.
+  CLAIM_PIPELINE_SPEC v0.1 Joist-hardened. Proto-AIR v0.2 header drafted.
+  5 local models validated. Olya method updated to v0.4 (VI amendment).
+S64_NEXT: |
+  CLAIM_PIPELINE Phase 1. Build the miners. Fill the analytical void.
+  Track A: Container hardening (3 HIGH SPF findings).
+  Track B: 6 deterministic CLAIM producers (~70K-300K CLAIMs).
+  Track C: CSO validation (Olya on 6 golden windows).
+  Spec: S64_SPRINT_SPEC.md (Joist-hardened, all 7 questions resolved).
 ```
 
 ---

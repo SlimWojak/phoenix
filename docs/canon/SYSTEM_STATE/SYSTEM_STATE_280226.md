@@ -122,16 +122,22 @@ codemap:
 path: ~/dexter
 purpose: Sovereign evidence refinery — analytical economy engine + bead field
 branch: main
-head: 7099707 "S62: Gate 2 query layer + Bridge notary" (tag: s62-gate2-query-layer)
+head: 21b48a4 "S63: Field Activation complete" (tag: s63-field-activation)
 status: |
-  Gate 1: PASS (substrate frozen)
+  Gate 1: PASS (substrate frozen, DEC-SUBSTRATE-FREEZE ~21 days remaining)
   Gate 2: QUERY LAYER BUILT (chain walk, verify, temporal, cross-pair)
   Bridge: OPERATIONAL (notary pipeline, 7/7 invariants)
-  Synthetic field: 11.4M beads, 66GB, validated
+  S63: FIELD_ACTIVATION COMPLETE (2026-03-03)
+  Synthetic field: 11.4M FACTs, 0 CLAIMs, 69GB, field-deployed on M3
+  Spitfire audit: 14 findings (0 CRITICAL, 3 HIGH queued for S64 Track A)
+  Model stack: 5 validated (gemma3:27b, kimi-k2, qwen3:32b, llama3.3:70b, deepseek-r1:32b)
+  Model disqualified: 1 (qwen2.5-coder:32b — fails structured output)
+  Methodology: SYNTHETIC_OLYA_METHOD v0.4 (VI amendment 2026-02-24)
+  Analytical state: "11.4M FACTs, 0 CLAIMs — analytical void. CLAIM pipeline is S64."
 tests: 455 (332 bead_field + 79 bridge + 44 query layer)
 genesis_beads: 789 (788 CLAIMs + 1 METHODOLOGY_DELTA)
 genesis_merkle_root: 5c4d63f29f667d0b80348e3dfc87204aea6488d034c70dd6ae354a57036e963c
-hardware: Mac Mini (current) → M3 Ultra (production target)
+hardware: M3 Ultra (production — field-deployed) + M4 Max (development)
 
 codemap:
   dirs:

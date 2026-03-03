@@ -2292,22 +2292,83 @@ commits:
 
 ---
 
-## S63: FIELD_ACTIVATION — IN PROGRESS
+## S63: FIELD_ACTIVATION — COMPLETE ✅ (2026-03-03)
 
 ```yaml
-status: IN PROGRESS
+status: COMPLETE
 started: 2026-03-01
+completed: 2026-03-03
 theme: "Use the field before hardening more infrastructure."
 codename: FIELD_ACTIVATION
 reframed_from: GATE_3_AIR (advisor poll 2026-03-01, G approved)
 
-partial_completion:
+deliverables:
   T1_M3_MIGRATION: COMPLETE (2026-03-03)
     - 69GB synthetic field transferred (rsync, 440MB/s LAN)
     - 6/6 databases integrity verified (hash chain + Merkle + signatures)
     - 455/455 tests PASS @ 2.30s on M3 (parity with M4)
     - SSH mesh: M3↔M4 bidirectional passwordless
     - Dexter repo @ 7099707, Python 3.12.12 venv
-  T4_canon: APPLIED (12/12 deltas, 2026-03-01)
-  T5_PROTO_AIR: PASS (v0.2 drafted, Joist Round 1 complete, 2026-03-01)
+    - 5 local models validated (gemma3:27b, kimi-k2, qwen3:32b, llama3.3:70b, deepseek-r1:32b)
+    - 1 disqualified (qwen2.5-coder:32b — fails structured output)
+  T2_OBSERVATION: COMPLETE
+    - 11 patterns documented (OBS-001 through OBS-011)
+    - Field is 100% raw OHLCV FACTs — zero analytical beads
+    - Mirror Test: 0 CLAIMs / 0 FACTs (analytically void — expected)
+    - 66 zero-volume bars identified (OBS-004)
+    - Volume regime shifts mapped across 5-year span
+  T3A_SPITFIRE_AUDIT: COMPLETE
+    - 14 findings (0 CRITICAL, 3 HIGH, 7 MEDIUM, 4 LOW)
+    - Container is sound — integrity primitives proven
+    - 3 HIGH findings queued for S64 Track A (SPF-005, SPF-006, SPF-012)
+  T3B_CLAIM_PIPELINE_SPEC: COMPLETE
+    - v0.1 produced, Joist-hardened to v0.2 (GPT+OWL+BOAR)
+    - 6 Phase 1 CLAIM types specified
+    - 7 open questions resolved
+    - Feeds directly into S64 sprint spec
+  T4_CANON: APPLIED (12/12 deltas, 2026-03-01)
+  T5_PROTO_AIR: PASS (v0.2 drafted, Joist Round 1 complete, 6 INV-AIR-* invariants, 2026-03-01)
+
+new_tests: 0 (docs + migration + observation sprint — no code)
+cumulative_dexter_tests: 455
+dexter_commit: 21b48a4 (tag: s63-field-activation)
+
+decisions:
+  DEC-FIELD-BEFORE-AIR: "Use the field before hardening more infrastructure (advisor unanimous)"
+  DEC-CLAIM-PIPELINE-NEXT: "S64 builds CLAIM producers — the analytical void is the #1 priority"
+```
+
+### Exit Gate
+"M3 field-deployed (455/455 PASS). 11 observations documented. Spitfire audit clean (0 CRITICAL). CLAIM pipeline spec Joist-hardened. Canon reconciled. Proto-AIR header drafted."
+
+---
+
+## REVISED ROADMAP (Post-S63)
+
+```yaml
+S64: CLAIM_PIPELINE Phase 1 — NEXT
+  what: "6 deterministic CLAIM producers (SWING_POINT, FVG, VI, SESSION_BOUNDARY, ASIA_RANGE, PDH_PDL)"
+  tracks:
+    A: Container hardening (SPF-005, SPF-006, SPF-012)
+    B: 6 Phase 1 producers (~70K-300K CLAIMs on EURUSD field)
+    C: CSO validation (Olya on 6 golden windows)
+  exit_gate: "All 3 tracks PASS, ≥70K CLAIMs, CSO validates ≥90%"
+  spec: S64_SPRINT_SPEC.md
+
+S65: CLAIM_PIPELINE Phase 2
+  what: "Composite CLAIMs (ORDER_FLOW, MSS, DEALING_RANGE, OTE_ZONE) + Mirror reboot"
+  prerequisite: Phase 1 CLAIMs proven correct by CSO
+
+S66: GATE_3_AIR (Agent Integrity Runtime) — was S64
+  what: "PQC+ECDSA signing on all agent actions, attestation bundles, code hash verification"
+  prerequisite: Observation friction from S63-S65 shapes spec
+
+S67: GATE_4_SWARM_AGENTS — was S65
+  what: "Director, Librarian, Researcher, Executor agents, event bus, saga orchestration"
+  prerequisite: AIR (agents sign), Bridge (agents consume), Gate 2 (agents query)
+
+S68+: GATE_5_DREAM_CYCLE — was S66+
+  what: "EnvModels, counterfactual simulation, SKILL candidates"
+  prerequisite: Shadow Field volume from Gate 4
+  hardware: DGX_REQUIRED
 ```
