@@ -70,7 +70,7 @@ NODE_DGX — NVIDIA DGX Spark (Grace-Blackwell):
   office: DEXTER_OFFICE
 
 NODE_M3 — Mac Studio M3 Ultra (512GB):
-  status: SMOKE_TESTED (332/332 PASS @ 0.48s, 2026-03-01) — rack install 2026-03-02
+  status: FIELD_DEPLOYED (455/455 PASS, 69GB field, 2026-03-03)
   role: Knowledge Substrate + Control Plane
   office: DEXTER_OFFICE (knowledge + control)
 
@@ -653,6 +653,13 @@ PLANNED: [REFINERY_CONTRACT.yaml, PULSE_OPERATIONS.md]
     T5 Proto-AIR Header v0.2 committed to canon.
     Attestation envelope schema: 5 groups, 6 invariants,
     8 anomaly classes. Bridge-aligned. Schema only, no runtime.
+
+- date: 2026-03-03
+  office: OPUS_CURSOR
+  change: |
+    T1 M3 migration COMPLETE. 69GB synthetic field (6 DBs, 11.4M beads)
+    transferred and integrity verified. 455/455 tests PASS @ 2.30s.
+    SSH mesh M3↔M4 established. NODE_M3 status: FIELD_DEPLOYED.
 
 # --- APPEND BELOW ---
 ```

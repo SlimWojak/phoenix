@@ -2302,7 +2302,12 @@ codename: FIELD_ACTIVATION
 reframed_from: GATE_3_AIR (advisor poll 2026-03-01, G approved)
 
 partial_completion:
-  T1_smoke: PASS (M3 Ultra 332/332 @ 0.48s, 2026-03-01)
+  T1_M3_MIGRATION: COMPLETE (2026-03-03)
+    - 69GB synthetic field transferred (rsync, 440MB/s LAN)
+    - 6/6 databases integrity verified (hash chain + Merkle + signatures)
+    - 455/455 tests PASS @ 2.30s on M3 (parity with M4)
+    - SSH mesh: M3↔M4 bidirectional passwordless
+    - Dexter repo @ 7099707, Python 3.12.12 venv
   T4_canon: APPLIED (12/12 deltas, 2026-03-01)
   T5_PROTO_AIR: PASS (v0.2 drafted, Joist Round 1 complete, 2026-03-01)
 ```

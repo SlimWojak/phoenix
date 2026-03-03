@@ -148,7 +148,7 @@ S63: FIELD_ACTIVATION (reframed from AIR — advisor poll 2026-03-01)
     Field is 66GB idle asset. Prove methodology↔data fit before agent infrastructure.
     AIR deferred to S64, informed by observation friction.
   partial_completion:
-    T1_smoke: PASS (M3 Ultra 332/332 @ 0.48s, 2026-03-01)
+    T1_migration: COMPLETE (69GB field deployed, 455/455 PASS, 2026-03-03)
     T4_deltas: APPLIED (12/12 canon deltas, 2026-03-01)
     T5_proto_air: PASS (v0.2 — 2 rounds advisor input, 6 invariants, 2026-03-01)
   exit_gate: |
