@@ -2,13 +2,14 @@
 
 ```yaml
 document: SYSTEM_MANIFEST
-version: 2.0
-date: 2026-02-28
-status: CANONICAL — updated post S62 BRIDGE_BUILD + GATE_2
+version: 2.2
+date: 2026-03-20
+status: CANONICAL — updated post S64 METHODOLOGY CALIBRATION
 purpose: Single M2M orientation for every Claude instance in the a8ra ecosystem
 update_discipline: Any session making a significant decision appends a MANIFEST DELTA
 owner: G (Sovereign Operator)
-supersedes: SYSTEM_MANIFEST v1.7
+supersedes: SYSTEM_MANIFEST v2.0
+methodology: SYNTHETIC_OLYA_METHOD_vLOCK.yaml (canonical — supersedes v0.4, v0.6)
 ```
 
 ---
@@ -660,6 +661,46 @@ PLANNED: [REFINERY_CONTRACT.yaml, PULSE_OPERATIONS.md]
     T1 M3 migration COMPLETE. 69GB synthetic field (6 DBs, 11.4M beads)
     transferred and integrity verified. 455/455 tests PASS @ 2.30s.
     SSH mesh M3↔M4 established. NODE_M3 status: FIELD_DEPLOYED.
+
+- date: 2026-03-03
+  office: CTO_SYNTHESIS
+  change: |
+    S63 FIELD_ACTIVATION COMPLETE. M3 field-deployed (69GB, 455/455 PASS).
+    11 observations documented. Spitfire audit: 14 findings (0 CRITICAL).
+    CLAIM_PIPELINE_SPEC v0.1 Joist-hardened. Proto-AIR v0.2 header.
+    5 local models validated, 1 disqualified. Olya method updated to v0.4.
+
+- date: 2026-03-19
+  office: CTO_SYNTHESIS
+  change: |
+    v2.2. S64 METHODOLOGY CALIBRATION COMPLETE. 2-week detour from original
+    CLAIM pipeline scope. Gates 1-3 MET. Gate 4 (producer rewrite) is next.
+    v0.4 DEPRECATED → SYNTHETIC_OLYA_METHOD_vLOCK.yaml canonical.
+    13 L1 primitives locked with pseudocode + empirical provenance.
+    STATE_DETECTION_LOGIC_v2.yaml added (HTF phase classifier, v2.4).
+    Native multi-TF detection rule established (all bar-pattern primitives).
+    VI removed entirely. IFVG + BPR added as derived primitives.
+    MSS/BOS unified with direction tag (REVERSAL | CONTINUATION).
+    Reference implementation: detect.py (test oracle for core producers).
+    14 Olya-annotated ground truth trades captured (Sep 2025 – Mar 2026).
+    Autoresearch harness: evaluate.py + sweep.py (27,328-combination sweep).
+    Research Accelerator platform operational (~/research_accelerator).
+    Walk-forward stability PASS (25 weeks, CV 0.08-0.28 on LTF).
+
+- date: 2026-03-20
+  office: OPUS_CURSOR
+  change: |
+    v2.2 cont. Canon update for S64 post-calibration state.
+    SPRINT_ROADMAP v5.0: S64 6-gate structure, S65 revised scope.
+    SYSTEM_STATE_200326.md: 5-node cluster topology from CLUSTER_MANIFEST v1.1.
+    UNIFIED_ROADMAP v3.0: S64/S65/methodology/hardware sections updated.
+    v0.4 and v0.6 methodology files deprecated (4 files across 2 repos).
+    vLOCK + STATE_DETECTION_LOGIC_v2 copied to phoenix-swarm/calibration_bible/.
+    Hardware: 5-node Tailscale mesh (MacBook cockpit, M3 COO, M4 Phoenix,
+    DGX dexter inference, DGX playground sandbox). MCP health layer operational.
+    COO orchestration model on M3 (QMD + Superpowers + Ralph Loop).
+    Sprints: 35 (S28-S44, S46-S60, S62-S63, S64 in progress).
+    Tests: 1887+ Phoenix, 493 Dexter. Methodology: vLOCK (13/13 locked).
 
 # --- APPEND BELOW ---
 ```

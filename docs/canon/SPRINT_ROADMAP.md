@@ -3,12 +3,13 @@
 
 ```yaml
 document: SPRINT_ROADMAP.md
-version: 4.0
-date: 2026-03-01
-status: CANONICAL — updated post S62 BRIDGE_BUILD + GATE_2 + S63 reframe
+version: 5.0
+date: 2026-03-20
+status: CANONICAL — updated post S64 METHODOLOGY CALIBRATION
 brand: a8ra (Phoenix is internal codename — see docs/canon/BRAND_IDENTITY.md)
 format: M2M_DENSE
 audience: Advisors (GPT, GROK, OWL, Opus)
+methodology: SYNTHETIC_OLYA_METHOD_vLOCK.yaml (supersedes v0.4, v0.6)
 ```
 
 ---
@@ -16,8 +17,8 @@ audience: Advisors (GPT, GROK, OWL, Opus)
 ## CURRENT STATE
 
 ```yaml
-current_sprint: S62 COMPLETE — BRIDGE_BUILD + GATE_2 (2026-02-28)
-status: S62_COMPLETE | ZERO_TIER1 | ZERO_TIER2 | HALT_OPERATIONAL | ORACLE_BOOTSTRAPPED | BRIDGE_OPERATIONAL
+current_sprint: S64 — CLAIM_PIPELINE + METHODOLOGY_CALIBRATION (Gates 1-3 MET, Gate 4 NEXT)
+status: S64_GATES_1_3_MET | ZERO_TIER1 | ZERO_TIER2 | HALT_OPERATIONAL | ORACLE_BOOTSTRAPPED | BRIDGE_OPERATIONAL | METHODOLOGY_vLOCK | STATE_DETECTION_v2.4
 s33_p2: BLOCKED (Olya CSO calibration) — CoE model accepted, not required for v0.1
 
 recent_completions:
@@ -50,11 +51,13 @@ recent_completions:
   s59_completion_date: 2026-02-25   # LEASE_WIRE — sovereign gate, write-ahead governance
   s60_completion_date: 2026-02-25   # CEREMONY_AND_HYGIENE — ceremony engine, debt cleanup
   s62_completion_date: 2026-02-28   # BRIDGE_BUILD + GATE_2 — notary pipeline + query layer
+  s63_completion_date: 2026-03-03   # FIELD_ACTIVATION — M3 deployed, Spitfire audit, CLAIM pipeline spec
+  s64_gates_1_3_met: 2026-03-19    # CLAIM_PIPELINE + METHODOLOGY_CALIBRATION (Gates 1-3 MET)
 
-certification: v0.1_SEALED | RIVER_PHASE_1_COMPLETE | WARBOAR_CERTIFIED | LIVE_GATEWAY_VALIDATED | CSO_PRODUCTION_READY | S46_CANONICAL | HUD_INTEGRATED | S44_FOUNDATION_VALIDATED | S47_LEASE_PROVEN | MC_v0.2_LOCKED | BEAD_FIELD_GATE_1 | S51_DRIVESHAFT_DELIVERED | S52_HARDENED | S53_JANK_NUKED | S54_TRUTH_SWEPT | MYPY_CAPITAL_PATH_CLEAN | S55_HALT_WIRED | S56_LOUD_FAILS | S57_ORACLE_BOOTSTRAPPED | S58_HYGIENE | S59_LEASE_WIRE | S60_CEREMONY | S62_BRIDGE_AND_GATE2
+certification: v0.1_SEALED | RIVER_PHASE_1_COMPLETE | WARBOAR_CERTIFIED | LIVE_GATEWAY_VALIDATED | CSO_PRODUCTION_READY | S46_CANONICAL | HUD_INTEGRATED | S44_FOUNDATION_VALIDATED | S47_LEASE_PROVEN | MC_v0.2_LOCKED | BEAD_FIELD_GATE_1 | S51_DRIVESHAFT_DELIVERED | S52_HARDENED | S53_JANK_NUKED | S54_TRUTH_SWEPT | MYPY_CAPITAL_PATH_CLEAN | S55_HALT_WIRED | S56_LOUD_FAILS | S57_ORACLE_BOOTSTRAPPED | S58_HYGIENE | S59_LEASE_WIRE | S60_CEREMONY | S62_BRIDGE_AND_GATE2 | S63_FIELD_ACTIVATION | S64_METHODOLOGY_vLOCK
 cumulative:
-  sprints_complete: 33 (S28-S44, S46-S60, S62)
-  tests_passing: 1887+ Phoenix | 455 Dexter (post-S62)
+  sprints_complete: 35 (S28-S44, S46-S60, S62-S63, S64 in progress)
+  tests_passing: 1887+ Phoenix | 493 Dexter (post-S64 Track A+B)
   chaos_vectors: 273/273 PASS
   invariants_registered: 259 Phoenix + 7 Bridge + 1 DEC-FREEZE-INDEX-CARVEOUT
   bead_types: 17+
@@ -62,6 +65,10 @@ cumulative:
   gate_glossary: 48 gates mapped
   seal_tag: v0.1
   mypy_strict_capital_path: 0 errors (governance/ execution/ cso/)
+  methodology: vLOCK (13 L1 primitives locked, walk-forward validated)
+  state_detection: v2.4 (14/14 phase classification, sweep HOLD_DEFAULTS)
+  ground_truth: 14 Olya-annotated trades (Sep 2025 – Mar 2026)
+  reference_impl: detect.py (test oracle for core producers)
 
 s44_soak_final:
   completed: 2026-02-04
@@ -1931,9 +1938,9 @@ s46_design_locked: 2026-01-31
 s47_completion_date: 2026-02-04
 s48_completion_date: 2026-01-31
 
-current_sprint: S62 COMPLETE — BRIDGE_BUILD + GATE_2 (2026-02-28)
+current_sprint: S64 — CLAIM_PIPELINE + METHODOLOGY_CALIBRATION (Gates 1-3 MET, Gate 4 NEXT)
 
-total_tests: 1887+ Phoenix | 455 Dexter
+total_tests: 1887+ Phoenix | 493 Dexter (post-S64 Track A+B)
 total_bunny_vectors: 273
 total_invariants: 259 Phoenix + 7 Bridge + 1 freeze carve-out
 total_gates_mapped: 48
@@ -2079,7 +2086,7 @@ parallel_systems: |
   - INV-NO-CORE-REWRITES-POST-S44: ACTIVE
 ```
 
-*S28-S44, S46-S60, S62 COMPLETE. v0.1 SEALED. Bridge OPERATIONAL. Gate 2 query layer BUILT. 273 chaos vectors. 259+ invariants. 11.4M synthetic beads validated.*
+*S28-S44, S46-S60, S62-S63 COMPLETE. S64 Gates 1-3 MET. v0.1 SEALED. Bridge OPERATIONAL. Gate 2 query layer BUILT. 273 chaos vectors. 259+ invariants. 11.4M synthetic beads validated. Methodology vLOCK (13/13 primitives locked). State Detection v2.4 validated (14/14 trades).*
 
 ---
 
@@ -2343,21 +2350,69 @@ decisions:
 
 ---
 
-## REVISED ROADMAP (Post-S63)
+## REVISED ROADMAP (Post-S64 Calibration)
 
 ```yaml
-S64: CLAIM_PIPELINE Phase 1 — NEXT
-  what: "6 deterministic CLAIM producers (SWING_POINT, FVG, VI, SESSION_BOUNDARY, ASIA_RANGE, PDH_PDL)"
+S64: CLAIM_PIPELINE Phase 1 + METHODOLOGY CALIBRATION — GATES 1-3 MET
+  status: "Gates 1-3 MET. Gate 4 (producer rewrite to vLOCK) is next action."
+  what: |
+    Original scope: 6 deterministic CLAIM producers.
+    Actual scope expanded: Full methodology rewrite (v0.4 → vLOCK),
+    native multi-TF detection, 13 L1 primitives calibrated,
+    State Detection logic discovered and specified (v2.4),
+    reference implementation (detect.py) built,
+    14 Olya-verified ground truth trades captured,
+    autoresearch harness (evaluate.py + sweep.py) operational.
   tracks:
-    A: Container hardening (SPF-005, SPF-006, SPF-012)
-    B: 6 Phase 1 producers (~70K-300K CLAIMs on EURUSD field)
-    C: CSO validation (Olya on 6 golden windows)
-  exit_gate: "All 3 tracks PASS, ≥70K CLAIMs, CSO validates ≥90%"
-  spec: S64_SPRINT_SPEC.md
+    A: Container hardening (SPF-005, SPF-006, SPF-012) — COMPLETE
+    B: 6 Phase 1 producers (v0.4 definitions) — COMPLETE (superseded by vLOCK)
+    C: CSO validation — triggered methodology recalibration
+    D: Methodology calibration (2-week detour, Mar 5-19) — COMPLETE
+  deliverables:
+    - SYNTHETIC_OLYA_METHOD_vLOCK.yaml (locked L1/L1.5 spec, 13 primitives)
+    - STATE_DETECTION_LOGIC_v2.yaml (HTF phase classifier — EXPANSION/RETRACE/RANGE)
+    - detect.py reference implementation (13 primitives, all TFs, test oracle)
+    - 14 Olya-annotated ground truth trades (Sep 2025 – Mar 2026)
+    - Calibration tool with 29-week EURUSD data (localhost:8787, localhost:8200)
+    - Autoresearch harness (evaluate.py + sweep.py, 27,328-combination parameter sweep)
+    - Research Accelerator platform (~/research_accelerator — self-contained proving ground)
+  exit_gates:
+    gate_1: MET — Track A+B shipped (493 tests)
+    gate_2: MET — Session/reference levels CSO-validated
+    gate_3: MET — vLOCK methodology Olya-locked (13/13 primitives, walk-forward PASS)
+    gate_4: NEXT — vLOCK producers built (core rewrite from detect.py reference impl)
+    gate_5: QUEUE — Shadow field v0.4 vs vLOCK diff
+    gate_6: QUEUE — Olya confirms golden windows on core producers (port verification)
+  key_decisions_locked:
+    - Native per-TF detection (5m FVG = gap across 3 consecutive 5m candles, not 1m overlay)
+    - L1/L1.5/L2 separation enforced by YAML structure
+    - VI removed entirely (IBKR workaround, not real ICT primitive)
+    - MSS/BOS unified with direction tag (REVERSAL | CONTINUATION)
+    - IFVG and BPR added as derived primitives
+    - FVG floor 0.5 pip (confluence-first — context tags filter, not pip threshold)
+    - State Detection: daily swing hierarchy (3 mechanisms, Olya's primary read)
 
-S65: CLAIM_PIPELINE Phase 2
-  what: "Composite CLAIMs (ORDER_FLOW, MSS, DEALING_RANGE, OTE_ZONE) + Mirror reboot"
-  prerequisite: Phase 1 CLAIMs proven correct by CSO
+S65: CLAIM_PIPELINE Phase 2 + STRATEGY ASSEMBLY
+  what: |
+    Composite CLAIMs + HTF detection + State Detection integration.
+    Strategy assembly layer (five-factor checklist as code).
+    L2 Strategy Designer output → strategy specs.
+  includes:
+    - HTF producers (1H, 4H, Daily, Weekly detection)
+    - State Detection integration (EXPANSION/RETRACE/RANGE classifier from v2.4)
+    - Level lifecycle tracking (equal H/L, PWH/PWL — ACTIVE → SWEPT state)
+    - Spatial query predicates (price vs zone/level filtering)
+    - Composite CLAIM generation (MSS + OB + Sweep chains)
+    - Strategy assembly from L2 Strategy Designer output
+    - Cartridge template update to vLOCK primitive names
+    - Setup regime classification (reversal vs continuation) as L3 input to five-factor checklist — signal already carried by MSS break_type tag in L1 output, no new detection required
+  prerequisite: |
+    S64 Gate 4 (core producers matching vLOCK spec).
+    L2 Strategy Designer output (parallel track).
+  note: |
+    Oct 1 2025 trade walkthrough revealed: HTF detection cannot stay in
+    "future phase." Strategy layer requires daily FVG state, 1H equal highs,
+    weekly order flow as inputs. S65 must deliver these.
 
 S66: GATE_3_AIR (Agent Integrity Runtime) — was S64
   what: "PQC+ECDSA signing on all agent actions, attestation bundles, code hash verification"
@@ -2370,5 +2425,5 @@ S67: GATE_4_SWARM_AGENTS — was S65
 S68+: GATE_5_DREAM_CYCLE — was S66+
   what: "EnvModels, counterfactual simulation, SKILL candidates"
   prerequisite: Shadow Field volume from Gate 4
-  hardware: DGX_REQUIRED
+  hardware: DGX_REQUIRED (2x DGX Spark — dexter for production, playground for experiments)
 ```

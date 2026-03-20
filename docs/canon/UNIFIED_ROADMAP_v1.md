@@ -4,13 +4,14 @@
 
 ```yaml
 document: UNIFIED_ROADMAP_v1.md
-version: 2.0
-date: 2026-03-03
-status: CANONICAL — updated post S63 FIELD_ACTIVATION complete
-author: CTO (synthesized from S62 Bridge + S63 Field Activation + S64 sprint spec)
+version: 3.0
+date: 2026-03-20
+status: CANONICAL — updated post S64 METHODOLOGY CALIBRATION (Gates 1-3 MET)
+author: CTO (synthesized from S62-S64 + RA calibration detour)
 audience: Fresh CTO, any advisor, G
 supersedes: Forward-looking sections of SPRINT_ROADMAP.md
 format: M2M_DENSE
+methodology: SYNTHETIC_OLYA_METHOD_vLOCK.yaml (canonical — supersedes v0.4, v0.6)
 ```
 
 ---
@@ -21,8 +22,8 @@ format: M2M_DENSE
 PHOENIX (Governance Economy):
   repo: ~/phoenix
   version: a8ra v0.1 — post-S60 hardened
-  branch: main @ b2c79e2
-  sprints: 32 complete (S28-S44, S46-S60)
+  branch: main @ 3c28211
+  sprints: 35 (S28-S44, S46-S60, S62-S63, S64 in progress)
   tests: 1887+
   invariants: 259 registered
   chaos_vectors: 273
@@ -43,9 +44,9 @@ PHOENIX (Governance Economy):
 
 DEXTER (Analytical Economy):
   repo: ~/dexter
-  version: Gate 1 PASS + Gate 2 BUILT + Bridge OPERATIONAL + S63 FIELD_ACTIVATION COMPLETE
-  branch: main @ 21b48a4 (tag: s63-field-activation)
-  tests: 455 (332 bead_field + 79 bridge + 44 query layer)
+  version: Gate 1 PASS + Gate 2 BUILT + Bridge OPERATIONAL + S64 Track A+B COMPLETE
+  branch: main @ f993d2f (S64 Track C — Plotly overlays for Olya review)
+  tests: 493 (332 bead_field + 79 bridge + 44 query layer + 38 producers)
   genesis: 789 beads (788 CLAIMs + 1 METHODOLOGY_DELTA)
   genesis_merkle_root: 5c4d63f29f667d0b80348e3dfc87204aea6488d034c70dd6ae354a57036e963c
   pqc: ML-DSA-65 Dilithium3 (real, ARM64)
@@ -53,14 +54,16 @@ DEXTER (Analytical Economy):
   integrity: SHA-256 chain + Merkle tree + dual PQC/ECDSA signing
   store: SQLite bi-temporal (DB-level immutability triggers)
   clock: HLC (microsecond, thread-safe, merge-ready for multi-node)
-  freeze: DEC-SUBSTRATE-FREEZE active (expires ~2026-03-24, index carve-out granted, ~21 days remaining)
-  extraction: 789 curated from 1178. Olya v0.4 methodology (VI amendment incorporated).
+  freeze: DEC-SUBSTRATE-FREEZE (expires ~2026-03-24, index carve-out granted)
+  methodology: SYNTHETIC_OLYA_METHOD_vLOCK.yaml (supersedes v0.4 — VI removed, 13 primitives locked)
+  state_detection: STATE_DETECTION_LOGIC_v2.yaml (v2.4 — EXPANSION/RETRACE/RANGE classifier)
   synthetic_field: 11,387,568 FACTs, 0 CLAIMs, 6 pairs, 5 years, 69GB (field-deployed on M3)
   bridge: 7 modules, 191 tests, 7/7 invariants (pull-based notary)
   query_layer: 6 modules, 44 tests (chain walk, verify, temporal, cross-pair)
-  spitfire_audit: 14 findings (0 CRITICAL, 3 HIGH — queued for S64 Track A)
-  model_stack: 5 validated (gemma3:27b, kimi-k2, qwen3:32b, llama3.3:70b, deepseek-r1:32b), 1 disqualified
-  analytical_state: "11.4M FACTs, 0 CLAIMs — analytical void. CLAIM pipeline is #1 priority."
+  spitfire_audit: 14 findings (0 CRITICAL, 3 HIGH — actioned in S64 Track A)
+  reference_impl: "detect.py in ~/research_accelerator — test oracle for core producer rewrite"
+  ground_truth: "14 Olya-annotated trades (Sep 2025 – Mar 2026)"
+  analytical_state: "11.4M FACTs, 0 CLAIMs — producer rewrite to vLOCK spec pending (Gate 4)"
 
 BRIDGE (Inter-System):
   status: S62_BUILT | OPERATIONAL (pull-based notary architecture)
@@ -74,11 +77,14 @@ BRIDGE (Inter-System):
   prerequisite: ALL MET (Phoenix v0.1 shipped, Gate 1 passed, investigations closed)
 
 HARDWARE:
-  m4_max: OPERATIONAL (Phoenix execution, 64GB)
-  m3_ultra: FIELD_DEPLOYED (512GB, 69GB field, 455/455 PASS, SSH mesh operational)
-  dgx_spark: ARRIVED (standing by — Grace-Blackwell, Dream Cycle compute)
-  mac_minis: OPERATIONAL (development, G sovereign sessions)
-  cluster_install: 2026-02-27 (network switch, UPS, office wiring)
+  cockpit: MacBook Pro M3 Max 36GB — operator terminal (Tailscale, ET, Ansible)
+  m4_studio: OPERATIONAL (Phoenix execution, M4 Max 64GB, sprint dev)
+  m3_ultra: COO STATION (512GB, 69GB field, Claude Code + QMD + Superpowers + Ralph Loop)
+  dgx_dexter: OPERATIONAL (DGX Spark GB10 120GB — production inference, S68+)
+  dgx_playground: OPERATIONAL (DGX Spark GB10 120GB — experimental sandbox, Qwen3.5-35B-A3B via vLLM, ACL isolated)
+  mac_mini: OPERATIONAL (Oracle/CSO office, G sovereign sessions)
+  cluster: 5-node Tailscale mesh, MCP health layer on all nodes, Ansible IaC
+  canonical_reference: phoenix-swarm/CLUSTER_MANIFEST.md (v1.1, 2026-03-19)
 ```
 
 ---
@@ -157,32 +163,58 @@ S63: FIELD_ACTIVATION — COMPLETE ✅ (2026-03-03)
   dexter_commit: 21b48a4 (tag: s63-field-activation)
   hardware: M3 Ultra (field) + M4 Max (dev) + VPS (Spitfire)
 
-S64: CLAIM_PIPELINE Phase 1 — NEXT
+S64: CLAIM_PIPELINE Phase 1 + METHODOLOGY CALIBRATION — GATES 1-3 MET
+  status: "Gates 1-3 MET. Gate 4 (producer rewrite to vLOCK) is next action."
   what: |
-    Track A: Container hardening (SPF-005, SPF-006, SPF-012 — 3 HIGH findings)
-    Track B: 6 deterministic CLAIM producers
-      (SWING_POINT, FVG, VI, SESSION_BOUNDARY, ASIA_RANGE, PDH_PDL)
-    Track C: CSO validation (Olya on 6 golden windows)
-  why_now: |
-    11.4M FACTs, 0 CLAIMs = analytical void. The field exists. The miners do not.
-    Phase 1 producers are purely geometric — zero LLM, zero ambiguity.
-    Methodology source: SYNTHETIC_OLYA_METHOD v0.4 (sole reference).
-  exit_gate: |
-    "All 3 tracks PASS. ≥70K CLAIMs produced. CSO validates ≥90%.
-     Hash chain + Merkle pass on heterogeneous FACT+CLAIM field.
-     Zero schema mutations. Zero LLM. Zero hardcoded values."
-  spec: S64_SPRINT_SPEC.md
+    Original scope: 6 deterministic CLAIM producers.
+    Actual scope expanded: Full methodology rewrite (v0.4 → vLOCK),
+    native multi-TF detection, 13 L1 primitives calibrated,
+    State Detection logic discovered and specified (v2.4),
+    reference implementation (detect.py) built,
+    14 Olya-verified ground truth trades captured.
+  tracks:
+    A: Container hardening (SPF-005, SPF-006, SPF-012) — COMPLETE
+    B: 6 Phase 1 producers (v0.4 definitions) — COMPLETE (superseded by vLOCK)
+    C: CSO validation — triggered methodology recalibration
+    D: Methodology calibration (2-week detour, Mar 5-19) — COMPLETE
+  deliverables:
+    - SYNTHETIC_OLYA_METHOD_vLOCK.yaml (locked L1/L1.5 spec, 13 primitives)
+    - STATE_DETECTION_LOGIC_v2.yaml (HTF phase classifier — EXPANSION/RETRACE/RANGE)
+    - detect.py reference implementation (13 primitives, all TFs, test oracle)
+    - 14 Olya-annotated ground truth trades (Sep 2025 – Mar 2026)
+    - Research Accelerator platform (~/research_accelerator)
+    - Autoresearch harness (evaluate.py + sweep.py)
+  exit_gates:
+    gate_1: MET — Track A+B shipped (493 tests)
+    gate_2: MET — Session/reference levels CSO-validated
+    gate_3: MET — vLOCK methodology Olya-locked (walk-forward PASS, 14/14 trades)
+    gate_4: NEXT — vLOCK producers built (port from detect.py reference impl)
+    gate_5: QUEUE — Shadow field v0.4 vs vLOCK diff
+    gate_6: QUEUE — Olya confirms golden windows on core producers (port verification)
   hardware: M4 Max (build) + M3 Ultra (production field)
 
-S65: CLAIM_PIPELINE Phase 2
+S65: CLAIM_PIPELINE Phase 2 + STRATEGY ASSEMBLY
   what: |
-    Composite CLAIMs (ORDER_FLOW, MSS, DEALING_RANGE, OTE_ZONE).
-    Tier 1 CLAIMs as inputs → Tier 2 analytical beads.
-    Mirror Test reboot (now meaningful with ≥1000 CLAIMs).
-  prerequisite: Phase 1 CLAIMs proven correct by CSO (S64 Track C PASS)
+    Composite CLAIMs + HTF detection + State Detection integration.
+    Strategy assembly layer (five-factor checklist as code).
+    L2 Strategy Designer output → strategy specs.
+  includes:
+    - HTF producers (1H, 4H, Daily, Weekly detection)
+    - State Detection integration (EXPANSION/RETRACE/RANGE from v2.4)
+    - Level lifecycle tracking (equal H/L, PWH/PWL — ACTIVE → SWEPT)
+    - Spatial query predicates (price vs zone/level filtering)
+    - Composite CLAIM generation (MSS + OB + Sweep chains)
+    - Strategy assembly from L2 Strategy Designer output
+    - Cartridge template update to vLOCK primitive names
+    - Setup regime classification (reversal vs continuation) as L3 input to five-factor checklist — signal already carried by MSS break_type tag in L1 output, no new detection required
+  prerequisite: S64 Gate 4 (core producers matching vLOCK spec)
+  note: |
+    Oct 1 2025 trade walkthrough revealed: HTF detection cannot stay in
+    "future phase." Strategy layer requires daily FVG state, 1H equal highs,
+    weekly order flow as inputs. S65 must deliver these.
   exit_gate: |
-    "Tier 2 CLAIMs produced. Mirror Test informative.
-     CLAIM:FACT compression ratio measurable."
+    "HTF + LTF producers operational. State Detection integrated.
+     Five-factor checklist computable. Strategy assembly generates SIGNALs."
   hardware: M4 Max + M3 Ultra
 
 S66: GATE_3_AIR (Agent Integrity Runtime) — was S64
@@ -217,9 +249,10 @@ S67: GATE_4_SWARM_AGENTS — was S65
   note: Shadow Field begins accumulating volume here
 
 # ═══════════════════════════════════════════════════════════════
-# DGX ACTIVATION LINE
-# DGX powers on when Gate 4 is producing Shadow Field volume.
-# Not before. Hardware waits for the system to need it.
+# DGX PRODUCTION ACTIVATION LINE
+# DGX playground is operational (Qwen3.5-35B, experiments).
+# DGX dexter (production inference) activates when Gate 4
+# is producing Shadow Field volume. Not before.
 # ═══════════════════════════════════════════════════════════════
 
 S68+: GATE_5_DREAM_CYCLE_v1 (Counterfactuals)
@@ -333,8 +366,15 @@ reference:
   CARTRIDGE_AND_LEASE_DESIGN_v1_0.md: "Governance architecture (LOCKED)"
   DREAM_CYCLE_DESIGN_INTENT_v0_1.md: "Gate 5+ design fence (DO NOT BUILD YET)"
   a8ra_MASTER_PLAN_v0_1.md: "Strategic vision (update DELTA LOG only)"
-  SYNTHETIC_OLYA_METHOD_v0_3.yaml: "ICT methodology reference"
+  SYNTHETIC_OLYA_METHOD_vLOCK.yaml: "ICT methodology — CANONICAL (13 primitives locked)"
+  STATE_DETECTION_LOGIC_v2.yaml: "HTF phase classifier (v2.4 — EXPANSION/RETRACE/RANGE)"
+  CLUSTER_MANIFEST.md: "5-node cluster topology (v1.1)"
   SKILL.md: "Operating patterns, templates, advisor coordination"
+
+deprecated:
+  SYNTHETIC_OLYA_METHOD_v0_3.yaml: "Superseded by vLOCK"
+  SYNTHETIC_OLYA_METHOD_v0_4.yaml: "Superseded by vLOCK (audit trail only)"
+  SYNTHETIC_OLYA_METHOD_v0_6.yaml: "Superseded by vLOCK (audit trail only)"
 
 # ═══════════════════════════════════════════════════════════════
 # RETIRE FROM ADVISOR CONTEXT (keep in repo, not in project knowledge)
@@ -402,28 +442,32 @@ DEXTER_SURFACE:
     - Any constitutional invariant
     - Write authority on any repo
 ```
-## 7. HARDWARE DEPLOYMENT SEQUENCE
+## 7. HARDWARE STATUS
 
 ```yaml
-FRIDAY_2026_02_27:
-  action: Installers wire office (network switch, UPS, cluster space)
-  no_rush: Let them finish. Clean install > fast install.
+CLUSTER_OPERATIONAL: |
+  5-node Tailscale mesh fully wired (2026-03-19).
+  See phoenix-swarm/CLUSTER_MANIFEST.md v1.1 for full topology.
 
-WEEKEND:
-  m3_ultra_deploy:
-    1: Clone dexter repo to M3
-    2: pip install -r bead_field/requirements.txt
-    3: pytest bead_field/tests/ -v (274 tests PASS)
-    4: Copy genesis.db + keys (secure transfer, INV-NO-SECRETS-IN-REPO)
-    5: Verify Genesis Merkle root: 5c4d63f29f667d0b80348e3dfc87204aea6488d034c70dd6ae354a57036e963c
-    6: Bead Field service operational
-  result: Gate 1 OPERATIONAL on production hardware (hours, not weeks)
+NODES:
+  cockpit: MacBook M3 Max — G's terminal (ET aliases, Ansible, Termius mobile)
+  m3_ultra: COO Station — bead field (69GB), Claude Code orchestrator, MCP health
+  m4_studio: Phoenix Node — core dev, sprint execution, test suites
+  dgx_dexter: Inference Node — production DGX Spark, standing by for S68+ Dream Cycle
+  dgx_playground: Sandbox Node — experimental DGX Spark, Qwen3.5-35B-A3B, ACL isolated
 
-DGX_ACTIVATION:
+INFRASTRUCTURE:
+  transport: Eternal Terminal (immortal sessions across all nodes)
+  multiplexer: Zellij (persistent named sessions per node)
+  iac: Ansible playbooks (phoenix-swarm/ansible/)
+  mcp: HTTP health layer port 7700 (all 4 server nodes)
+  coo: QMD 2.0.1 + Superpowers 5.0.2 + Ralph Loop 1.0.0 on M3
+
+DGX_PRODUCTION_ACTIVATION:
   trigger: Gate 4 operational + Shadow Field accumulating volume
   not_before: S67 complete (Gate 4 Swarm Agents)
   first_use: Gate 5 Dream Cycle v1 (EnvModel training + counterfactual simulation)
-  note: "Standing by is not waste. It's discipline."
+  hardware: dgx_dexter (production), dgx_playground (experiments)
 ```
 
 ---
@@ -431,21 +475,33 @@ DGX_ACTIVATION:
 ## 8. NEXT SESSION
 
 ```yaml
-S63_COMPLETE: |
-  FIELD_ACTIVATION delivered (2026-03-03). M3 field-deployed (69GB, 455/455 PASS).
-  11 observations documented. Spitfire audit: 14 findings, 0 CRITICAL, container sound.
-  CLAIM_PIPELINE_SPEC v0.1 Joist-hardened. Proto-AIR v0.2 header drafted.
-  5 local models validated. Olya method updated to v0.4 (VI amendment).
-S64_NEXT: |
-  CLAIM_PIPELINE Phase 1. Build the miners. Fill the analytical void.
-  Track A: Container hardening (3 HIGH SPF findings).
-  Track B: 6 deterministic CLAIM producers (~70K-300K CLAIMs).
-  Track C: CSO validation (Olya on 6 golden windows).
-  Spec: S64_SPRINT_SPEC.md (Joist-hardened, all 7 questions resolved).
+S64_STATUS: |
+  Gates 1-3 MET (2026-03-19). Track A+B shipped (493 tests). Track C triggered
+  a 2-week methodology calibration detour that produced vLOCK (13/13 primitives
+  locked), State Detection v2.4 (14/14 phase classification), detect.py reference
+  implementation, 14 Olya-annotated ground truth trades, and autoresearch harness.
+
+  Methodology is LOCKED. State Detection is VALIDATED. Producer rewrite is de-risked
+  by the reference implementation (detect.py output = expected result for core).
+
+GATE_4_NEXT: |
+  Port vLOCK L1 algorithms from detect.py to core a8ra CLAIM producers.
+  8 core producers + 3 derived (IFVG, BPR, OTE).
+  Native multi-TF: each producer runs per-TF on aggregated bars.
+  Bar aggregation utility (1m → 5m/15m/1H/4H) — prerequisite.
+  TF metadata in CLAIM bead metadata dict.
+  ATR lookback pre-seeding for HTF producers.
+  Verification: producer output matches detect.py enriched detection JSON.
+
+OPEN_ITEMS_CARRIED_FORWARD:
+  - SMT primitive: 2 of 14 trades used DXY divergence as sweep substitute (tolerated)
+  - Level lifecycle tracking: ACTIVE → SWEPT (deferred to S65)
+  - Monthly/Weekly detection: deferred (Daily/4H/1H sufficient for all 14 trades)
+  - Regime validation: 14 trades span 7 months; 5-year data available for future expansion
 ```
 
 ---
 
-*Two economies. One bridge. Seven invariants. The notary holds the line.*
+*Two economies. One bridge. Seven invariants. Thirteen locked primitives. The notary holds the line.*
 
 *OINK OINK.* 🐗🔥
