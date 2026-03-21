@@ -154,17 +154,20 @@ codemap:
 path: ~/dexter
 purpose: Sovereign evidence refinery — analytical economy engine + bead field
 branch: main
-head: f993d2f "S64: Track C — Plotly interactive chart overlays for Olya review"
+head: "(post-Gate 4 — 11 vLOCK producers committed)"
 status: |
   Gate 1: PASS (substrate)
   Gate 2: QUERY LAYER BUILT (chain walk, verify, temporal, cross-pair)
   Bridge: OPERATIONAL (notary pipeline, 7/7 invariants)
   S63: FIELD_ACTIVATION COMPLETE (2026-03-03)
-  S64: Track A+B COMPLETE (493 tests with producers)
+  S64: COMPLETE (all 6 gates sealed 2026-03-20)
+  S65: NEXT
   Synthetic field: 11.4M FACTs, 0 CLAIMs, 69GB, field-deployed on M3
   Methodology: SYNTHETIC_OLYA_METHOD_vLOCK.yaml (supersedes v0.4, v0.6)
-  Analytical state: "11.4M FACTs, 0 CLAIMs — producer rewrite to vLOCK pending (Gate 4)"
-tests: 493 (332 bead_field + 79 bridge + 44 query layer + 38 producers)
+  Analytical state: "11.4M FACTs, 0 CLAIMs — producers operational, S65 will generate CLAIMs on live data"
+  Gate 6 Olya confirmed: 2026-03-20 (14/14 trades PASS, 0 unexpected misses)
+tests: 651 (332 bead_field + 79 bridge + 44 query + 158 producers)
+producers: 11 vLOCK producers (VI retired)
 genesis_beads: 789 (788 CLAIMs + 1 METHODOLOGY_DELTA)
 genesis_merkle_root: 5c4d63f29f667d0b80348e3dfc87204aea6488d034c70dd6ae354a57036e963c
 hardware: M3 Ultra (production — field-deployed) + M4 Max (development)
@@ -336,16 +339,19 @@ key_decisions:
 ## 4. SPRINT STATUS
 
 ```yaml
-current_sprint: S64 — CLAIM_PIPELINE + METHODOLOGY_CALIBRATION
+current_sprint: S64 — COMPLETE (all 6 gates sealed 2026-03-20)
+next_sprint: S65 — STRATEGY_ASSEMBLY
 gate_status:
   gate_1: MET — Track A+B shipped (493 tests)
   gate_2: MET — Session/reference levels CSO-validated
   gate_3: MET — vLOCK methodology Olya-locked (13/13 primitives, walk-forward PASS)
-  gate_4: NEXT — vLOCK producers built (core rewrite from detect.py reference impl)
-  gate_5: QUEUE — Shadow field v0.4 vs vLOCK diff
-  gate_6: QUEUE — Olya confirms golden windows on core producers (port verification)
+  gate_4: SEALED — 11 vLOCK producers built, 158 tests, VI retired, oracle comparison PASS
+  gate_5: SEALED — v0.4 vs vLOCK diff report delivered
+  gate_6: SEALED — 14/14 annotated trades PASS (Olya confirmed 2026-03-20)
+s64_exit_gate: ALL_6_GATES_PASS
+s64_certification: "METHODOLOGY_vLOCK | 11_PRODUCERS | 158_TESTS | VI_RETIRED | STATE_DETECTION_v2.4 | GATE6_OLYA_CONFIRMED"
 
-next_action: "Gate 4 — port vLOCK L1 algorithms from detect.py to core a8ra CLAIM producers"
+next_action: "S65 — River→producer wiring, HTF producers, strategy assembly"
 ```
 
 ---

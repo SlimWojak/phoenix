@@ -4,9 +4,9 @@
 
 ```yaml
 document: UNIFIED_ROADMAP_v1.md
-version: 3.0
+version: 3.1
 date: 2026-03-20
-status: CANONICAL — updated post S64 METHODOLOGY CALIBRATION (Gates 1-3 MET)
+status: CANONICAL — updated post S64 COMPLETE (all 6 gates sealed)
 author: CTO (synthesized from S62-S64 + RA calibration detour)
 audience: Fresh CTO, any advisor, G
 supersedes: Forward-looking sections of SPRINT_ROADMAP.md
@@ -23,7 +23,7 @@ PHOENIX (Governance Economy):
   repo: ~/phoenix
   version: a8ra v0.1 — post-S60 hardened
   branch: main @ 3c28211
-  sprints: 35 (S28-S44, S46-S60, S62-S63, S64 in progress)
+  sprints: 36 (S28-S44, S46-S60, S62-S64)
   tests: 1887+
   invariants: 259 registered
   chaos_vectors: 273
@@ -44,9 +44,9 @@ PHOENIX (Governance Economy):
 
 DEXTER (Analytical Economy):
   repo: ~/dexter
-  version: Gate 1 PASS + Gate 2 BUILT + Bridge OPERATIONAL + S64 Track A+B COMPLETE
-  branch: main @ f993d2f (S64 Track C — Plotly overlays for Olya review)
-  tests: 493 (332 bead_field + 79 bridge + 44 query layer + 38 producers)
+  version: Gate 1 PASS + Gate 2 BUILT + Bridge OPERATIONAL + S64 COMPLETE (all 6 gates)
+  branch: main (post-Gate 4 — 11 vLOCK producers committed)
+  tests: 651 (332 bead_field + 79 bridge + 44 query layer + 158 producers + 38 legacy)
   genesis: 789 beads (788 CLAIMs + 1 METHODOLOGY_DELTA)
   genesis_merkle_root: 5c4d63f29f667d0b80348e3dfc87204aea6488d034c70dd6ae354a57036e963c
   pqc: ML-DSA-65 Dilithium3 (real, ARM64)
@@ -61,9 +61,12 @@ DEXTER (Analytical Economy):
   bridge: 7 modules, 191 tests, 7/7 invariants (pull-based notary)
   query_layer: 6 modules, 44 tests (chain walk, verify, temporal, cross-pair)
   spitfire_audit: 14 findings (0 CRITICAL, 3 HIGH — actioned in S64 Track A)
-  reference_impl: "detect.py in ~/research_accelerator — test oracle for core producer rewrite"
+  reference_impl: "detect.py in ~/research_accelerator — test oracle for core producers"
   ground_truth: "14 Olya-annotated trades (Sep 2025 – Mar 2026)"
-  analytical_state: "11.4M FACTs, 0 CLAIMs — producer rewrite to vLOCK spec pending (Gate 4)"
+  producers: "11 vLOCK CLAIM producers operational (VI retired)"
+  gate6_olya_confirmed: 2026-03-20
+  port_verification: "14/14 trades PASS, 0 unexpected misses"
+  analytical_state: "11.4M FACTs, 0 CLAIMs — producers operational, S65 will generate CLAIMs on live data"
 
 BRIDGE (Inter-System):
   status: S62_BUILT | OPERATIONAL (pull-based notary architecture)
@@ -163,8 +166,8 @@ S63: FIELD_ACTIVATION — COMPLETE ✅ (2026-03-03)
   dexter_commit: 21b48a4 (tag: s63-field-activation)
   hardware: M3 Ultra (field) + M4 Max (dev) + VPS (Spitfire)
 
-S64: CLAIM_PIPELINE Phase 1 + METHODOLOGY CALIBRATION — GATES 1-3 MET
-  status: "Gates 1-3 MET. Gate 4 (producer rewrite to vLOCK) is next action."
+S64: CLAIM_PIPELINE Phase 1 + METHODOLOGY CALIBRATION — COMPLETE ✓ (2026-03-20)
+  status: "All 6 gates sealed. vLOCK methodology operational in core dexter."
   what: |
     Original scope: 6 deterministic CLAIM producers.
     Actual scope expanded: Full methodology rewrite (v0.4 → vLOCK),
@@ -188,30 +191,38 @@ S64: CLAIM_PIPELINE Phase 1 + METHODOLOGY CALIBRATION — GATES 1-3 MET
     gate_1: MET — Track A+B shipped (493 tests)
     gate_2: MET — Session/reference levels CSO-validated
     gate_3: MET — vLOCK methodology Olya-locked (walk-forward PASS, 14/14 trades)
-    gate_4: NEXT — vLOCK producers built (port from detect.py reference impl)
-    gate_5: QUEUE — Shadow field v0.4 vs vLOCK diff
-    gate_6: QUEUE — Olya confirms golden windows on core producers (port verification)
+    gate_4: SEALED — 11 vLOCK producers built, 158 tests, VI retired, oracle comparison PASS
+    gate_5: SEALED — v0.4 vs vLOCK diff report (FVG 5m 337→236, VI 4886→0, 6 new primitives)
+    gate_6: SEALED — 14/14 annotated trades PASS, 0 unexpected misses (Olya confirmed)
   hardware: M4 Max (build) + M3 Ultra (production field)
 
-S65: CLAIM_PIPELINE Phase 2 + STRATEGY ASSEMBLY
+S65: STRATEGY_ASSEMBLY — ACTIVE (NEXT)
+  status: NEXT
+  prerequisite: S64 COMPLETE ✓
   what: |
-    Composite CLAIMs + HTF detection + State Detection integration.
-    Strategy assembly layer (five-factor checklist as code).
-    L2 Strategy Designer output → strategy specs.
+    Detection pipeline wiring + HTF producers + composition layer + strategy assembly.
+    Run in parallel to live trading. Expand ground truth pool.
+    System finds Olya's logic in live IBKR data.
+  tracks:
+    track_A: "Detection Pipeline — River→producer wiring, HTF producers, state detection"
+    track_B: "Composition Layer — level lifecycle, spatial queries, composite CLAIMs"
+    track_C: "Strategy Assembly — five-factor checklist, cartridge update, SIGNAL generation"
   includes:
+    - River→producer wiring (live EURUSD 1m → dexter producers)
     - HTF producers (1H, 4H, Daily, Weekly detection)
     - State Detection integration (EXPANSION/RETRACE/RANGE from v2.4)
     - Level lifecycle tracking (equal H/L, PWH/PWL — ACTIVE → SWEPT)
     - Spatial query predicates (price vs zone/level filtering)
     - Composite CLAIM generation (MSS + OB + Sweep chains)
+    - OTE producer (derived from MSS dealing range)
     - Strategy assembly from L2 Strategy Designer output
     - Cartridge template update to vLOCK primitive names
-    - Setup regime classification (reversal vs continuation) as L3 input to five-factor checklist — signal already carried by MSS break_type tag in L1 output, no new detection required
-  prerequisite: S64 Gate 4 (core producers matching vLOCK spec)
-  note: |
-    Oct 1 2025 trade walkthrough revealed: HTF detection cannot stay in
-    "future phase." Strategy layer requires daily FVG state, 1H equal highs,
-    weekly order flow as inputs. S65 must deliver these.
+  carried_from_s64:
+    - DEC-CE-TOUCHED-WICK-PENDING-OLYA
+    - HTF_MSS_PROPOSED (1H/4H params)
+    - LIQUIDITY_SWEEP_level_pool
+    - MSS_15m_cascade (monitor)
+  first_gate: "HTF detection running on live EURUSD — Olya visual confirm"
   exit_gate: |
     "HTF + LTF producers operational. State Detection integrated.
      Five-factor checklist computable. Strategy assembly generates SIGNALs."

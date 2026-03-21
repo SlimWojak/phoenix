@@ -2,9 +2,9 @@
 
 ```yaml
 document: SYSTEM_MANIFEST
-version: 2.2
+version: 2.3
 date: 2026-03-20
-status: CANONICAL — updated post S64 METHODOLOGY CALIBRATION
+status: CANONICAL — updated post S64 COMPLETE (all 6 gates sealed)
 purpose: Single M2M orientation for every Claude instance in the a8ra ecosystem
 update_discipline: Any session making a significant decision appends a MANIFEST DELTA
 owner: G (Sovereign Operator)
@@ -701,6 +701,19 @@ PLANNED: [REFINERY_CONTRACT.yaml, PULSE_OPERATIONS.md]
     COO orchestration model on M3 (QMD + Superpowers + Ralph Loop).
     Sprints: 35 (S28-S44, S46-S60, S62-S63, S64 in progress).
     Tests: 1887+ Phoenix, 493 Dexter. Methodology: vLOCK (13/13 locked).
+
+- date: 2026-03-20
+  office: OPUS_FACTORY
+  change: |
+    v2.3. S64 COMPLETE — all 6 gates sealed.
+    Gate 4: 11 vLOCK producers built (FVG, SWING, DISPLACEMENT, MSS, ORDER_BLOCK,
+      IFVG, BPR, SESSION_BOUNDARY, ASIA_RANGE, PDH_PDL, LIQUIDITY_SWEEP). VI retired.
+      158 new tests. Oracle comparison PASS on all leaf primitives.
+    Gate 5: v0.4 vs vLOCK diff report — FVG 5m 337→236 (native TF), VI 4886→0 (retired),
+      6 new primitives operational.
+    Gate 6: 14/14 Olya-annotated trades verified. 12/13 MSS chain steps reproduced.
+      0 unexpected misses. Known items: sweep pool incomplete, OTE not standalone producer.
+    Dexter tests: 493→651. Sprints: 35→36. S65 begins (STRATEGY_ASSEMBLY).
 
 # --- APPEND BELOW ---
 ```

@@ -17,8 +17,8 @@ methodology: SYNTHETIC_OLYA_METHOD_vLOCK.yaml (supersedes v0.4, v0.6)
 ## CURRENT STATE
 
 ```yaml
-current_sprint: S64 — CLAIM_PIPELINE + METHODOLOGY_CALIBRATION (Gates 1-3 MET, Gate 4 NEXT)
-status: S64_GATES_1_3_MET | ZERO_TIER1 | ZERO_TIER2 | HALT_OPERATIONAL | ORACLE_BOOTSTRAPPED | BRIDGE_OPERATIONAL | METHODOLOGY_vLOCK | STATE_DETECTION_v2.4
+current_sprint: S65 — STRATEGY_ASSEMBLY (NEXT)
+status: S64_COMPLETE | ZERO_TIER1 | ZERO_TIER2 | HALT_OPERATIONAL | ORACLE_BOOTSTRAPPED | BRIDGE_OPERATIONAL | METHODOLOGY_vLOCK | STATE_DETECTION_v2.4 | 11_PRODUCERS | GATE6_OLYA_CONFIRMED
 s33_p2: BLOCKED (Olya CSO calibration) — CoE model accepted, not required for v0.1
 
 recent_completions:
@@ -53,11 +53,12 @@ recent_completions:
   s62_completion_date: 2026-02-28   # BRIDGE_BUILD + GATE_2 — notary pipeline + query layer
   s63_completion_date: 2026-03-03   # FIELD_ACTIVATION — M3 deployed, Spitfire audit, CLAIM pipeline spec
   s64_gates_1_3_met: 2026-03-19    # CLAIM_PIPELINE + METHODOLOGY_CALIBRATION (Gates 1-3 MET)
+  s64_completion_date: 2026-03-20   # ALL 6 GATES SEALED — vLOCK producers operational, Olya confirmed
 
-certification: v0.1_SEALED | RIVER_PHASE_1_COMPLETE | WARBOAR_CERTIFIED | LIVE_GATEWAY_VALIDATED | CSO_PRODUCTION_READY | S46_CANONICAL | HUD_INTEGRATED | S44_FOUNDATION_VALIDATED | S47_LEASE_PROVEN | MC_v0.2_LOCKED | BEAD_FIELD_GATE_1 | S51_DRIVESHAFT_DELIVERED | S52_HARDENED | S53_JANK_NUKED | S54_TRUTH_SWEPT | MYPY_CAPITAL_PATH_CLEAN | S55_HALT_WIRED | S56_LOUD_FAILS | S57_ORACLE_BOOTSTRAPPED | S58_HYGIENE | S59_LEASE_WIRE | S60_CEREMONY | S62_BRIDGE_AND_GATE2 | S63_FIELD_ACTIVATION | S64_METHODOLOGY_vLOCK
+certification: v0.1_SEALED | RIVER_PHASE_1_COMPLETE | WARBOAR_CERTIFIED | LIVE_GATEWAY_VALIDATED | CSO_PRODUCTION_READY | S46_CANONICAL | HUD_INTEGRATED | S44_FOUNDATION_VALIDATED | S47_LEASE_PROVEN | MC_v0.2_LOCKED | BEAD_FIELD_GATE_1 | S51_DRIVESHAFT_DELIVERED | S52_HARDENED | S53_JANK_NUKED | S54_TRUTH_SWEPT | MYPY_CAPITAL_PATH_CLEAN | S55_HALT_WIRED | S56_LOUD_FAILS | S57_ORACLE_BOOTSTRAPPED | S58_HYGIENE | S59_LEASE_WIRE | S60_CEREMONY | S62_BRIDGE_AND_GATE2 | S63_FIELD_ACTIVATION | S64_METHODOLOGY_vLOCK | S64_COMPLETE
 cumulative:
-  sprints_complete: 35 (S28-S44, S46-S60, S62-S63, S64 in progress)
-  tests_passing: 1887+ Phoenix | 493 Dexter (post-S64 Track A+B)
+  sprints_complete: 36 (S28-S44, S46-S60, S62-S64)
+  tests_passing: 1887+ Phoenix | 651 Dexter (493 + 158 Gate 4)
   chaos_vectors: 273/273 PASS
   invariants_registered: 259 Phoenix + 7 Bridge + 1 DEC-FREEZE-INDEX-CARVEOUT
   bead_types: 17+
@@ -65,9 +66,10 @@ cumulative:
   gate_glossary: 48 gates mapped
   seal_tag: v0.1
   mypy_strict_capital_path: 0 errors (governance/ execution/ cso/)
-  methodology: vLOCK (13 L1 primitives locked, walk-forward validated)
-  state_detection: v2.4 (14/14 phase classification, sweep HOLD_DEFAULTS)
+  methodology: vLOCK (13 L1 primitives, walk-forward validated, Olya confirmed)
   ground_truth: 14 Olya-annotated trades (Sep 2025 – Mar 2026)
+  producers: 11 vLOCK CLAIM producers operational (VI retired)
+  state_detection: v2.4 (14/14 phase classification, HOLD_DEFAULTS)
   reference_impl: detect.py (test oracle for core producers)
 
 s44_soak_final:
@@ -1938,9 +1940,9 @@ s46_design_locked: 2026-01-31
 s47_completion_date: 2026-02-04
 s48_completion_date: 2026-01-31
 
-current_sprint: S64 — CLAIM_PIPELINE + METHODOLOGY_CALIBRATION (Gates 1-3 MET, Gate 4 NEXT)
+current_sprint: S65 — STRATEGY_ASSEMBLY (NEXT)
 
-total_tests: 1887+ Phoenix | 493 Dexter (post-S64 Track A+B)
+total_tests: 1887+ Phoenix | 651 Dexter (493 + 158 Gate 4)
 total_bunny_vectors: 273
 total_invariants: 259 Phoenix + 7 Bridge + 1 freeze carve-out
 total_gates_mapped: 48
@@ -2380,9 +2382,9 @@ S64: CLAIM_PIPELINE Phase 1 + METHODOLOGY CALIBRATION — GATES 1-3 MET
     gate_1: MET — Track A+B shipped (493 tests)
     gate_2: MET — Session/reference levels CSO-validated
     gate_3: MET — vLOCK methodology Olya-locked (13/13 primitives, walk-forward PASS)
-    gate_4: NEXT — vLOCK producers built (core rewrite from detect.py reference impl)
-    gate_5: QUEUE — Shadow field v0.4 vs vLOCK diff
-    gate_6: QUEUE — Olya confirms golden windows on core producers (port verification)
+    gate_4: SEALED — 11 vLOCK producers built, 158 tests, VI retired, oracle comparison PASS
+    gate_5: SEALED — v0.4 vs vLOCK diff report (FVG 5m 337→236, VI 4886→0, 6 new primitives)
+    gate_6: SEALED — 14/14 annotated trades verified (12/13 MSS chain steps reproduced)
   key_decisions_locked:
     - Native per-TF detection (5m FVG = gap across 3 consecutive 5m candles, not 1m overlay)
     - L1/L1.5/L2 separation enforced by YAML structure
@@ -2392,12 +2394,18 @@ S64: CLAIM_PIPELINE Phase 1 + METHODOLOGY CALIBRATION — GATES 1-3 MET
     - FVG floor 0.5 pip (confluence-first — context tags filter, not pip threshold)
     - State Detection: daily swing hierarchy (3 mechanisms, Olya's primary read)
 
-S65: CLAIM_PIPELINE Phase 2 + STRATEGY ASSEMBLY
+S65: STRATEGY_ASSEMBLY
+  status: NEXT
+  prerequisite: S64 COMPLETE ✓
   what: |
-    Composite CLAIMs + HTF detection + State Detection integration.
-    Strategy assembly layer (five-factor checklist as code).
-    L2 Strategy Designer output → strategy specs.
+    Detection pipeline wiring + HTF producers + composition layer + strategy assembly.
+    Three parallel tracks converging on SIGNAL generation.
+  tracks:
+    track_A: "Detection Pipeline — River→producer wiring, HTF producers, state detection"
+    track_B: "Composition Layer — level lifecycle, spatial queries, composite CLAIMs"
+    track_C: "Strategy Assembly — five-factor checklist, cartridge update, SIGNAL generation"
   includes:
+    - River→producer wiring (live EURUSD 1m → dexter producers)
     - HTF producers (1H, 4H, Daily, Weekly detection)
     - State Detection integration (EXPANSION/RETRACE/RANGE classifier from v2.4)
     - Level lifecycle tracking (equal H/L, PWH/PWL — ACTIVE → SWEPT state)
@@ -2405,10 +2413,14 @@ S65: CLAIM_PIPELINE Phase 2 + STRATEGY ASSEMBLY
     - Composite CLAIM generation (MSS + OB + Sweep chains)
     - Strategy assembly from L2 Strategy Designer output
     - Cartridge template update to vLOCK primitive names
-    - Setup regime classification (reversal vs continuation) as L3 input to five-factor checklist — signal already carried by MSS break_type tag in L1 output, no new detection required
-  prerequisite: |
-    S64 Gate 4 (core producers matching vLOCK spec).
-    L2 Strategy Designer output (parallel track).
+    - OTE producer (derived from MSS dealing range)
+    - Sweep level pool completion (promoted swings, HTF EQH/EQL)
+    - Setup regime classification (reversal vs continuation)
+  carried_from_s64:
+    - DEC-CE-TOUCHED-WICK-PENDING-OLYA (S65 Olya session)
+    - HTF_MSS_PROPOSED (1H/4H params not locked)
+    - LIQUIDITY_SWEEP_level_pool (incomplete — needs promoted swings, HTF EQH/EQL)
+    - MSS_15m_cascade (46.7% divergence — monitor in production)
   note: |
     Oct 1 2025 trade walkthrough revealed: HTF detection cannot stay in
     "future phase." Strategy layer requires daily FVG state, 1H equal highs,
