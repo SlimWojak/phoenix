@@ -94,15 +94,20 @@ cso_integration:
 
   gate_requirements:
     - GATE_ASIA_RANGE_VALID
-    - GATE_SWEEP_DETECTED
+    - GATE_LIQUIDITY_SWEEP_DETECTED
     - GATE_SWEEP_EXTENSION_VALID
-    - GATE_RE_ACCEPTANCE
-    - GATE_FVG_VALID
+    - GATE_LTF_PDA_ENGAGED
+    - GATE_FVG_ACTIVE
     - GATE_CANDLE_C_INSIDE
     - GATE_RR_VALID
     - GATE_SESSION_LIMIT
 
-  primitive_set: [FVG, SWEEP, RE_ACCEPTANCE, KZ_TIMING]
+  primitive_set: [FVG, LiquiditySweep, NYWindows]
+  state_detection_required: true
+  permitted_phases: [EXPANSION, RETRACE, RANGE]
+  permitted_directions: [WITH_EXPANSION, COUNTER_ALLOWED, NEUTRAL]
+  authority_timeframes: [1D, 4H, 1H]
+  stale_after_bars: 1
 
 research_hooks:
   hunt_grid_enabled: true

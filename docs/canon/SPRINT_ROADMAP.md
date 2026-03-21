@@ -17,8 +17,8 @@ methodology: SYNTHETIC_OLYA_METHOD_vLOCK.yaml (supersedes v0.4, v0.6)
 ## CURRENT STATE
 
 ```yaml
-current_sprint: S65 — STRATEGY_ASSEMBLY (NEXT)
-status: S64_COMPLETE | ZERO_TIER1 | ZERO_TIER2 | HALT_OPERATIONAL | ORACLE_BOOTSTRAPPED | BRIDGE_OPERATIONAL | METHODOLOGY_vLOCK | STATE_DETECTION_v2.4 | 11_PRODUCERS | GATE6_OLYA_CONFIRMED
+current_sprint: S66 — STATE_CLASSIFIER_TUNING (NEXT)
+status: S65_COMPLETE | ZERO_TIER1 | ZERO_TIER2 | HALT_OPERATIONAL | ORACLE_BOOTSTRAPPED | BRIDGE_OPERATIONAL | METHODOLOGY_vLOCK | STATE_DETECTION_v2.4 | 11_PRODUCERS | GATE6_OLYA_CONFIRMED | FIVE_FACTOR_CHECKLIST | DIAGNOSTIC_SIGNAL | HTF_DISPLACEMENT_FIXED
 s33_p2: BLOCKED (Olya CSO calibration) — CoE model accepted, not required for v0.1
 
 recent_completions:
@@ -54,11 +54,12 @@ recent_completions:
   s63_completion_date: 2026-03-03   # FIELD_ACTIVATION — M3 deployed, Spitfire audit, CLAIM pipeline spec
   s64_gates_1_3_met: 2026-03-19    # CLAIM_PIPELINE + METHODOLOGY_CALIBRATION (Gates 1-3 MET)
   s64_completion_date: 2026-03-20   # ALL 6 GATES SEALED — vLOCK producers operational, Olya confirmed
+  s65_completion_date: 2026-03-21   # STRATEGY_ASSEMBLY — checklist, signals, HTF displacement fix
 
-certification: v0.1_SEALED | RIVER_PHASE_1_COMPLETE | WARBOAR_CERTIFIED | LIVE_GATEWAY_VALIDATED | CSO_PRODUCTION_READY | S46_CANONICAL | HUD_INTEGRATED | S44_FOUNDATION_VALIDATED | S47_LEASE_PROVEN | MC_v0.2_LOCKED | BEAD_FIELD_GATE_1 | S51_DRIVESHAFT_DELIVERED | S52_HARDENED | S53_JANK_NUKED | S54_TRUTH_SWEPT | MYPY_CAPITAL_PATH_CLEAN | S55_HALT_WIRED | S56_LOUD_FAILS | S57_ORACLE_BOOTSTRAPPED | S58_HYGIENE | S59_LEASE_WIRE | S60_CEREMONY | S62_BRIDGE_AND_GATE2 | S63_FIELD_ACTIVATION | S64_METHODOLOGY_vLOCK | S64_COMPLETE
+certification: v0.1_SEALED | RIVER_PHASE_1_COMPLETE | WARBOAR_CERTIFIED | LIVE_GATEWAY_VALIDATED | CSO_PRODUCTION_READY | S46_CANONICAL | HUD_INTEGRATED | S44_FOUNDATION_VALIDATED | S47_LEASE_PROVEN | MC_v0.2_LOCKED | BEAD_FIELD_GATE_1 | S51_DRIVESHAFT_DELIVERED | S52_HARDENED | S53_JANK_NUKED | S54_TRUTH_SWEPT | MYPY_CAPITAL_PATH_CLEAN | S55_HALT_WIRED | S56_LOUD_FAILS | S57_ORACLE_BOOTSTRAPPED | S58_HYGIENE | S59_LEASE_WIRE | S60_CEREMONY | S62_BRIDGE_AND_GATE2 | S63_FIELD_ACTIVATION | S64_METHODOLOGY_vLOCK | S64_COMPLETE | S65_STRATEGY_ASSEMBLY | S65_COMPLETE
 cumulative:
-  sprints_complete: 36 (S28-S44, S46-S60, S62-S64)
-  tests_passing: 1887+ Phoenix | 651 Dexter (493 + 158 Gate 4)
+  sprints_complete: 37 (S28-S44, S46-S60, S62-S65)
+  tests_passing: 1887+ Phoenix | 869 Dexter (651 S64 + 218 S65)
   chaos_vectors: 273/273 PASS
   invariants_registered: 259 Phoenix + 7 Bridge + 1 DEC-FREEZE-INDEX-CARVEOUT
   bead_types: 17+
@@ -2088,7 +2089,7 @@ parallel_systems: |
   - INV-NO-CORE-REWRITES-POST-S44: ACTIVE
 ```
 
-*S28-S44, S46-S60, S62-S63 COMPLETE. S64 Gates 1-3 MET. v0.1 SEALED. Bridge OPERATIONAL. Gate 2 query layer BUILT. 273 chaos vectors. 259+ invariants. 11.4M synthetic beads validated. Methodology vLOCK (13/13 primitives locked). State Detection v2.4 validated (14/14 trades).*
+*S28-S44, S46-S60, S62-S65 COMPLETE. v0.1 SEALED. Bridge OPERATIONAL. Gate 2 query layer BUILT. 273 chaos vectors. 259+ invariants. 11.4M synthetic beads validated. Methodology vLOCK (13/13 primitives locked). State Detection v2.4. Five-factor checklist + DIAGNOSTIC_SIGNAL operational. HTF displacement fixed. 218 S65 tests (869 total dexter).*
 
 ---
 
@@ -2394,39 +2395,64 @@ S64: CLAIM_PIPELINE Phase 1 + METHODOLOGY CALIBRATION — GATES 1-3 MET
     - FVG floor 0.5 pip (confluence-first — context tags filter, not pip threshold)
     - State Detection: daily swing hierarchy (3 mechanisms, Olya's primary read)
 
-S65: STRATEGY_ASSEMBLY
-  status: NEXT
-  prerequisite: S64 COMPLETE ✓
-  what: |
-    Detection pipeline wiring + HTF producers + composition layer + strategy assembly.
-    Three parallel tracks converging on SIGNAL generation.
+S65: STRATEGY_ASSEMBLY — COMPLETE ✅ (2026-03-21)
+  status: COMPLETE
+  completion_date: 2026-03-21
+  dexter_commit: be2a06e
+  tests: 218 new (869 total dexter)
+  theme: "Five-factor checklist, DIAGNOSTIC_SIGNAL, HTF displacement fix"
   tracks:
-    track_A: "Detection Pipeline — River→producer wiring, HTF producers, state detection"
-    track_B: "Composition Layer — level lifecycle, spatial queries, composite CLAIMs"
-    track_C: "Strategy Assembly — five-factor checklist, cartridge update, SIGNAL generation"
-  includes:
-    - River→producer wiring (live EURUSD 1m → dexter producers)
-    - HTF producers (1H, 4H, Daily, Weekly detection)
-    - State Detection integration (EXPANSION/RETRACE/RANGE classifier from v2.4)
-    - Level lifecycle tracking (equal H/L, PWH/PWL — ACTIVE → SWEPT state)
-    - Spatial query predicates (price vs zone/level filtering)
-    - Composite CLAIM generation (MSS + OB + Sweep chains)
-    - Strategy assembly from L2 Strategy Designer output
-    - Cartridge template update to vLOCK primitive names
-    - OTE producer (derived from MSS dealing range)
-    - Sweep level pool completion (promoted swings, HTF EQH/EQL)
-    - Setup regime classification (reversal vs continuation)
-  carried_from_s64:
-    - DEC-CE-TOUCHED-WICK-PENDING-OLYA (S65 Olya session)
-    - HTF_MSS_PROPOSED (1H/4H params not locked)
-    - LIQUIDITY_SWEEP_level_pool (incomplete — needs promoted swings, HTF EQH/EQL)
-    - MSS_15m_cascade (46.7% divergence — monitor in production)
-  note: |
-    Oct 1 2025 trade walkthrough revealed: HTF detection cannot stay in
-    "future phase." Strategy layer requires daily FVG state, 1H equal highs,
-    weekly order flow as inputs. S65 must deliver these.
+    brief_1: "HTF detection pipeline — RiverBarAdapter, HTF producers (1H/4H/1D), state classifier v2.4"
+    brief_2: "Entry model — OTE producer, composite chains (REVERSAL/CONTINUATION), level lifecycle, spatial predicates, MSS dedup"
+    brief_3: "Five-factor checklist (F1-F5), DIAGNOSTIC_SIGNAL bead builder (shadow_mode=true), cartridge YAML updates"
+    htf_fix: "HTF displacement close_location formula inversion + DECISIVE_OVERRIDE path — critical bug fix"
+  deliverables:
+    - Five-factor checklist evaluator (two-pass: HTF context then LTF F1-F5)
+    - DIAGNOSTIC_SIGNAL bead builder with rate limiter (max 3 per 4H window, shadow_mode=true)
+    - OTE producer (Fibonacci 0.618-0.79 zone, kill zone gated)
+    - Composite chain detector (REVERSAL_CHAIN + CONTINUATION_CHAIN with break_type routing)
+    - Level lifecycle tracker (ACTIVE→SWEPT on close-beyond)
+    - 7 spatial predicates (price_in_zone, zone_overlap, nearest_zone, premium/discount)
+    - MSS dedup (3x native TF window, lowest TF wins)
+    - FVG FILLED terminal state (>0.5 pip beyond boundary excluded from PDA)
+    - HTF displacement fix (close_loc inversion + DECISIVE_OVERRIDE from locked_baseline.yaml)
+    - Daily detection export pipeline (scripts/daily_detection_export.py)
+    - 3 Phoenix cartridge YAMLs updated (asia_range_scalp, conditions, methodology_template)
+  gate_verdicts:
+    B3A_checklist: PASS (18 tests)
+    B3B_signals: PASS (shadow_mode verified, rate limiter operational)
+    B3C_trade_alignment: "CONDITIONAL — 4/8 addressable trades produce signal (state classifier bottleneck)"
+    B3D_cartridges: PASS (37/37 Phoenix driveshaft tests)
+    B3E_output: PASS (pipeline runs clean, JSON export with signals)
+  htf_displacement_fix:
+    bug_1: "close_location formula inverted — computed distance from wrong end of bar"
+    bug_2: "no DECISIVE_OVERRIDE path — body>=0.75 + close<=0.10 + range>=pip_floor missing"
+    post_fix: "1H displacement 0→13 (detect.py=9, superset with PROPOSED params)"
+    impact: "State classifier reaches EXPANSION on real data. 8 signals emitted on Mar 15-20."
+  carried_to_s66:
+    - State classifier needs intraday evolution (4/8 addressable — daily snapshot cannot capture real-time structure shifts)
+    - Signal direction filtering (currently emits for all chains, not just matching direction)
+    - PROPOSED HTF params need Olya visual confirmation (close_gate, body_ratio)
+    - Sweep level pool incomplete (SESSION_LIQUIDITY box params, promoted swings, HTF EQH/EQL)
+    - DEC-CE-TOUCHED-WICK-PENDING-OLYA
+    - MSS_15m_cascade (46.7% divergence — monitor)
+  pipeline_evidence:
+    W40_oct: "HTF DISP=14, EXPANSION on Oct 2-3, 36 DIAGNOSTIC_SIGNALs"
+    dec_weeks: "HTF DISP=13, EXPANSION on Dec 8-9, 22 signals"
+    mar_15_20: "HTF DISP=25, EXPANSION on Mar 19, 8 signals"
 
-S66: GATE_3_AIR (Agent Integrity Runtime) — was S64
+S66: STATE_CLASSIFIER_TUNING + GATE_3_AIR
+  status: NEXT
+  what: |
+    Priority 1: State classifier intraday evolution — allow mid-day 4H MSS
+    to update state (currently end-of-day only). Target >=6/8 addressable
+    trades with correct state classification.
+    Priority 2: Signal direction filtering (emit only matching-direction chains).
+    Priority 3: Olya visual confirmation on PROPOSED HTF displacement params.
+    Priority 4: Sweep level pool completion.
+    Also: GATE_3_AIR (Agent Integrity Runtime) — PQC+ECDSA signing.
+
+S67: GATE_4_SWARM_AGENTS — was S65
   what: "PQC+ECDSA signing on all agent actions, attestation bundles, code hash verification"
   prerequisite: Observation friction from S63-S65 shapes spec
 

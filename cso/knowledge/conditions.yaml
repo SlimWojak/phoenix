@@ -255,6 +255,25 @@ composite_gates:
     output: "GRADE_A_SHORT"
     ref: "NEX:L11"
 
+  # vLOCK gate name updates (S65 Brief 3)
+  GATE_LIQUIDITY_SWEEP_DETECTED:
+    id: "GATE-COND-010"
+    name: "Liquidity Sweep Detected"
+    source: "LiquiditySweep CLAIM"
+    note: "Renamed from GATE_SWEEP_DETECTED. Uses vLOCK LiquiditySweep producer."
+
+  GATE_FVG_ACTIVE:
+    id: "GATE-COND-011"
+    name: "FVG Active Gate"
+    source: "FVG CLAIM where state IN [ACTIVE, CE_TOUCHED]"
+    note: "Renamed from GATE_FVG_VALID. FILLED state excluded."
+
+  GATE_LTF_PDA_ENGAGED:
+    id: "GATE-COND-012"
+    name: "LTF PDA Engaged"
+    source: "FVG/IFVG/BPR/OB CLAIM where state != FILLED"
+    note: "Replaces GATE_RE_ACCEPTANCE. Price must interact with PDA zone."
+
   alignment_gate:
     id: "GATE-COND-003"
     name: "Alignment Gate"

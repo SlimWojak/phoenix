@@ -2,9 +2,9 @@
 
 ```yaml
 document: SYSTEM_MANIFEST
-version: 2.3
-date: 2026-03-20
-status: CANONICAL — updated post S64 COMPLETE (all 6 gates sealed)
+version: 2.4
+date: 2026-03-21
+status: CANONICAL — updated post S65 COMPLETE (checklist + signals + HTF displacement fix)
 purpose: Single M2M orientation for every Claude instance in the a8ra ecosystem
 update_discipline: Any session making a significant decision appends a MANIFEST DELTA
 owner: G (Sovereign Operator)
@@ -714,6 +714,22 @@ PLANNED: [REFINERY_CONTRACT.yaml, PULSE_OPERATIONS.md]
     Gate 6: 14/14 Olya-annotated trades verified. 12/13 MSS chain steps reproduced.
       0 unexpected misses. Known items: sweep pool incomplete, OTE not standalone producer.
     Dexter tests: 493→651. Sprints: 35→36. S65 begins (STRATEGY_ASSEMBLY).
+
+  DELTA-22 (2026-03-21): S65 COMPLETE — STRATEGY_ASSEMBLY sealed.
+    Five-factor checklist (F1-F5, two-pass evaluator, 18 tests).
+    DIAGNOSTIC_SIGNAL bead builder (shadow_mode=true, rate limiter max 3 per 4H).
+    HTF displacement critical fix: close_location formula inverted + DECISIVE_OVERRIDE
+    path missing. Post-fix: 1H displacement 0→13 (detect.py=9), state classifier
+    reaches EXPANSION on real data. 8-36 DIAGNOSTIC_SIGNALs per trade week.
+    OTE producer, composite chains (REVERSAL/CONTINUATION routing), level lifecycle,
+    7 spatial predicates, MSS dedup, FVG FILLED terminal state.
+    Pipeline: daily_detection_export.py (River→producers→state→checklist→signals).
+    3 Phoenix cartridge YAMLs updated (vLOCK primitives, gate names).
+    Gate B3C: 4/8 addressable trades produce signal (state classifier bottleneck).
+    Dexter tests: 651→869. Sprints: 36→37.
+    S66 FLAGS: state classifier intraday evolution, signal direction filtering,
+    PROPOSED HTF params need Olya visual confirmation, sweep level pool incomplete.
+    Dexter commit: be2a06e.
 
 # --- APPEND BELOW ---
 ```

@@ -49,10 +49,24 @@ MARKET_STRUCTURE:
     - asia_range_end            # HH:MM
     - asia_range_timezone       # IANA timezone
     - asia_range_max_pips       # Max valid range size
-    - mss_required              # Market Structure Shift needed?
+    - mss_required              # MSS (Market Structure Shift) — unified BOS+MSS
+  primitives:                   # vLOCK primitive set (S65)
+    - SwingPoint                # HH/HL/LL/LH detection
+    - FVG                       # Fair Value Gap (3-candle imbalance)
+    - IFVG                      # Inverse FVG (filled + resumed)
+    - BPR                       # Balanced Price Range (overlapping FVGs)
+    - Displacement              # ATR-quality directional move
+    - MSS                       # Market Structure Shift (unified)
+    - OrderBlock                # OB in MSS displacement wake
+    - LiquiditySweep            # Level sweep with rejection
+    - SessionBoundary           # Asia/London/NY session markers
+    - AsiaRange                 # Asia box high/low
+    - PDH_PDL                   # Previous day high/low
+  retired: [VI]                 # Volume Imbalance — retired in vLOCK
   notes: |
     Session-specific strategies define their range parameters here.
     MSS-based strategies set mss_required: true.
+    All primitives use vLOCK names (S65). VI retired.
 
 # =============================================================================
 # DRAWER 3: PREMIUM_DISCOUNT (formerly "conditions")
@@ -63,7 +77,7 @@ MARKET_STRUCTURE:
 PREMIUM_DISCOUNT:
   description: "Premium/discount evaluation, sweeps, setup conditions"
   example_gates:
-    - sweep_required            # Liquidity sweep needed?
+    - liquidity_sweep_required  # LiquiditySweep CLAIM needed?
     - sweep_extension_min_pips  # Min sweep extension
     - sweep_extension_max_pips  # Max sweep extension
     - sweep_direction           # [high, low] or specific
@@ -84,8 +98,8 @@ ENTRY_MODEL:
   example_gates:
     - fvg_required              # FVG entry needed?
     - fvg_timeframe             # FVG detection timeframe
-    - re_acceptance_required    # Re-acceptance candle needed?
-    - re_acceptance_candle      # Candle type for re-acceptance
+    - ltf_pda_engaged           # LTF PDA interaction (replaces re_acceptance)
+    - ote_zone_check            # OTE retracement zone available?
     - limit_order               # Limit vs market entry
     - entry_type                # fvg_retrace | displacement | ob_touch
   notes: |
