@@ -2441,27 +2441,50 @@ S65: STRATEGY_ASSEMBLY — COMPLETE ✅ (2026-03-21)
     dec_weeks: "HTF DISP=13, EXPANSION on Dec 8-9, 22 signals"
     mar_15_20: "HTF DISP=25, EXPANSION on Mar 19, 8 signals"
 
-S66: STATE_CLASSIFIER_TUNING + GATE_3_AIR
-  status: NEXT
-  what: |
-    Priority 1: State classifier intraday evolution — allow mid-day 4H MSS
-    to update state (currently end-of-day only). Target >=6/8 addressable
-    trades with correct state classification.
-    Priority 2: Signal direction filtering (emit only matching-direction chains).
-    Priority 3: Olya visual confirmation on PROPOSED HTF displacement params.
-    Priority 4: Sweep level pool completion.
-    Also: GATE_3_AIR (Agent Integrity Runtime) — PQC+ECDSA signing.
+S66: STATE_FLAGS + DREAM_CYCLE_V1 + CHANNELS — COMPLETE ✅ (2026-03-22)
+  status: COMPLETE
+  completion_date: 2026-03-22
+  dexter_commits: "f01ee8b (Track A) + b7bef38 (Track C)"
+  tests: 219 new (1088 total dexter)
+  theme: "Intraday state evolution, direction guard, KZ gate v2, Dream Cycle v1, MIRROR, Channels"
+  tracks:
+    track_a: "State snapshots + direction guard + KZ gate v2"
+      deliverables:
+        - "classify_at_time(), classify_day_snapshots(), get_worldstate_at_time() in classifier.py"
+        - "Two-phase kill zone gate: confluence in session, entry in session+30min grace"
+        - "Direction guard (_direction_permitted) in signal_builder.py"
+        - "RANGE permission NEUTRAL→BOTH, F1 bias accepts BOTH"
+        - "peak_window quality tag on DIAGNOSTIC_SIGNAL"
+        - "Pipeline (daily_detection_export.py) produces time-indexed snapshots"
+        - "Regression harness extended with signal evaluation"
+        - "vLOCK amendment: kill_zone_gate_v2 (Olya confirmed 2026-03-22)"
+      regression: "6/8 addressable trades produce DIAGNOSTIC_SIGNAL (was 4/8)"
+    track_c: "Dream Cycle v1 — rejection mining + morning briefing"
+      deliverables:
+        - "dream_cycle/analyzer.py: signal outcomes, skip classification, state review"
+        - "dream_cycle/briefing.py: JSON + Markdown morning briefing"
+        - "scripts/dream_cycle_nightly.py: --date and --date-range batch mode"
+        - "4 days analyzed (Mar 17-20): 15 signals, 7 skips, 5 FALSE_REJECTIONS"
+    track_d: "Channels — @a8ra_COO_bot on M3 (Telegram, round-trip proven)"
+    mirror: "SHIPPED — Olya's live observation surface (localhost:8300)"
+  gate_verdicts:
+    flag_1_snapshots: PASS (WorldState re-evaluates at 1H/4H bar close)
+    flag_2_direction: PASS (wrong-direction signals blocked)
+    kz_gate_v2: PASS (two-phase gate, all 5 amendment scenarios pass)
+    regression: PASS (6/8 target met)
+    dream_cycle: PASS (all 6 gates: analyzer, skip classification, state review, briefing, batch, no regression)
+    no_regression: PASS (1088 passed, 0 failures)
 
-S67: GATE_4_SWARM_AGENTS — was S65
-  what: "PQC+ECDSA signing on all agent actions, attestation bundles, code hash verification"
-  prerequisite: Observation friction from S63-S65 shapes spec
-
-S67: GATE_4_SWARM_AGENTS — was S65
-  what: "Director, Librarian, Researcher, Executor agents, event bus, saga orchestration"
-  prerequisite: AIR (agents sign), Bridge (agents consume), Gate 2 (agents query)
-
-S68+: GATE_5_DREAM_CYCLE — was S66+
-  what: "EnvModels, counterfactual simulation, SKILL candidates"
-  prerequisite: Shadow Field volume from Gate 4
-  hardware: DGX_REQUIRED (2x DGX Spark — dexter for production, playground for experiments)
+# ═══════════════════════════════════════════════════════════════
+# FORWARD SPRINT PLANNING
+# ═══════════════════════════════════════════════════════════════
+# S66 marks the pivot from detection pipeline build to
+# constitutional execution wiring. Forward plan is in:
+#   ~/phoenix/docs/build_docs/DEPLOYMENT_ROADMAP.md (v1.1)
+#
+# Phase 0: Foundations (enrichment fix, GateRegistry)
+# Phase 1: ARS canonical path (predicates, orchestrator, paper lease)
+# Phase 2: Signal escalation adapter (Dexter→Phoenix bridge)
+# Phase 3: Operational hardening (daemons, fleet)
+# ═══════════════════════════════════════════════════════════════
 ```

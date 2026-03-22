@@ -2,9 +2,9 @@
 
 ```yaml
 document: SYSTEM_MANIFEST
-version: 2.4
-date: 2026-03-21
-status: CANONICAL — updated post S65 COMPLETE (checklist + signals + HTF displacement fix)
+version: 2.5
+date: 2026-03-22
+status: CANONICAL — updated post S66 COMPLETE (state snapshots, KZ gate v2, Dream Cycle v1)
 purpose: Single M2M orientation for every Claude instance in the a8ra ecosystem
 update_discipline: Any session making a significant decision appends a MANIFEST DELTA
 owner: G (Sovereign Operator)
@@ -306,14 +306,14 @@ integration_with_bead_field:
 ### 4.2 Dexter (Sovereign Evidence Refinery)
 
 ```yaml
-status: GATE_1_PASS + GATE_2_QUERY_LAYER_BUILT + BRIDGE_OPERATIONAL (2026-02-28)
+status: GATE_1_PASS + GATE_2_BUILT + BRIDGE_OPERATIONAL + S66 COMPLETE (2026-03-22)
 repo: dexter/ (private)
-head: 7099707 (tag: s62-gate2-query-layer)
+head: b7bef38 (post-S66 — state snapshots, KZ gate v2, Dream Cycle v1)
 
 extraction: COMPLETE (789 Genesis beads curated from 1178 extractions, 73 bundles, 363 tests)
 bead_field_spec: v0.3 (OPEN_SOURCE enum added)
 bead_field:
-  tests: 455 (332 bead_field + 79 bridge + 44 query layer)
+  tests: 1088 (332 bead_field + 79 bridge + 44 query + 651 S64 + 218 S65 + 219 S66 — overlapping with prior counts)
   genesis_beads: 789 (curated from 1178 extractions)
   genesis_merkle_root: 5c4d63f29f667d0b80348e3dfc87204aea6488d034c70dd6ae354a57036e963c
   pqc: ML-DSA-65 Dilithium3 (real, ARM64)
@@ -730,6 +730,22 @@ PLANNED: [REFINERY_CONTRACT.yaml, PULSE_OPERATIONS.md]
     S66 FLAGS: state classifier intraday evolution, signal direction filtering,
     PROPOSED HTF params need Olya visual confirmation, sweep level pool incomplete.
     Dexter commit: be2a06e.
+
+  DELTA-23 (2026-03-22): S66 COMPLETE — STATE_FLAGS + DREAM_CYCLE_V1 + CHANNELS.
+    Track A: Time-indexed WorldState snapshots (classify_at_time, 1H/4H boundaries).
+    Direction guard in signal_builder. RANGE permission NEUTRAL→BOTH.
+    Two-phase kill zone gate (confluence in session, entry in session+30min grace).
+    peak_window quality tag. Regression 4/8→6/8 addressable.
+    vLOCK amendment: kill_zone_gate_v2 (Olya confirmed).
+    Track C: Dream Cycle v1 — analyzer (signal outcomes, skip classification,
+    state review), morning briefing (JSON + Markdown), nightly runner.
+    5 FALSE_REJECTIONS found across 4 days (first tuning targets).
+    Track D: Channels — @a8ra_COO_bot on M3 (Telegram round-trip).
+    MIRROR: live observation surface for Olya (localhost:8300).
+    DEPLOYMENT_ROADMAP.md v1.1: canonical build plan for paper trading
+    (Phase 0-3, 9 new invariants, ~5-8 days to first paper trade).
+    Dexter tests: 869→1088. Commits: f01ee8b + b7bef38. Sprints: 37→38.
+    Forward sprint planning defers to DEPLOYMENT_ROADMAP.md.
 
 # --- APPEND BELOW ---
 ```

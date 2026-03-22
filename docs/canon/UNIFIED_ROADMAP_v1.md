@@ -4,9 +4,9 @@
 
 ```yaml
 document: UNIFIED_ROADMAP_v1.md
-version: 3.2
-date: 2026-03-21
-status: CANONICAL — updated post S65 COMPLETE (checklist + signals + HTF fix)
+version: 3.3
+date: 2026-03-22
+status: CANONICAL — updated post S66 COMPLETE (state snapshots, Dream Cycle v1, deployment roadmap)
 author: CTO (synthesized from S62-S64 + RA calibration detour)
 audience: Fresh CTO, any advisor, G
 supersedes: Forward-looking sections of SPRINT_ROADMAP.md
@@ -46,8 +46,8 @@ PHOENIX (Governance Economy):
 DEXTER (Analytical Economy):
   repo: ~/dexter
   version: Gate 1 PASS + Gate 2 BUILT + Bridge OPERATIONAL + S64 COMPLETE (all 6 gates)
-  branch: main @ be2a06e (post-S65 — checklist + signals + HTF fix)
-  tests: 869 (651 S64 + 218 S65: checklist, OTE, composite, spatial, level lifecycle, HTF warmup)
+  branch: main @ b7bef38 (post-S66 — state snapshots, KZ gate v2, Dream Cycle v1)
+  tests: 1088 (651 S64 + 218 S65 + 219 S66: snapshots, direction guard, KZ gate, evaluator)
   genesis: 789 beads (788 CLAIMs + 1 METHODOLOGY_DELTA)
   genesis_merkle_root: 5c4d63f29f667d0b80348e3dfc87204aea6488d034c70dd6ae354a57036e963c
   pqc: ML-DSA-65 Dilithium3 (real, ARM64)
@@ -238,79 +238,53 @@ S65: STRATEGY_ASSEMBLY — COMPLETE ✅ (2026-03-21)
      HTF displacement fixed and verified against detect.py oracle. 218 tests, 0 regressions."
   hardware: M4 Max + M3 Ultra
 
-S66: STATE_CLASSIFIER_TUNING + GATE_3_AIR — NEXT
-  status: NEXT
-  prerequisite: S65 COMPLETE ✓
-  what: |
-    Priority 1: State classifier intraday evolution — allow mid-day 4H MSS to update state.
-    Currently end-of-day snapshot only. Target >=6/8 addressable trades with correct state.
-    Priority 2: Signal direction filtering (emit only chains matching WorldState direction).
-    Priority 3: Olya visual confirmation on PROPOSED HTF displacement params (PROPOSED→LOCKED).
-    Priority 4: Sweep level pool completion (SESSION_LIQUIDITY box, promoted swings, HTF EQH/EQL).
-    Also: GATE_3_AIR (Agent Integrity Runtime) — PQC+ECDSA signing on all agent actions.
-  flags_from_s65:
-    state_classifier: "4/8 addressable trades — classifier sees end-of-day evidence only"
-    direction_mismatch: "trade_011 and trade_014 signals fire in wrong direction"
-    proposed_params: "HTF displacement body_ratio=0.55(1H)/0.60(4H) and close_gate=0.40/0.45 need Olya calibration"
-  exit_gate: |
-    "State classifier produces correct phase for >=6/8 addressable trades.
-     Signals emit only in correct direction. PROPOSED params confirmed or revised."
-  what: |
-    PQC+ECDSA dual signing on all agent actions.
-    Attestation bundle format ALIGNED with Bridge notary envelope.
-    Code hash verification against approved builds.
-    Unsigned mutation rejection + security event logging.
-  why_after_pipeline: |
-    S63-S65 observation + production friction shapes AIR spec.
-    Proto-AIR header from S63.T5 becomes input to full AIR design.
-    "Don't build the passport office until the citizens have something to say."
-  exit_gate: |
-    "Unsigned mutation rejected and logged"
-    "Any bead inspectable with full attestation bundle"
-    "Local verification: hash chain + Merkle proof + signature"
-  hardware: M3 Ultra
-
-S67: GATE_4_SWARM_AGENTS — was S66
-  what: |
-    Director, Librarian, Researcher, Executor agents operational.
-    Event bus (NATS/Kafka on M3 Ultra).
-    Saga orchestration for proposal lifecycle.
-    Commitment Threshold enforced in agent contracts.
-  prerequisites: AIR (agents sign), Bridge (agents consume cross-system data),
-                 Gate 2 (agents query the field)
-  exit_gate: |
-    "FACT → CLAIM → SIGNAL → PROPOSAL lifecycle completes autonomously"
-    "Rejections produce full PROPOSAL_REJECTED beads (Shadow Field populated)"
-    "Agent failure → graceful degradation + alert (no orphan state)"
-  hardware: M3 Ultra (orchestration) + M4 Max (Phoenix execution)
-  note: Shadow Field begins accumulating volume here
+S66: STATE_FLAGS + DREAM_CYCLE_V1 + CHANNELS — COMPLETE ✅ (2026-03-22)
+  status: COMPLETE
+  dexter_commits: "f01ee8b (Track A) + b7bef38 (Track C)"
+  tests: "1088 dexter (was 869)"
+  tracks:
+    track_a: "State snapshots + direction guard + KZ gate v2 (6/8 regression)"
+    track_c: "Dream Cycle v1 — rejection mining + morning briefing"
+    track_d: "Channels — @a8ra_COO_bot on M3, Telegram round-trip proven"
+    mirror: "SHIPPED — Olya's live observation surface (localhost:8300)"
+    vlock_amendment: "kill_zone_gate_v2 (Olya confirmed — two-phase session + grace window)"
+  key_deliverables:
+    - "Time-indexed WorldState snapshots (classify_at_time, 1H/4H boundaries)"
+    - "Direction guard in signal_builder.py + BOTH permission for RANGE"
+    - "Two-phase kill zone gate (confluence in session, entry in session+grace)"
+    - "peak_window quality tag on DIAGNOSTIC_SIGNAL"
+    - "Dream Cycle v1 analyzer (signal outcomes, skip classification, state review)"
+    - "Morning briefing generator (JSON + Markdown)"
+    - "5 FALSE_REJECTIONS found across 4 days — first tuning targets identified"
+    - "DEPLOYMENT_ROADMAP.md v1.1 — canonical build plan for paper trading"
+  regression: "6/8 addressable trades produce DIAGNOSTIC_SIGNAL (was 4/8 in S65)"
 
 # ═══════════════════════════════════════════════════════════════
-# DGX PRODUCTION ACTIVATION LINE
-# DGX playground is operational (Qwen3.5-35B, experiments).
-# DGX dexter (production inference) activates when Gate 4
-# is producing Shadow Field volume. Not before.
+# FORWARD PLAN: DEPLOYMENT_ROADMAP.md
+# ═══════════════════════════════════════════════════════════════
+#
+# S66 marks the pivot from "build detection pipeline" to
+# "wire detection into constitutional execution."
+#
+# All forward sprint planning (Phase 0-3) is in:
+#   ~/phoenix/docs/build_docs/DEPLOYMENT_ROADMAP.md (v1.1)
+#
+# Phase 0: FOUNDATIONS (enrichment fix, GateRegistry, ghost canon)
+# Phase 1: ARS THROUGH CONSTITUTIONAL PATH (predicates, orchestrator, smoke test)
+# Phase 2: SIGNAL ESCALATION ADAPTER (Dexter→Phoenix, HTF cartridge, graduation)
+# Phase 3: OPERATIONAL HARDENING (daemons, fleet, monitoring)
+#
+# 9 new invariants registered in the deployment roadmap.
+# Total to paper trading: ~5-8 days of Opus build time.
 # ═══════════════════════════════════════════════════════════════
 
-S68+: GATE_5_DREAM_CYCLE_v1 (Counterfactuals)
-  what: |
-    EnvModels trained on historical FACT beads.
-    Counterfactual simulation for PROPOSAL_REJECTED beads.
-    Leakage metrics (PC, CI, IDS) computed.
-    SKILL candidate beads generated from failure trajectories.
-  prerequisite: Sufficient Shadow Field volume (Gate 4 producing rejections)
-  exit_gate: |
-    "Pick any PROPOSAL_REJECTED → counterfactual replay + failure analysis"
-    "SKILL candidates generated and linked to source rejections"
-  hardware: DGX_REQUIRED (training + simulation)
-
-FUTURE: GATE_6_DREAM_CYCLE_v2 (GALILEO + SkillRL)
-  what: Adversarial EnvModel, GAN synthetic regimes, SkillRL pipeline
-  hardware: DGX_HEAVY
-
-FUTURE: GATE_7_SOVEREIGN_READINESS
-  what: HSM, daily ledger anchoring, DR, incident response, full audit
-  hardware: ALL_NODES
+FUTURE: GATE_3_AIR + GATE_4_SWARM_AGENTS + GATE_5_DREAM_CYCLE (DGX)
+  note: |
+    These remain the long-horizon gates from the original bead field plan.
+    They are NOT blocking paper trading (DEPLOYMENT_ROADMAP Phase 0-2 handles that).
+    AIR, swarm agents, and DGX Dream Cycle activate when production Shadow Field
+    has accumulated sufficient volume from the constitutional execution path.
+  hardware: DGX_REQUIRED for Gate 5+
 ```
 
 ---
@@ -390,7 +364,8 @@ QUALITY:
 # ═══════════════════════════════════════════════════════════════
 
 orientation:
-  UNIFIED_ROADMAP_v1.md: "THIS FILE — what's next and why"
+  UNIFIED_ROADMAP_v1.md: "THIS FILE — system state + forward direction"
+  DEPLOYMENT_ROADMAP.md: "FORWARD PLAN — phased build plan for paper trading (Phase 0-3)"
   a8ra_SYSTEM_MANIFEST_v1_0.md: "System topology, cross-system invariants, component status"
   SPRINT_ROADMAP.md: "Historical sprint record + cumulative metrics"
 
@@ -509,41 +484,45 @@ DGX_PRODUCTION_ACTIVATION:
 
 ---
 
-## 8. NEXT SESSION
+## 8. CURRENT STATE + FORWARD PLAN
 
 ```yaml
-S65_STATUS: |
-  COMPLETE (2026-03-21). Five-factor checklist + DIAGNOSTIC_SIGNAL + HTF displacement fix.
-  218 new tests (869 total dexter). Pipeline runs end-to-end on River data.
-  Critical bug fixed: HTF displacement close_location formula was inverted + missing
-  DECISIVE_OVERRIDE path. Post-fix: 1H displacement 0→13, state classifier reaches
-  EXPANSION, 8-36 DIAGNOSTIC_SIGNALs per trade week.
+S66_STATUS: |
+  COMPLETE (2026-03-22). All S65 flags resolved:
+  - State classifier: time-indexed snapshots at 1H/4H boundaries (Flag 1)
+  - Direction guard: signal_builder blocks wrong-direction signals (Flag 2)
+  - KZ gate v2: two-phase (confluence in session, entry in session+30min grace)
+  - Dream Cycle v1: morning briefing with rejection mining (5 FALSE_REJECTIONs found)
+  - MIRROR: live observation surface for Olya
+  - Channels: @a8ra_COO_bot operational on M3
+  Regression: 6/8 addressable trades → TARGET MET (was 4/8)
+  Tests: 1088 dexter (was 869). Commits: f01ee8b + b7bef38.
 
-  Gate B3C: 4/8 addressable trades produce signal. Bottleneck is state classifier
-  (daily snapshot, cannot see intraday structure shifts), NOT the checklist engine.
+FORWARD_PLAN: |
+  DEPLOYMENT_ROADMAP.md v1.1 is the canonical forward plan.
+  Location: ~/phoenix/docs/build_docs/DEPLOYMENT_ROADMAP.md
 
-S66_NEXT: |
-  Priority 1: State classifier intraday evolution.
-    Currently classify_day() uses end-of-day HTF CLAIMs. Olya identifies structure
-    shifts mid-day (e.g., 4H MSS fires at 09:00, but classifier only evaluates at
-    day close). Target: >=6/8 addressable trades with correct state.
+  Phase 0: Foundations (1-2 days) — enrichment import fix, GateRegistry, MarketState completion
+  Phase 1: ARS through constitutional path (2-3 days) — predicates, orchestrator, paper lease
+  Phase 2: Signal escalation adapter (2-3 days) — Dexter→Phoenix bridge, HTF cartridge
+  Phase 3: Operational hardening (ongoing) — daemons, fleet deployment, monitoring
 
-  Priority 2: Signal direction filtering.
-    DIAGNOSTIC_SIGNAL currently emits for ALL chain CLAIMs regardless of direction.
-    trade_014 (SHORT) gets bullish signal. Must filter to WorldState daily_direction.
+  First paper trade: end of Phase 1 (ARS shadow mode through constitutional path)
+  First Dexter signal trade: end of Phase 2 (HTF Directional through escalation adapter)
+  Total to paper trading: ~5-8 days of Opus build time
 
-  Priority 3: Olya visual confirmation on PROPOSED HTF displacement params.
-    1H close_gate=0.40, body_ratio=0.55 are PROPOSED. Olya needs to review
-    displacement chart on RA calibration tool (localhost:8787/displacement.html).
-
-  Priority 4: Sweep level pool completion.
-    SESSION_LIQUIDITY box params + promoted swings + HTF EQH/EQL.
+PARALLEL_WORK:
+  olya: "observes MIRROR dashboard Monday, trades live, annotates"
+  dream_cycle: "runs nightly on detection output — morning briefing for G + Olya"
+  channels: "@a8ra_COO_bot on M3 for coordination"
+  calibration: "Olya visual sessions on PROPOSED HTF params (pending)"
 
 OPEN_ITEMS_CARRIED_FORWARD:
   - SMT primitive: 2 of 14 trades used DXY divergence as sweep substitute (tolerated)
   - DEC-CE-TOUCHED-WICK-PENDING-OLYA (wick vs body CE touch)
   - MSS_15m_cascade (46.7% divergence — monitor in production)
-  - Monthly/Weekly detection: deferred (Daily/4H/1H sufficient for all 14 trades)
+  - PROPOSED HTF params: Olya visual confirmation still pending
+  - Sweep level pool: SESSION_LIQUIDITY box, promoted swings, HTF EQH/EQL (Flag 4 scope)
 ```
 
 ---
