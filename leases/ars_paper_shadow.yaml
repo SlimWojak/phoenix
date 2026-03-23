@@ -1,0 +1,44 @@
+# ARS Paper Trading Lease — DEPLOY.P1.4
+# shadow_mode: true (initial — requires graduation ceremony to lift)
+# INV-PERISH-BY-DEFAULT: expires after 7 days, no auto-renew
+
+lease_id: LEASE-ARS-PAPER-001
+version: "1.0.0"
+created_by: G
+strategy_ref: ASIA_RANGE_SCALP_v2.0.0
+status: DRAFT
+
+mode:
+  shadow: true
+  paper: true
+  live: false
+
+bounds:
+  per_trade_risk_pct: 1.0
+  max_trades_per_session: 1
+  max_daily_trades: 1
+  max_daily_loss_pct: 1.0
+  allowed_pairs: [EURUSD]
+  allowed_sessions: [asia_sweep_window]
+
+duration:
+  days: 7
+  renewal: CEREMONY_REQUIRED
+  expiry_behavior: EXPIRE_CLOSED
+
+governance:
+  halt_integration: true
+  t2_required_for_live: true
+  shadow_graduation:
+    min_shadow_days: 5
+    min_shadow_signals: 3
+    requires_cso_signoff: true
+    requires_g_approval: true
+    requires_dream_cycle_summary: true
+
+invariants:
+  - INV-PERISH-BY-DEFAULT
+  - INV-SHADOW-MODE-RESPECTED
+  - INV-SHADOW-GRADUATION-ONCE
+  - INV-HALT-OVERRIDES-LEASE
+  - INV-SOVEREIGN-1

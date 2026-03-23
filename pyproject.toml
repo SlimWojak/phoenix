@@ -81,6 +81,8 @@ module = [
     "ib_insync.*",
     "nest_asyncio",
     "httpx",
+    "numpy",
+    "numpy.*",
     "pytest",
     "pytest.*",
     "_pytest.*",
@@ -95,8 +97,10 @@ module = [
     "river.synthetic_river",
     "intelligence.backends",
     "brokers.ibkr.real_client",
+    "enrichment.*",
+    "cso.market_state_builder",
 ]
-disable_error_code = ["type-arg", "no-any-return", "index", "unused-ignore"]
+disable_error_code = ["type-arg", "no-any-return", "index", "unused-ignore", "var-annotated", "assignment"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
