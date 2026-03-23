@@ -12,6 +12,7 @@ Invariants:
 
 from __future__ import annotations
 
+import json
 from datetime import datetime
 from pathlib import Path
 from zoneinfo import ZoneInfo
@@ -66,6 +67,17 @@ class RiverReader:
             raise ValueError(f"Invalid timeframe: {timeframe}. Valid: {VALID_TIMEFRAMES}")
 
         raw = self._read_parquet(pair, start, end)
+
+        staging = self._read_staging(pair, start, end)
+        if not staging.empty:
+            if raw.empty:
+                raw = staging
+            else:
+                raw = pd.concat([raw, staging], ignore_index=True)
+                raw = raw.drop_duplicates(subset=["timestamp"], keep="first")
+                raw = raw.sort_values("timestamp").reset_index(drop=True)
+            logger.debug("staging_merged", staging_bars=len(staging), total=len(raw))
+
         if raw.empty:
             return self._empty_materialized()
 
@@ -129,7 +141,7 @@ class RiverReader:
         glob = str(self._root / pair / "**" / "*.parquet")
         con = duckdb.connect()
         try:
-            result = con.execute(f"SELECT count(*) FROM read_parquet('{glob}')").fetchone()
+            result = con.execute(f"SELECT count(*) FROM read_parquet('{glob}')").fetchone()  # noqa: S608
             return result[0] if result else 0
         finally:
             con.close()
@@ -140,7 +152,7 @@ class RiverReader:
         con = duckdb.connect()
         try:
             result = con.execute(
-                f"SELECT min(timestamp), max(timestamp) FROM read_parquet('{glob}')"
+                f"SELECT min(timestamp), max(timestamp) FROM read_parquet('{glob}')"  # noqa: S608
             ).fetchone()
             if result and result[0] is not None:
                 first = pd.Timestamp(result[0])
@@ -183,7 +195,7 @@ class RiverReader:
                 params.append(ts.tz_localize("UTC") if ts.tzinfo is None else ts)
 
             where = f" WHERE {' AND '.join(clauses)}" if clauses else ""
-            query = f"SELECT * FROM read_parquet('{glob}'){where} ORDER BY timestamp"
+            query = f"SELECT * FROM read_parquet('{glob}'){where} ORDER BY timestamp"  # noqa: S608
 
             df = con.execute(query, params).fetchdf()
             if not df.empty:
@@ -199,6 +211,69 @@ class RiverReader:
             return df
         finally:
             con.close()
+
+    # ------------------------------------------------------------------
+    # Staging JSONL reader (live intraday bars)
+    # ------------------------------------------------------------------
+
+    def _read_staging(
+        self,
+        pair: str,
+        start: datetime | pd.Timestamp | None,
+        end: datetime | pd.Timestamp | None,
+    ) -> pd.DataFrame:
+        """Read bars from staging JSONL files (today's live data).
+
+        Staging JSONL is written by RiverStreamer before consolidation
+        into daily parquet. Each line: {timestamp, open, high, low, close,
+        volume, source, knowledge_time}.
+        """
+        staging_dir = self._root / pair / ".staging"
+        if not staging_dir.exists():
+            return pd.DataFrame()
+
+        rows: list[dict] = []
+        for jsonl_path in sorted(staging_dir.glob("*.jsonl")):
+            try:
+                with open(jsonl_path) as f:
+                    for line in f:
+                        line = line.strip()
+                        if not line:
+                            continue
+                        try:
+                            row = json.loads(line)
+                        except (ValueError, json.JSONDecodeError):
+                            continue
+                        rows.append(row)
+            except OSError:
+                continue
+
+        if not rows:
+            return pd.DataFrame()
+
+        df = pd.DataFrame(rows)
+
+        if "timestamp" not in df.columns:
+            return pd.DataFrame()
+
+        df["timestamp"] = pd.to_datetime(df["timestamp"], utc=True)
+        if "knowledge_time" in df.columns:
+            df["knowledge_time"] = pd.to_datetime(df["knowledge_time"], utc=True)
+        if "bar_hash" not in df.columns:
+            df["bar_hash"] = ""
+
+        if start is not None:
+            ts = pd.Timestamp(start)
+            if ts.tzinfo is None:
+                ts = ts.tz_localize("UTC")
+            df = df[df["timestamp"] >= ts]
+        if end is not None:
+            ts = pd.Timestamp(end)
+            if ts.tzinfo is None:
+                ts = ts.tz_localize("UTC")
+            df = df[df["timestamp"] < ts]
+
+        return df.sort_values("timestamp").reset_index(drop=True)
 
     # ------------------------------------------------------------------
     # Hash verification (probabilistic corruption detection)
