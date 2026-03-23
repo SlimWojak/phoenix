@@ -116,6 +116,7 @@ class BarProcessingResult:
 class OrchestratorConfig:
     pair: str = "EURUSD"
     shadow_mode: bool = True
+    is_shadow_fn: Any | None = None
     cartridge_hash: str = "ARS_v2.0.0"
     halt_check_fn: Any | None = None
     account_equity: float = 10000.0
@@ -127,6 +128,7 @@ class StrategyOrchestrator:
     Constitutional strategy execution chain.
 
     INV-NO-PARALLEL-EVAL-PATHS: All evaluation through GateRegistry only.
+    INV-SHADOW-MODE-RESPECTED: shadow check via callable (lease or config).
     """
 
     def __init__(self, config: OrchestratorConfig | None = None) -> None:
@@ -136,6 +138,12 @@ class StrategyOrchestrator:
         self._intent_factory = IntentFactory(source_module="ARS")
         self._session_tracker = SessionTracker()
         self._observations: list[ShadowObservation] = []
+
+    def _is_shadow(self) -> bool:
+        """Check shadow mode via callable (lease) or config fallback."""
+        if self._config.is_shadow_fn is not None:
+            return bool(self._config.is_shadow_fn())
+        return self._config.shadow_mode
 
     @property
     def shadow_observations(self) -> list[ShadowObservation]:
@@ -295,7 +303,7 @@ class StrategyOrchestrator:
                     error=f"halt check failed: {e}",
                 )
 
-        if self._config.shadow_mode:
+        if self._is_shadow():
             obs = ShadowObservation(
                 timestamp=now,
                 pair=pair,

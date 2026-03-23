@@ -1,0 +1,72 @@
+# HTF Directional — Staged Cartridge (DEPLOY.P2.2)
+# Status: SCAFFOLD — awaiting Olya calibration from shadow observation
+# Gate predicates are STUBS. Final definitions shaped by Olya's review.
+
+identity:
+  name: HTF_DIRECTIONAL
+  version: "0.1.0"
+  author: CTO
+  description: |
+    HTF Directional strategy — trend-following on higher timeframe structure.
+    Uses Dexter DIAGNOSTIC_SIGNAL WorldState for bias + structure assessment.
+    SCAFFOLD ONLY — predicates await Olya calibration.
+  created_at: "2026-03-23T00:00:00Z"
+  methodology_hash: null
+
+scope:
+  pairs: [EURUSD]
+  regime_affinity: TRENDING
+
+risk_defaults:
+  per_trade_pct: 1.0
+  min_rr: 2.0
+  max_trades_per_session: 2
+  max_daily_trades: 3
+
+cso_integration:
+  gate_requirements:
+    - GATE_HTF_EXPANSION_OR_RETRACE
+    - GATE_LIQUIDITY_SWEPT_IN_KZ
+    - GATE_PDA_ENGAGED
+    - GATE_MSS_CONFIRMED
+    - GATE_TARGET_REACHABLE
+    - GATE_RR_VALID
+
+  drawer_config:
+    CONTEXT:
+      htf_bias_required: true
+      requires_worldstate: true
+
+    MONITORING:
+      kill_zone_sweep_required: true
+
+    SETUP:
+      pda_in_ote_zone: true
+      displacement_confirmed: true
+
+    EXECUTION:
+      mss_required: true
+      entry_type: limit_at_pda
+
+    MANAGEMENT:
+      target_reachable: true
+      min_rr: 2.0
+
+  primitive_set: [FVG, MSS, Displacement, OrderBlock, IFVG, BPR, OTE]
+  state_detection_required: true
+  permitted_phases: [EXPANSION, RETRACE]
+  permitted_directions: [WITH_EXPANSION, COUNTER_ALLOWED]
+  authority_timeframes: [1D, 4H, 1H]
+  stale_after_bars: 1
+
+constitutional:
+  invariants_required:
+    - INV-NO-UNSOLICITED
+    - INV-HALT-1
+    - INV-ATTR-CAUSAL-BAN
+    - INV-SHADOW-MODE-RESPECTED
+  forbidden_patterns:
+    - "grade"
+    - "score"
+    - "recommend"
+  guard_dog_scan: true

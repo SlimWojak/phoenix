@@ -418,6 +418,146 @@ def build_ars_registry() -> GateRegistry:
     return registry
 
 
+# =============================================================================
+# HTF DIRECTIONAL STUB PREDICATES (P2.2 — awaiting Olya calibration)
+# =============================================================================
+
+
+def _gate_htf_expansion_or_retrace(
+    state: MarketState,
+    ctx: GateContext | None = None,
+) -> tuple[bool, str | None]:
+    """HTF phase is EXPANSION or RETRACE. Stub — awaiting Olya calibration."""
+    return False, "awaiting Olya calibration"
+
+
+def _gate_liquidity_swept_in_kz(
+    state: MarketState,
+    ctx: GateContext | None = None,
+) -> tuple[bool, str | None]:
+    """Liquidity swept during kill zone. Stub — awaiting Olya calibration."""
+    return False, "awaiting Olya calibration"
+
+
+def _gate_pda_engaged(
+    state: MarketState,
+    ctx: GateContext | None = None,
+) -> tuple[bool, str | None]:
+    """PDA engaged in OTE zone. Stub — awaiting Olya calibration."""
+    return False, "awaiting Olya calibration"
+
+
+def _gate_mss_confirmed(
+    state: MarketState,
+    ctx: GateContext | None = None,
+) -> tuple[bool, str | None]:
+    """MSS confirmed with displacement. Stub — awaiting Olya calibration."""
+    return False, "awaiting Olya calibration"
+
+
+def _gate_target_reachable(
+    state: MarketState,
+    ctx: GateContext | None = None,
+) -> tuple[bool, str | None]:
+    """Target reachable with acceptable distance. Stub — awaiting Olya calibration."""
+    return False, "awaiting Olya calibration"
+
+
+HTF_GATE_IDS = [
+    "GATE_HTF_EXPANSION_OR_RETRACE",
+    "GATE_LIQUIDITY_SWEPT_IN_KZ",
+    "GATE_PDA_ENGAGED",
+    "GATE_MSS_CONFIRMED",
+    "GATE_TARGET_REACHABLE",
+    "GATE_RR_VALID",
+]
+
+HTF_DRAWER_SPECS = [
+    DrawerSpec(
+        drawer_id=1,
+        name="HTF Bias",
+        gate_ids=("GATE_HTF_EXPANSION_OR_RETRACE",),
+        rule=DrawerRuleType.ALL_REQUIRED,
+    ),
+    DrawerSpec(
+        drawer_id=2,
+        name="Market Structure",
+        gate_ids=("GATE_LIQUIDITY_SWEPT_IN_KZ",),
+        rule=DrawerRuleType.ALL_REQUIRED,
+    ),
+    DrawerSpec(
+        drawer_id=3,
+        name="Premium / Discount",
+        gate_ids=("GATE_PDA_ENGAGED",),
+        rule=DrawerRuleType.ALL_REQUIRED,
+    ),
+    DrawerSpec(
+        drawer_id=4,
+        name="Entry Model",
+        gate_ids=("GATE_MSS_CONFIRMED",),
+        rule=DrawerRuleType.ALL_REQUIRED,
+    ),
+    DrawerSpec(
+        drawer_id=5,
+        name="Confirmation",
+        gate_ids=("GATE_TARGET_REACHABLE", "GATE_RR_VALID"),
+        rule=DrawerRuleType.ALL_REQUIRED,
+    ),
+]
+
+
+def build_htf_registry() -> GateRegistry:
+    """
+    Build GateRegistry for HTF Directional cartridge.
+
+    SCAFFOLD ONLY — all HTF-specific predicates are stubs returning False.
+    GATE_RR_VALID is reused from ARS (same logic applies).
+    Final predicates calibrated by Olya after shadow observation.
+    """
+    registry = GateRegistry()
+
+    registry.register(
+        "GATE_HTF_EXPANSION_OR_RETRACE",
+        _gate_htf_expansion_or_retrace,
+        drawer=1,
+        description="HTF phase EXPANSION or RETRACE (stub)",
+    )
+    registry.register(
+        "GATE_LIQUIDITY_SWEPT_IN_KZ",
+        _gate_liquidity_swept_in_kz,
+        drawer=2,
+        description="Liquidity swept in kill zone (stub)",
+    )
+    registry.register(
+        "GATE_PDA_ENGAGED",
+        _gate_pda_engaged,
+        drawer=3,
+        description="PDA engaged in OTE zone (stub)",
+    )
+    registry.register(
+        "GATE_MSS_CONFIRMED",
+        _gate_mss_confirmed,
+        drawer=4,
+        description="MSS confirmed with displacement (stub)",
+    )
+    registry.register(
+        "GATE_TARGET_REACHABLE",
+        _gate_target_reachable,
+        drawer=5,
+        description="Target reachable (stub)",
+    )
+    registry.register(
+        "GATE_RR_VALID",
+        _gate_rr_valid,
+        drawer=5,
+        description="R:R >= cartridge min_rr",
+    )
+
+    registry.set_drawer_specs(HTF_DRAWER_SPECS)
+
+    return registry
+
+
 __all__ = [
     "GateContext",
     "GateRegistry",
@@ -426,5 +566,8 @@ __all__ = [
     "DrawerSpec",
     "RegistryEvaluationResult",
     "build_ars_registry",
+    "build_htf_registry",
     "ARS_DRAWER_SPECS",
+    "HTF_DRAWER_SPECS",
+    "HTF_GATE_IDS",
 ]
