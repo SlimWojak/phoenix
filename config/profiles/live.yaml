@@ -18,7 +18,7 @@ ibkr:
   # account_id: loaded at runtime from Keychain (a8ra-ibkr-live)
 
 river:
-  data_path: "~/nex/river.db"
+  data_path: "~/phoenix-river"
   refresh_interval_seconds: 30   # Faster refresh for live
   stale_threshold_hours: 0.5     # Stricter staleness for live
 

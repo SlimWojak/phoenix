@@ -51,7 +51,7 @@ class IBKRConfig(BaseModel):
 class RiverConfig(BaseModel):
     """River data pipeline configuration."""
 
-    data_path: str = Field(default="~/nex/river.db", description="Path to River SQLite database")
+    data_path: str = Field(default="~/phoenix-river", description="Path to River parquet root")
     refresh_interval_seconds: int = Field(default=60, description="Data refresh interval")
     stale_threshold_hours: float = Field(
         default=1.0, description="Hours before data considered stale"
