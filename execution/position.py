@@ -3,7 +3,7 @@ DEPRECATED — S52 HARDENING (RISK-1: Dual Position State Machine)
 
 This module has been relocated. Use the canonical imports:
 
-  Production (9-state FSM with T2 gates):
+  Production (10-state FSM with T2 gates):
     from execution.positions import Position, PositionState, PositionLifecycle
 
   Paper broker (5-state simplified FSM):

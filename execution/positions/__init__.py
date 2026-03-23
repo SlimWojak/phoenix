@@ -4,7 +4,7 @@ Positions — Position lifecycle management
 
 S32: EXECUTION_PATH
 
-9-state position lifecycle with STALLED handling.
+10-state position lifecycle with STALLED handling.
 
 INVARIANTS:
 - INV-POSITION-SM-1: Only valid state transitions allowed

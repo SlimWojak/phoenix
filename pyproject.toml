@@ -69,6 +69,35 @@ disallow_untyped_defs = false
 disallow_untyped_decorators = false
 ignore_missing_imports = true
 
+# External packages without type stubs
+[[tool.mypy.overrides]]
+module = [
+    "pandas",
+    "pandas.*",
+    "pyarrow",
+    "pyarrow.*",
+    "duckdb",
+    "ib_insync",
+    "ib_insync.*",
+    "nest_asyncio",
+    "httpx",
+    "pytest",
+    "pytest.*",
+    "_pytest.*",
+]
+ignore_missing_imports = true
+
+# Grandfathered modules with pre-existing strict violations (P0 audit)
+[[tool.mypy.overrides]]
+module = [
+    "river.seam",
+    "river.reader",
+    "river.synthetic_river",
+    "intelligence.backends",
+    "brokers.ibkr.real_client",
+]
+disable_error_code = ["type-arg", "no-any-return", "index", "unused-ignore"]
+
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 python_files = ["test_*.py"]

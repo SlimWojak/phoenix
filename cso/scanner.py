@@ -347,7 +347,7 @@ class CSOScanner:
                     stop=cse.parameters["stop"],
                     target=cse.parameters["target"],
                     risk_percent=cse.parameters["risk_percent"],
-                    confidence=len(cse.readiness_reasons) / 5.0,
+                    confidence=0.0,  # INV-CSO-NO-SCALAR-DECISIONS: sentinel only
                     source=cse.source,
                     evidence_hash=cse.evidence_hash,
                 )

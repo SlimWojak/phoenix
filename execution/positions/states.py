@@ -4,7 +4,7 @@ Position States — State machine definition
 
 S32: EXECUTION_PATH
 
-Defines the 9-state position lifecycle with valid transitions.
+Defines the 10-state position lifecycle with valid transitions.
 
 States:
 - PROPOSED: Intent received, awaiting T2 approval
@@ -32,22 +32,22 @@ class PositionState(Enum):
     """Position lifecycle states."""
 
     # Pre-execution states
-    PROPOSED = "PROPOSED"      # Intent received, awaiting T2
-    APPROVED = "APPROVED"      # Human approved, token issued
-    SUBMITTED = "SUBMITTED"    # Sent to broker, awaiting fill
+    PROPOSED = "PROPOSED"  # Intent received, awaiting T2
+    APPROVED = "APPROVED"  # Human approved, token issued
+    SUBMITTED = "SUBMITTED"  # Sent to broker, awaiting fill
 
     # Problem states
-    STALLED = "STALLED"        # WP_C1: 60s timeout, no broker ACK
-    REJECTED = "REJECTED"      # Broker rejected order
-    EXPIRED = "EXPIRED"        # T2 token expired before submission
+    STALLED = "STALLED"  # WP_C1: 60s timeout, no broker ACK
+    REJECTED = "REJECTED"  # Broker rejected order
+    EXPIRED = "EXPIRED"  # T2 token expired before submission
 
     # Active states
-    FILLED = "FILLED"          # Entry executed
-    MANAGED = "MANAGED"        # SL/TP in place
+    FILLED = "FILLED"  # Entry executed
+    MANAGED = "MANAGED"  # SL/TP in place
 
     # Terminal states
-    CLOSED = "CLOSED"          # Exited (win/loss/BE)
-    CANCELLED = "CANCELLED"    # Cancelled before fill
+    CLOSED = "CLOSED"  # Exited (win/loss/BE)
+    CANCELLED = "CANCELLED"  # Cancelled before fill
 
     @property
     def is_terminal(self) -> bool:
@@ -162,9 +162,7 @@ def get_transition(from_state: PositionState, to_state: PositionState) -> StateT
 def get_valid_next_states(current_state: PositionState) -> list[PositionState]:
     """Get all valid next states from current state."""
     return [
-        trans.to_state
-        for trans in VALID_TRANSITIONS.values()
-        if trans.from_state == current_state
+        trans.to_state for trans in VALID_TRANSITIONS.values() if trans.from_state == current_state
     ]
 
 

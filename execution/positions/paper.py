@@ -18,7 +18,7 @@ INVARIANTS:
 - INV-EXEC-LIFECYCLE-1: valid transitions only
 
 NOTE: This is the PAPER BROKER position model. For production lifecycle
-with T2 gates, use execution.positions (9-state FSM).
+with T2 gates, use execution.positions (10-state FSM).
 """
 
 import hashlib

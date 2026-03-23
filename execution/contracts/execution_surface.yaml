@@ -13,9 +13,9 @@ status: ACTIVE
 
 module:
   id: phoenix.execution
-  name: Execution Path (Mock Signals)
-  tier: T0/T1/T2_MOCKED  # T2 with paper broker only
-  mode: MOCK_SIGNALS
+  name: Execution Path (Constitutional)
+  tier: T0/T1/T2_PAPER  # T2 with paper broker, constitutional governance
+  mode: SHADOW_PAPER
   capital: PAPER_ONLY
 
 # =============================================================================
@@ -27,19 +27,19 @@ capabilities:
     schema_enforcement: true
     deterministic_hash: true
     halt_gate_integration: true
-  
+
   position_lifecycle:
     states: [PROPOSED, APPROVED, SUBMITTED, STALLED, FILLED, MANAGED, CLOSED, CANCELLED, REJECTED, EXPIRED]
     valid_transitions: enforced
     state_machine: deterministic
     canonical_source: execution/positions/states.py
-  
+
   paper_broker:
     fill_mode: IMMEDIATE
     slippage: NONE  # v0 simplified
     fees: NONE      # v0 simplified
     pnl_calculation: SIMPLIFIED_V0
-  
+
   replay_harness:
     deterministic: PROVEN
     halt_integration: true
@@ -54,13 +54,13 @@ permissions:
     - cso.beads.approved
     - governance.halt_signal
     - market_data.prices
-  
+
   writes:
     - execution.intents
     - execution.positions
     - execution.orders_paper
     - execution.blocked_log
-  
+
   forbidden:
     - broker.live
     - orders.live
@@ -78,13 +78,13 @@ invariants:
     enforcement: HaltGateViolation exception
     test: test_halt_before_exec.py
     status: PROVEN
-  
+
   - id: INV-CONTRACT-1
     description: "State machine is deterministic"
     enforcement: hash comparison
     test: test_execution_path.py::TestGateC2Deterministic
     status: PROVEN
-  
+
   - id: INV-EXEC-LIFECYCLE-1
     description: "Only valid state transitions allowed"
     enforcement: InvalidTransitionError exception
@@ -165,7 +165,7 @@ intent_schema:
     - size: float
     - source_state_hash: string
     - intent_hash: string
-  
+
   optional_fields:
     - expires_at: datetime
     - entry_price: float
@@ -181,13 +181,13 @@ halt_gate:
   pattern: "halt-first"
   enforcement: "HaltGate.check_before(action)"
   latency: "<50ms (INV-HALT-1)"
-  
+
   flow:
     1_receive_intent: "Intent arrives"
     2_check_halt: "MUST check halt_signal"
     3_if_halted: "Block intent, raise BrokerHaltedError"
     4_if_clear: "Process order via paper broker"
-  
+
   violations:
     - skip_check: "HaltGateViolation raised"
     - execute_while_halted: "BrokerHaltedError raised"
@@ -202,17 +202,17 @@ exit_gates:
     test: test_execution_path.py::TestGateC1PaperTrades
     criterion: "signal → order → position → P&L cycle complete"
     status: PASS
-  
+
   GATE_C2_DETERMINISTIC:
     test: test_execution_path.py::TestGateC2Deterministic
     criterion: "same replay = same result (hash match)"
     status: PASS
-  
+
   GATE_C3_HALT_RESPECTED:
     test: test_execution_path.py::TestGateC3HaltRespected
     criterion: "halt stops all execution"
     status: PASS
-  
+
   GATE_C4_LIFECYCLE_VALID:
     test: test_execution_path.py::TestGateC4LifecycleValid
     criterion: "only valid state transitions"

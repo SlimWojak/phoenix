@@ -34,6 +34,7 @@ from cso.drawer import (
     GateEvaluationResult,
     evaluate_drawer_rule,
 )
+from cso.gate_registry import GateRegistry
 
 # =============================================================================
 # CONSTANTS
@@ -406,8 +407,49 @@ class GateEvaluator:
             passed = market_state.partials_defined
             return GateEvaluationResult(gate_id, passed, None)
 
-        # Unknown gate
+        # Unknown gate — legacy path only. Use evaluate_with_registry() for cartridge gates.
         return GateEvaluationResult(gate_id, False, "UNKNOWN_GATE")
+
+    def evaluate_with_registry(
+        self,
+        pair: str,
+        market_state: MarketState,
+        strategy_config_hash: str,
+        registry: GateRegistry,
+        gate_ids: list[str],
+        gate_context: Any | None = None,
+    ) -> FiveDrawerResult:
+        """
+        Evaluate gates using GateRegistry (cartridge-driven path).
+
+        INV-GATE-NAMESPACE-SINGLETON: All gate resolution through registry.
+        No fallback to hardcoded switch table.
+
+        Args:
+            pair: Trading pair
+            market_state: Current market state
+            strategy_config_hash: Strategy config hash
+            registry: GateRegistry with registered predicates
+            gate_ids: Gate IDs from cartridge gate_requirements
+            gate_context: Optional GateContext with runtime-computed values
+
+        Returns:
+            FiveDrawerResult with gates_passed/failed lists and drawer verdicts
+        """
+
+        reg_result = registry.evaluate_all(gate_ids, market_state, gate_context)
+
+        return FiveDrawerResult(
+            pair=pair,
+            timestamp=datetime.now(UTC),
+            gates_passed=reg_result.gates_passed,
+            gates_failed=reg_result.gates_failed,
+            gates_skipped=[],
+            drawer_status=reg_result.drawer_status,
+            drawer_results=reg_result.drawer_results,
+            strategy_config_hash=strategy_config_hash,
+            market_state_hash=market_state.compute_hash(),
+        )
 
 
 # =============================================================================
