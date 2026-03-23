@@ -20,6 +20,7 @@ from __future__ import annotations
 
 import sys
 from datetime import UTC, datetime, timedelta
+from pathlib import Path
 
 sys.path.insert(0, '.')
 
@@ -309,7 +310,7 @@ class TestWave3Telegram:
         INVARIANT: INV-TELEGRAM-LIVE-1
         """
         # Import from correct path (phoenix root, not tests)
-        sys.path.insert(0, '/Users/echopeso/phoenix')
+        sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent))
         from notification.telegram_notifier import TelegramNotifier
         
         # Create notifier without real credentials
@@ -337,7 +338,7 @@ class TestWave3Telegram:
         INVARIANT: INV-TELEGRAM-LIVE-1
         """
         # Import from correct path
-        sys.path.insert(0, '/Users/echopeso/phoenix')
+        sys.path.insert(0, str(Path(__file__).resolve().parent.parent.parent))
         from notification.alert_aggregator import Alert, AlertAggregator
         
         aggregator = AlertAggregator(

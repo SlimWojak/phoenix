@@ -8,4 +8,9 @@ cd ~/phoenix || exit 1
 export RIVER_ROOT="${RIVER_ROOT:-$HOME/phoenix-river}"
 export PYTHONUNBUFFERED=1
 
-exec python3 -m river.streamer "$@"
+# Use venv python if available, else fall back to pyenv shim
+if [ -f .venv/bin/python3 ]; then
+    exec .venv/bin/python3 -m river.streamer "$@"
+else
+    exec python3 -m river.streamer "$@"
+fi
