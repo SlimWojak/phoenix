@@ -175,14 +175,12 @@ class RiverReader:
             params: list = []
             if start is not None:
                 clauses.append("timestamp >= ?")
-                params.append(
-                    pd.Timestamp(start, tz="UTC") if not isinstance(start, pd.Timestamp) else start
-                )
+                ts = pd.Timestamp(start) if not isinstance(start, pd.Timestamp) else start
+                params.append(ts.tz_localize("UTC") if ts.tzinfo is None else ts)
             if end is not None:
                 clauses.append("timestamp < ?")
-                params.append(
-                    pd.Timestamp(end, tz="UTC") if not isinstance(end, pd.Timestamp) else end
-                )
+                ts = pd.Timestamp(end) if not isinstance(end, pd.Timestamp) else end
+                params.append(ts.tz_localize("UTC") if ts.tzinfo is None else ts)
 
             where = f" WHERE {' AND '.join(clauses)}" if clauses else ""
             query = f"SELECT * FROM read_parquet('{glob}'){where} ORDER BY timestamp"
