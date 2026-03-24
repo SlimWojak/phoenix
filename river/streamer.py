@@ -202,10 +202,14 @@ class RiverStreamer:
                 last_seed_ts=str(self._last_bar_ts),
             )
 
+        # Persist seed bars BEFORE registering live callback to prevent race:
+        # _persist_seed_bars populates _known_timestamps, and _on_bar_update
+        # checks that set for dedup. If callback fires before seed persist,
+        # both paths write the same bar.
+        self._persist_seed_bars()
         self._bars_handle.updateEvent += self._on_bar_update
         self._subscribed = True
         self._subscribe_time = time.monotonic()
-        self._persist_seed_bars()
         self._update_heartbeat()
 
     def _load_known_timestamps(self) -> None:
