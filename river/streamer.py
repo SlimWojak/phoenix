@@ -347,13 +347,22 @@ class RiverStreamer:
         if not has_new_bar or not bars:
             return
 
-        bar = bars[-1]
+        # With keepUpToDate=True, bars[-1] is the currently FORMING bar.
+        # The just-completed bar is bars[-2]. has_new_bar=True means a
+        # new bar opened, so the PREVIOUS bar is now closed and complete.
+        if len(bars) < 2:
+            return
+        bar = bars[-2]
         kt = datetime.now(UTC)
         bar_ts = pd.Timestamp(bar.date.timestamp(), unit="s", tz="UTC")
         ts_key = bar_ts.isoformat()
 
+        # Dedup: check known set and last processed timestamp.
         if ts_key in self._known_timestamps:
             return
+        if self._last_bar_ts is not None and bar_ts <= self._last_bar_ts:
+            return
+        self._known_timestamps.add(ts_key)
 
         if self._state != "STREAMING":
             self._state = "STREAMING"
@@ -431,10 +440,32 @@ class RiverStreamer:
         staging_file = self.staging_path(bar_date)
         staging_file.parent.mkdir(parents=True, exist_ok=True)
 
+        # Final dedup guard: check if this timestamp already exists in file.
+        # Belt-and-suspenders against ib_insync's double-callback which can
+        # bypass in-memory checks via threading or event loop reentrancy.
+        if staging_file.exists():
+            last_line = ""
+            try:
+                with open(staging_file, "rb") as f:
+                    f.seek(0, 2)  # end
+                    pos = f.tell()
+                    # Read last ~300 bytes to find the last line
+                    read_size = min(pos, 300)
+                    f.seek(pos - read_size)
+                    last_line = f.read().decode("utf-8", errors="replace").strip().rsplit("\n", 1)[-1]
+            except Exception:
+                pass
+            if last_line:
+                try:
+                    last_ts = json.loads(last_line).get("timestamp", "")
+                    if last_ts == ts_key:
+                        return
+                except (json.JSONDecodeError, ValueError):
+                    pass
+
         with open(staging_file, "a") as f:
             f.write(json.dumps(bar_data) + "\n")
 
-        self._known_timestamps.add(ts_key)
         self._bars_received += 1
         self._last_bar_time = kt
         self._update_heartbeat()
