@@ -104,6 +104,7 @@ class RiverStreamer:
         self._bars_received: int = 0
         self._gaps_detected: int = 0
         self._consecutive_good_bars: int = 0
+        self._last_bar_close: float | None = None  # for continuity correction
         self._known_timestamps: set[str] = set()
         self._session_start: datetime | None = None
 
@@ -275,6 +276,12 @@ class RiverStreamer:
             self._bars_received += 1
             persisted += 1
 
+        # Anchor _last_bar_close from the last seed bar for live continuity correction.
+        # Use the last bar in the handle (excluding forming bar), whether persisted or deduped.
+        last_seed = self._bars_handle[-2] if len(self._bars_handle) >= 2 else None
+        if last_seed is not None:
+            self._last_bar_close = float(last_seed.close)
+
         if persisted:
             logger.info(
                 "seed_bars_persisted",
@@ -386,15 +393,38 @@ class RiverStreamer:
 
         self._last_bar_ts = bar_ts
 
+        # Continuity correction: IBKR's live keepUpToDate delivery can
+        # produce open(N+1) != close(N) — a delivery artifact. IBKR's own
+        # historical engine reconstructs the same data with perfect continuity.
+        # We apply the same correction here, preserving the raw value for audit.
+        raw_open = float(bar.open)
+        corrected_open = raw_open
+        if self._last_bar_close is not None:
+            delta = abs(raw_open - self._last_bar_close)
+            if delta > 0.000005:  # > 0.05 pip — not just floating point noise
+                corrected_open = self._last_bar_close
+                logger.debug(
+                    "continuity_correction",
+                    pair=self._pair,
+                    bar_ts=ts_key,
+                    raw_open=f"{raw_open:.6f}",
+                    corrected_open=f"{corrected_open:.6f}",
+                    delta_pips=f"{delta * 10000:.1f}",
+                )
+
+        bar_close = float(bar.close)
+        self._last_bar_close = bar_close
+
         bar_data = {
             "timestamp": ts_key,
-            "open": float(bar.open),
+            "open": corrected_open,
             "high": float(bar.high),
             "low": float(bar.low),
-            "close": float(bar.close),
+            "close": bar_close,
             "volume": float(bar.volume),
             "source": "ibkr",
             "knowledge_time": kt.isoformat(),
+            "raw_open": raw_open if raw_open != corrected_open else None,
         }
 
         bar_date = bar_ts.date()
