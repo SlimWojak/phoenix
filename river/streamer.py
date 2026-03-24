@@ -58,8 +58,9 @@ NY = ZoneInfo("America/New_York")
 IBKR_DEFAULT_PORT = 4002
 STALENESS_THRESHOLD_SECONDS = 120
 WATCHDOG_INITIAL_TIMEOUT_S = 60
-RESUBSCRIBE_MAX_ATTEMPTS = 3
-RESUBSCRIBE_BACKOFF_S = [5, 15, 45]
+RESUBSCRIBE_MAX_ATTEMPTS = 5
+RESUBSCRIBE_BACKOFF_S = [60, 120, 300, 300, 300]
+CONSECUTIVE_GOOD_BARS_RESET = 5
 
 
 class RiverStreamer:
@@ -100,6 +101,12 @@ class RiverStreamer:
         self._bars_handle: Any = None
         self._subscribe_time: float | None = None
 
+        self._bars_received: int = 0
+        self._gaps_detected: int = 0
+        self._consecutive_good_bars: int = 0
+        self._known_timestamps: set[str] = set()
+        self._session_start: datetime | None = None
+
     @property
     def staging_dir(self) -> Path:
         return self._root / self._pair / ".staging"
@@ -125,6 +132,7 @@ class RiverStreamer:
         from ib_insync import IB
 
         self._state = "STARTED"
+        self._session_start = datetime.now(UTC)
         self._update_heartbeat()
 
         self._ib = IB()
@@ -139,10 +147,10 @@ class RiverStreamer:
         self._ib.reqMarketDataType(mdt)
         logger.info("market_data_type_set", type=mdt)
 
+        self.staging_dir.mkdir(parents=True, exist_ok=True)
         self._subscribe()
 
         self._running = True
-        self.staging_dir.mkdir(parents=True, exist_ok=True)
         logger.info("streamer_started", pair=self._pair)
         self._update_heartbeat()
 
@@ -174,7 +182,7 @@ class RiverStreamer:
         self._bars_handle = self._ib.reqHistoricalData(
             contract,
             endDateTime="",
-            durationStr="120 S",
+            durationStr="1 D",
             barSizeSetting="1 min",
             whatToShow="MIDPOINT",
             useRTH=False,
@@ -197,8 +205,79 @@ class RiverStreamer:
         self._bars_handle.updateEvent += self._on_bar_update
         self._subscribed = True
         self._subscribe_time = time.monotonic()
-        self._resubscribe_attempts = 0
+        self._persist_seed_bars()
         self._update_heartbeat()
+
+    def _load_known_timestamps(self) -> None:
+        """Load timestamps from existing staging JSONL into dedup set."""
+        if not self.staging_dir.exists():
+            return
+        for jsonl_path in self.staging_dir.glob("*.jsonl"):
+            try:
+                with open(jsonl_path) as f:
+                    for line in f:
+                        line = line.strip()
+                        if not line:
+                            continue
+                        try:
+                            row = json.loads(line)
+                            if "timestamp" in row:
+                                self._known_timestamps.add(row["timestamp"])
+                        except (ValueError, json.JSONDecodeError):
+                            continue
+            except OSError:
+                continue
+
+    def _persist_seed_bars(self) -> None:
+        """Write historical seed bars to staging JSONL, deduped against existing.
+
+        INV-RIVER-IMMUTABLE: writes to staging only, never to parquet.
+        INV-NO-FORMING-CANDLE: excludes last bar (currently forming).
+        """
+        if not self._bars_handle or len(self._bars_handle) < 2:
+            return
+
+        self._load_known_timestamps()
+        self.staging_dir.mkdir(parents=True, exist_ok=True)
+
+        persisted = 0
+        kt = datetime.now(UTC)
+
+        for bar in self._bars_handle[:-1]:
+            bar_ts = pd.Timestamp(bar.date.timestamp(), unit="s", tz="UTC")
+            ts_key = bar_ts.isoformat()
+            if ts_key in self._known_timestamps:
+                continue
+
+            bar_data = {
+                "timestamp": ts_key,
+                "open": float(bar.open),
+                "high": float(bar.high),
+                "low": float(bar.low),
+                "close": float(bar.close),
+                "volume": float(bar.volume),
+                "source": "ibkr",
+                "knowledge_time": kt.isoformat(),
+            }
+
+            bar_date = bar_ts.date()
+            staging_file = self.staging_path(bar_date)
+            staging_file.parent.mkdir(parents=True, exist_ok=True)
+
+            with open(staging_file, "a") as f:
+                f.write(json.dumps(bar_data) + "\n")
+
+            self._known_timestamps.add(ts_key)
+            self._bars_received += 1
+            persisted += 1
+
+        if persisted:
+            logger.info(
+                "seed_bars_persisted",
+                pair=self._pair,
+                persisted=persisted,
+                skipped_dedup=len(self._bars_handle) - 1 - persisted,
+            )
 
     def stop(self) -> None:
         """Stop streaming and consolidate any pending staging data."""
@@ -217,9 +296,9 @@ class RiverStreamer:
 
     def _on_ib_error(
         self,
-        reqId: int,
-        errorCode: int,
-        errorString: str,
+        reqId: int,  # noqa: N803
+        errorCode: int,  # noqa: N803
+        errorString: str,  # noqa: N803
         contract: Any = None,
     ) -> None:
         """IB error/warning callback. Logs all events for observability."""
@@ -260,6 +339,10 @@ class RiverStreamer:
         bar = bars[-1]
         kt = datetime.now(UTC)
         bar_ts = pd.Timestamp(bar.date.timestamp(), unit="s", tz="UTC")
+        ts_key = bar_ts.isoformat()
+
+        if ts_key in self._known_timestamps:
+            return
 
         if self._state != "STREAMING":
             self._state = "STREAMING"
@@ -271,6 +354,8 @@ class RiverStreamer:
             if actual_gap > expected_gap * 2 and self._is_trading_hours():
                 missed = int(actual_gap.total_seconds() / 60) - 1
                 self._consecutive_gaps += missed
+                self._consecutive_good_bars = 0
+                self._gaps_detected += 1
                 if self._consecutive_gaps >= 5:
                     logger.warning(
                         "river_gap_alert",
@@ -281,10 +366,24 @@ class RiverStreamer:
                     )
             else:
                 self._consecutive_gaps = 0
+                self._consecutive_good_bars += 1
+                if (
+                    self._consecutive_good_bars >= CONSECUTIVE_GOOD_BARS_RESET
+                    and self._resubscribe_attempts > 0
+                ):
+                    logger.info(
+                        "resubscribe_counter_reset",
+                        pair=self._pair,
+                        after_good_bars=self._consecutive_good_bars,
+                    )
+                    self._resubscribe_attempts = 0
+        else:
+            self._consecutive_good_bars += 1
+
         self._last_bar_ts = bar_ts
 
         bar_data = {
-            "timestamp": bar_ts.isoformat(),
+            "timestamp": ts_key,
             "open": float(bar.open),
             "high": float(bar.high),
             "low": float(bar.low),
@@ -294,20 +393,22 @@ class RiverStreamer:
             "knowledge_time": kt.isoformat(),
         }
 
-        bar_date = pd.Timestamp(bar.date.timestamp(), unit="s", tz="UTC").date()
+        bar_date = bar_ts.date()
         staging_file = self.staging_path(bar_date)
         staging_file.parent.mkdir(parents=True, exist_ok=True)
 
         with open(staging_file, "a") as f:
             f.write(json.dumps(bar_data) + "\n")
 
+        self._known_timestamps.add(ts_key)
+        self._bars_received += 1
         self._last_bar_time = kt
         self._update_heartbeat()
 
         logger.debug(
             "bar_received",
             pair=self._pair,
-            ts=bar_data["timestamp"],
+            ts=ts_key,
             close=bar_data["close"],
         )
 
@@ -338,9 +439,14 @@ class RiverStreamer:
                 pair=self._pair,
                 seconds_since_last_bar=int(elapsed),
             )
+            self._attempt_resubscribe()
 
     def _attempt_resubscribe(self) -> None:
-        """Resubscribe with exponential backoff. Max RESUBSCRIBE_MAX_ATTEMPTS."""
+        """Resubscribe with exponential backoff. Max RESUBSCRIBE_MAX_ATTEMPTS.
+
+        Rate-limited: skips if still within backoff window from last attempt.
+        On resubscribe, seed bars (1 D) fill any gap via _persist_seed_bars.
+        """
         if self._resubscribe_attempts >= RESUBSCRIBE_MAX_ATTEMPTS:
             logger.error(
                 "resubscribe_exhausted",
@@ -355,13 +461,23 @@ class RiverStreamer:
         backoff = RESUBSCRIBE_BACKOFF_S[
             min(self._resubscribe_attempts, len(RESUBSCRIBE_BACKOFF_S) - 1)
         ]
+
+        if self._subscribe_time is not None and (time.monotonic() - self._subscribe_time) < backoff:
+            return
+
         self._resubscribe_attempts += 1
+
+        gap_seconds: float | None = None
+        if self._last_bar_ts is not None:
+            gap_seconds = (datetime.now(UTC) - self._last_bar_ts.to_pydatetime()).total_seconds()
+
         logger.warning(
             "resubscribe_attempt",
             pair=self._pair,
             attempt=self._resubscribe_attempts,
             max_attempts=RESUBSCRIBE_MAX_ATTEMPTS,
             backoff_s=backoff,
+            gap_seconds=int(gap_seconds) if gap_seconds else None,
         )
 
         time.sleep(backoff)
@@ -370,6 +486,13 @@ class RiverStreamer:
             if self._bars_handle is not None:
                 self._ib.cancelHistoricalData(self._bars_handle)
             self._subscribe()
+            if gap_seconds and gap_seconds > 120:
+                logger.info(
+                    "gap_backfill_via_seed",
+                    pair=self._pair,
+                    gap_seconds=int(gap_seconds),
+                    seed_bars=len(self._bars_handle) if self._bars_handle else 0,
+                )
         except Exception:
             logger.exception("resubscribe_failed", pair=self._pair)
             if self._resubscribe_attempts >= RESUBSCRIBE_MAX_ATTEMPTS:
@@ -397,6 +520,10 @@ class RiverStreamer:
                 "last_bar_time": self._last_bar_time.isoformat() if self._last_bar_time else None,
                 "last_update": datetime.now(UTC).isoformat(),
                 "resubscribe_attempts": self._resubscribe_attempts,
+                "bars_received": self._bars_received,
+                "gaps_detected": self._gaps_detected,
+                "consecutive_good_bars": self._consecutive_good_bars,
+                "session_start": self._session_start.isoformat() if self._session_start else None,
             },
             indent=2,
         )
