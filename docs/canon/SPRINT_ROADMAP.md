@@ -2533,17 +2533,46 @@ S68: SWEEP_POOL_EXPANSION — COMPLETE ✅ (2026-03-26)
   deferred:
     - "P5: Sweep event recursion (depth 2) — lower priority, pool already rich"
 
+S69: FAITHFUL_SWEEP_PORT — PLANNED (2026-03-26)
+  status: PLANNED
+  theme: "Faithful port of RA oracle's full liquidity_sweep.py (1,416 lines)"
+  motivation: |
+    S68 proved the architecture (self-contained producer, internal bar computation,
+    per-day iteration) but oracle comparison showed 1/21 match rate on worst day.
+    Spec-based approach hit ceiling — interaction effects between pool management
+    and detection were forensically calibrated with Olya and cannot be reconstructed
+    from spec alone. Port the oracle implementation directly.
+  scope:
+    - "Replace _detect_on_bars with oracle's _detect_base_sweeps (4-phase pipeline)"
+    - "Port full lifecycle: pass-through, probe exhaustion, dwell, displacement override"
+    - "Port continuation detection (breach > 1.5x ATR)"
+    - "Port temporal gating (valid_from enforcement per bar)"
+    - "Port phantom sweep prune (dwell supersedes later sweeps)"
+    - "Port qualified sweep tagging"
+    - "Adapt interface: ClaimSpec/VirtualBar instead of DetectionResult/DataFrame"
+  exit_gate: |
+    Oracle comparison on Jan 8-12 2024 (calibration week).
+    Match rate >= 85% on sweep-only detections (excluding continuations)
+    per day on 15m. Ground truth: 11/20/21/19/10 sweeps per day.
+  brief: "dexter/docs/build_docs/OPUS_BRIEF_S69_FAITHFUL_SWEEP_PORT.md"
+  keeps_from_s68:
+    - "HTFLiquidityProducer, PWHPWLProducer (upstream, working)"
+    - "bar_level_computer.py (internal session/PDH computation)"
+    - "Self-contained architecture, per-day iteration pattern"
+  replaces_from_s68:
+    - "liquidity_sweep.py _detect_on_bars → oracle _detect_base_sweeps"
+    - "level_pool.py build_level_pool → oracle _build_level_pool"
+
 # ═══════════════════════════════════════════════════════════════
 # FORWARD SPRINT PLANNING
 # ═══════════════════════════════════════════════════════════════
-# S68 resolves the sweep pool starvation finding from S67.
-# Forward plan priorities:
+# S69 is the priority: faithful sweep port for signal fidelity.
+# No backfill until oracle comparison exit gate passes.
 #
 # NEXT_PRIORITIES:
-#   observation_week: "Olya validating via MIRROR (live, in progress)"
-#   sweep_recursion: "P5 — sweep event recursion (depth 2, Olya confirmed pattern)"
-#   bridge_daemon: "E.1 — governance events → bead field (deferred from S66)"
-#   graduation_metrics: "Tracking shadow mode toward graduation criteria"
-#   canon_architecture: "Claude Channels + agentic layer rethink (design phase)"
+#   s69_sweep_port: "IMMEDIATE — faithful port of oracle sweep pipeline"
+#   observation_week: "Olya validating via MIRROR (continues)"
+#   bridge_daemon: "E.1 — governance events → bead field (after S69)"
+#   graduation_metrics: "Shadow mode toward graduation criteria"
 # ═══════════════════════════════════════════════════════════════
 ```

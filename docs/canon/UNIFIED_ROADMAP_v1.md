@@ -533,26 +533,33 @@ S67_STATUS: |
 
 S68_STATUS: |
   COMPLETE (2026-03-26). SWEEP_POOL_EXPANSION.
-  Root cause POOL_STARVATION resolved: level pool expanded from 2 sources to 6.
-  - htf_liquidity.py: HTFLiquidityProducer (EQH/EQL from H1/H4 fractal swings)
-  - htf_pool_builder.py: fractal detection + pool clustering (5 gates, merge)
-  - level_pool.py: dedup, merge, priority-ranked pool assembly
-  - pwh_pwl.py: PWHPWLProducer (previous forex week high/low)
-  - liquidity_sweep.py: expanded to 6 sources, detection logic untouched
-  - Validation: 0→40-49 sweeps/day on all 5 annotated trade dates
-  - 32 new tests, 207 producer total, zero regressions
-  - Deferred: P5 sweep event recursion (depth 2)
-  Tests: 1154 dexter (was 1122). Sprints: 39→40.
+  Pool starvation resolved: 2→6 sources, self-contained bar computation,
+  per-day iteration. Sweep counts 0→10-22/day on 15m.
+  HOWEVER: oracle comparison revealed 1/21 match rate on worst day (Jan 10).
+  Spec-based approach insufficient — interaction effects between pool management
+  and detection were forensically calibrated with Olya, cannot be reconstructed
+  from spec. S69 planned: faithful port of oracle's full pipeline.
+  Keeps: HTFLiquidityProducer, PWHPWLProducer, bar_level_computer, architecture.
+  Replaces: detection loop, pool builder, lifecycle management.
+  Tests: 220 dexter (was 1122). Sprints: 39→40.
+
+S69_STATUS: |
+  PLANNED (2026-03-26). FAITHFUL_SWEEP_PORT.
+  Replace LiquiditySweepProducer with faithful port of RA oracle's full
+  liquidity_sweep.py (1,416 lines). 4-phase pipeline: pool construction,
+  detection loop, dwell consumption, post-processing.
+  Exit gate: oracle comparison >= 85% match rate on 5 calibration days.
+  Brief: dexter/docs/build_docs/OPUS_BRIEF_S69_FAITHFUL_SWEEP_PORT.md
 
 FORWARD_PLAN: |
+  S69 FAITHFUL_SWEEP_PORT is the immediate priority.
+  No backfill until oracle comparison exit gate passes.
   Observation week continues (Olya validating via MIRROR).
-  Sweep pool now functional — execution chains should begin filling in.
-  Remaining: sweep event recursion (P5), bridge daemon, graduation metrics.
 
 NEXT_PRIORITIES:
-  observation_week: "Olya validating via MIRROR (live, in progress)"
-  sweep_recursion: "P5 — sweep event recursion (depth 2, Olya confirmed pattern)"
-  bridge_daemon: "E.1 — governance events → bead field"
+  s69_sweep_port: "IMMEDIATE — faithful port of oracle sweep pipeline"
+  observation_week: "Olya validating via MIRROR (continues)"
+  bridge_daemon: "E.1 — governance events → bead field (after S69)"
   graduation_metrics: "Shadow mode toward graduation criteria"
 
 OPEN_ITEMS_CARRIED_FORWARD:
@@ -560,7 +567,7 @@ OPEN_ITEMS_CARRIED_FORWARD:
   - DEC-CE-TOUCHED-WICK-PENDING-OLYA (wick vs body CE touch)
   - MSS_15m_cascade (46.7% divergence — monitor in production)
   - PROPOSED HTF params: Olya visual confirmation still pending
-  - Sweep event recursion: P5 deferred (depth 2, max_age 3 sessions)
+  - Sweep fidelity: oracle comparison is the exit gate for backfill
 ```
 
 ---
