@@ -2502,15 +2502,46 @@ S67: CANONICAL_PIPELINE_AND_VERIFICATION — COMPLETE ✅ (2026-03-26)
     - "WARMUP_BEADS: 9,457 in first 30 days (ATR unreliable)"
     - "SIGNAL_CHAIN_EMPTY: provenance links not populated"
 
+S68: SWEEP_POOL_EXPANSION — COMPLETE ✅ (2026-03-26)
+  status: COMPLETE
+  completion_date: 2026-03-26
+  tests: 32 new (207 producer tests, 0 regressions)
+  theme: "Expand sweep level pool from 2 sources to 6, breaking the 0-sweep bottleneck"
+  root_cause: "POOL_STARVATION confirmed — Dexter had 2 sources (~8 levels/day), RA oracle has 7+ (~20-28)"
+  deliverables:
+    - "htf_liquidity.py (172 lines) — HTFLiquidityProducer: EQH/EQL pools from H1/H4 fractal swings"
+    - "utils/htf_pool_builder.py (218 lines) — fractal detection (left=2, right=2) + pool clustering with 5 gates"
+    - "utils/level_pool.py (162 lines) — pool assembly, dedup by (source,side,price±0.1pip), merge by (side,forex_day) within 1.0pip"
+    - "pwh_pwl.py (121 lines) — PWHPWLProducer: previous forex week high/low"
+    - "liquidity_sweep.py expanded: accepts 6 sources (was 2), delegates pool building"
+    - "daily_detection_export.py: wired HTF_LIQ + PWH_PWL + swing + displacement into sweep; session/pdh now persisted to all_claims"
+    - "4 test files (32 tests): htf_pool_builder, htf_liquidity, sweep_pool_expansion, pwh_pwl"
+  pool_sources:
+    existing: "SESSION_BOUNDARY, PDH_PDL"
+    new: "HTF_EQH/EQL (H1/H4 structural pools), PROMOTED_SWING (vivid-grade, current day), PWH/PWL, displacement (qualified_sweep wiring)"
+  validation_results:
+    oct_01: "0 → 40 sweeps"
+    dec_12: "0 → 45 sweeps"
+    feb_04: "0 → 41 sweeps"
+    nov_12: "0 → 49 sweeps"
+    sep_29: "0 → 40 sweeps"
+    htf_pools: "13-20 EQH/EQL pools per day"
+  architecture_constraints:
+    - "Detection logic (_detect_on_bars) UNTOUCHED — only pool feeding expanded"
+    - "All new files ≤300 lines"
+    - "vLOCK parameters preserved exactly"
+  deferred:
+    - "P5: Sweep event recursion (depth 2) — lower priority, pool already rich"
+
 # ═══════════════════════════════════════════════════════════════
 # FORWARD SPRINT PLANNING
 # ═══════════════════════════════════════════════════════════════
-# S67 completes the bead field integrity verification.
+# S68 resolves the sweep pool starvation finding from S67.
 # Forward plan priorities:
 #
 # NEXT_PRIORITIES:
 #   observation_week: "Olya validating via MIRROR (live, in progress)"
-#   sweep_investigation: "Forensic audit of LiquiditySweepProducer (pool starvation confirmed)"
+#   sweep_recursion: "P5 — sweep event recursion (depth 2, Olya confirmed pattern)"
 #   bridge_daemon: "E.1 — governance events → bead field (deferred from S66)"
 #   graduation_metrics: "Tracking shadow mode toward graduation criteria"
 #   canon_architecture: "Claude Channels + agentic layer rethink (design phase)"

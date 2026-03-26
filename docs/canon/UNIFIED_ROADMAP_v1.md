@@ -531,16 +531,27 @@ S67_STATUS: |
     WARMUP_BEADS (9,457 ATR-unreliable), SIGNAL_CHAIN_EMPTY (provenance gap).
   Tests: 1122 dexter (was 1088). Sprints: 38→39.
 
+S68_STATUS: |
+  COMPLETE (2026-03-26). SWEEP_POOL_EXPANSION.
+  Root cause POOL_STARVATION resolved: level pool expanded from 2 sources to 6.
+  - htf_liquidity.py: HTFLiquidityProducer (EQH/EQL from H1/H4 fractal swings)
+  - htf_pool_builder.py: fractal detection + pool clustering (5 gates, merge)
+  - level_pool.py: dedup, merge, priority-ranked pool assembly
+  - pwh_pwl.py: PWHPWLProducer (previous forex week high/low)
+  - liquidity_sweep.py: expanded to 6 sources, detection logic untouched
+  - Validation: 0→40-49 sweeps/day on all 5 annotated trade dates
+  - 32 new tests, 207 producer total, zero regressions
+  - Deferred: P5 sweep event recursion (depth 2)
+  Tests: 1154 dexter (was 1122). Sprints: 39→40.
+
 FORWARD_PLAN: |
-  Observation week in progress (Olya validating via MIRROR).
-  Sweep producer forensic: pool starvation confirmed — Dexter pool has
-  SESSION_BOUNDARY + PDH_PDL only (2 sources), RA oracle has 7+ sources
-  (EQH/EQL, promoted swings, PWH/PWL, sweep events, session H/L).
-  Root cause is narrow port, not detection logic bug.
+  Observation week continues (Olya validating via MIRROR).
+  Sweep pool now functional — execution chains should begin filling in.
+  Remaining: sweep event recursion (P5), bridge daemon, graduation metrics.
 
 NEXT_PRIORITIES:
   observation_week: "Olya validating via MIRROR (live, in progress)"
-  sweep_fix: "Expand level pool to match RA oracle (EQH/EQL, promoted swings, PWH/PWL)"
+  sweep_recursion: "P5 — sweep event recursion (depth 2, Olya confirmed pattern)"
   bridge_daemon: "E.1 — governance events → bead field"
   graduation_metrics: "Shadow mode toward graduation criteria"
 
@@ -549,7 +560,7 @@ OPEN_ITEMS_CARRIED_FORWARD:
   - DEC-CE-TOUCHED-WICK-PENDING-OLYA (wick vs body CE touch)
   - MSS_15m_cascade (46.7% divergence — monitor in production)
   - PROPOSED HTF params: Olya visual confirmation still pending
-  - Sweep level pool: CONFIRMED STARVATION — needs EQH/EQL, promoted swings, HTF pools
+  - Sweep event recursion: P5 deferred (depth 2, max_age 3 sessions)
 ```
 
 ---

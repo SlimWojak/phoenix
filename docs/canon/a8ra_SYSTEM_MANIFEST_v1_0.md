@@ -788,6 +788,52 @@ PLANNED: [REFINERY_CONTRACT.yaml, PULSE_OPERATIONS.md]
     New DB: eurusd_claims.db (4.4GB, 564K beads).
     Sprints: 38→39.
 
+- date: 2026-03-26
+  office: OPUS_FACTORY (M3 Ultra)
+  change: |
+    S68 COMPLETE — SWEEP_POOL_EXPANSION.
+
+    ROOT CAUSE: POOL_STARVATION (confirmed by S67 forensic).
+    Dexter LiquiditySweepProducer had 2 level sources (~8 levels/day).
+    RA oracle has 7+ sources (~20-28 levels/day). Detection logic was
+    correct — only the pool feeding it needed expansion.
+
+    NEW PRODUCERS:
+    - htf_liquidity.py (172 lines): HTFLiquidityProducer — EQH/EQL pools
+      from H1/H4 fractal swing detection (left=2, right=2) with 5 gates
+      (tolerance, min_bars_between, rotation, invalidation, asia filter).
+    - utils/htf_pool_builder.py (218 lines): fractal detection + pool
+      clustering + merge. Faithful port of ra.detectors.htf_liquidity.
+    - utils/level_pool.py (162 lines): pool assembly, dedup by
+      (source,side,price±0.1pip), merge by (side,forex_day) within 1.0pip.
+      Priority ranking: HTF > PDH/PDL > Session > Swing > Sweep Event.
+    - pwh_pwl.py (121 lines): PWHPWLProducer — previous forex week H/L.
+
+    POOL EXPANSION (2 → 6 sources):
+    - SESSION_BOUNDARY (existing), PDH_PDL (existing)
+    - HTF_EQH/EQL (NEW — H1/H4 structural pools, UNTOUCHED only)
+    - PROMOTED_SWING (NEW — vivid-grade, strength>=10, height>=10pip, current day)
+    - PWH/PWL (NEW — previous forex week high/low)
+    - Displacement (NEW wiring — qualified_sweep check)
+
+    LEVEL LIFECYCLE PORTED:
+    - Dedup by (source, side, price within 0.1pip)
+    - Merge by (side, forex_day) within 1.0pip tolerance
+    - Forex day partitioning (different days never merge)
+
+    PIPELINE WIRING:
+    - daily_detection_export.py: HTF_LIQ + PWH_PWL + swing + displacement
+      wired into sweep producer. Session + PDH now in all_claims (persisted).
+
+    VALIDATION (5 annotated trade dates):
+    - Oct 1: 0→40, Dec 12: 0→45, Feb 4: 0→41, Nov 12: 0→49, Sep 29: 0→40
+    - HTF pools: 13-20 per day. Detection logic untouched.
+
+    ARCHITECTURE: All new files ≤300 lines. vLOCK parameters preserved.
+    DEFERRED: P5 sweep event recursion (depth 2).
+    Tests: 32 new, 207 producer total, zero regressions.
+    Sprints: 39→40.
+
 # --- APPEND BELOW ---
 ```
 
