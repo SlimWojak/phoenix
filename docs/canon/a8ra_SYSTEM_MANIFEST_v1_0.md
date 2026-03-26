@@ -747,6 +747,47 @@ PLANNED: [REFINERY_CONTRACT.yaml, PULSE_OPERATIONS.md]
     Dexter tests: 869→1088. Commits: f01ee8b + b7bef38. Sprints: 37→38.
     Forward sprint planning defers to DEPLOYMENT_ROADMAP.md.
 
+- date: 2026-03-26
+  office: CTO_SESSION + OPUS_FACTORY
+  change: |
+    S67 COMPLETE — CANONICAL_PIPELINE_AND_VERIFICATION.
+
+    PIPELINE:
+    - Export bug fixed: FVG/OB silently dropped due to reasoning_trace key mismatch
+      (bar_time vs detect_time/ob_time). 2-line fix in daily_detection_export.py.
+    - claim_writer.py BUILT: 265 lines, 34 tests. End-state module.
+      ClaimSpec → signed CLAIM beads (PQC+ECDSA, bi-temporal, chain-linked).
+    - Pipeline dual-write: JSON + beads from same producer run.
+    - eurusd_claims.db created: SEPARATE DB for analytical CLAIMs.
+    - 5-year historical backfill: 564,471 beads (563,187 CLAIM + 1,284 SIGNAL).
+      Jan 2021 → Mar 2026. One unbroken chain. Zero anomalies.
+    - Bead field: analytically void → analytically rich.
+
+    MIRROR:
+    - Architectural audit: complete state machine X-ray (state inventory,
+      conflict map, 11 issues found including 3 P0 crashes).
+    - Root cause: 4 competing date mechanisms, sequential/real timestamp mismatch.
+    - Phase A surgical fixes: 6 fixes (HTF scroll, sequential timestamps,
+      feed navigation, mode switch reset, timezone docs, WS subscribe).
+    - Phase B setView() refactor: unified state management architecture.
+    - MIRROR now reliable real-time observation surface.
+
+    VERIFICATION (Mar 26):
+    - 7-angle bead field integrity verification (advisor-enriched).
+    - Angle 7 (raw bar ground truth): 899/900 correct against River candles.
+    - Angle 4 (vLOCK compliance): 5/5 core rules, zero violations across 564K beads.
+    - Angle 3 (statistical consistency): zero anomalies across 63 months.
+    - Angle 5 (temporal integrity): 5/5 bi-temporal tests perfect.
+    - Named findings: SWEEP_PRODUCER_NEAR_NONFUNCTIONAL (70/5yr),
+      WARMUP_BEADS (9,457 in unreliable window), SIGNAL_CHAIN_EMPTY.
+    - Permanent verification suite: 7 scripts at ~/dexter/scripts/verification/
+    - BEAD_FIELD_CALIBRATION_REPORT.md produced.
+
+    Dexter tests: 1088 + 34 claim_writer = 1122.
+    New modules: claim_writer.py, 7 verification scripts.
+    New DB: eurusd_claims.db (4.4GB, 564K beads).
+    Sprints: 38→39.
+
 # --- APPEND BELOW ---
 ```
 

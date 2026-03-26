@@ -517,12 +517,39 @@ PARALLEL_WORK:
   channels: "@a8ra_COO_bot on M3 for coordination"
   calibration: "Olya visual sessions on PROPOSED HTF params (pending)"
 
+S67_STATUS: |
+  COMPLETE (2026-03-26). CANONICAL_PIPELINE_AND_VERIFICATION.
+  - claim_writer.py: end-state ClaimSpec → signed CLAIM beads (265 lines, 34 tests)
+  - eurusd_claims.db: 564,471 beads (4.4GB), Jan 2021 → Mar 2026, one unbroken chain
+  - Pipeline dual-write: JSON + beads from same producer run
+  - MIRROR: setView() refactor, reliable real-time observation surface
+  - 7-angle bead field integrity verification (advisor-enriched):
+    Angle 7 (bar geometry): 899/900 correct. Angle 4 (vLOCK): 5/5 zero violations.
+    Angle 3 (statistics): zero anomalies 63 months. Angle 5 (temporal): 5/5 perfect.
+    Angle 6 (sensitivity): 13/13 extreme moves detected.
+  - Findings: SWEEP_PRODUCER_NEAR_NONFUNCTIONAL (70/5yr, pool starvation),
+    WARMUP_BEADS (9,457 ATR-unreliable), SIGNAL_CHAIN_EMPTY (provenance gap).
+  Tests: 1122 dexter (was 1088). Sprints: 38→39.
+
+FORWARD_PLAN: |
+  Observation week in progress (Olya validating via MIRROR).
+  Sweep producer forensic: pool starvation confirmed — Dexter pool has
+  SESSION_BOUNDARY + PDH_PDL only (2 sources), RA oracle has 7+ sources
+  (EQH/EQL, promoted swings, PWH/PWL, sweep events, session H/L).
+  Root cause is narrow port, not detection logic bug.
+
+NEXT_PRIORITIES:
+  observation_week: "Olya validating via MIRROR (live, in progress)"
+  sweep_fix: "Expand level pool to match RA oracle (EQH/EQL, promoted swings, PWH/PWL)"
+  bridge_daemon: "E.1 — governance events → bead field"
+  graduation_metrics: "Shadow mode toward graduation criteria"
+
 OPEN_ITEMS_CARRIED_FORWARD:
   - SMT primitive: 2 of 14 trades used DXY divergence as sweep substitute (tolerated)
   - DEC-CE-TOUCHED-WICK-PENDING-OLYA (wick vs body CE touch)
   - MSS_15m_cascade (46.7% divergence — monitor in production)
   - PROPOSED HTF params: Olya visual confirmation still pending
-  - Sweep level pool: SESSION_LIQUIDITY box, promoted swings, HTF EQH/EQL (Flag 4 scope)
+  - Sweep level pool: CONFIRMED STARVATION — needs EQH/EQL, promoted swings, HTF pools
 ```
 
 ---

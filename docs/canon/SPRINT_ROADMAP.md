@@ -2475,16 +2475,44 @@ S66: STATE_FLAGS + DREAM_CYCLE_V1 + CHANNELS — COMPLETE ✅ (2026-03-22)
     dream_cycle: PASS (all 6 gates: analyzer, skip classification, state review, briefing, batch, no regression)
     no_regression: PASS (1088 passed, 0 failures)
 
+S67: CANONICAL_PIPELINE_AND_VERIFICATION — COMPLETE ✅ (2026-03-26)
+  status: COMPLETE
+  completion_date: 2026-03-26
+  tests: 34 new claim_writer + 7 verification scripts (1122 total dexter)
+  theme: "End-state pipeline, bead field population, integrity verification"
+  tracks:
+    pipeline: "Export bug fix + claim_writer + dual-write + 5yr backfill"
+    mirror: "Architectural audit + Phase A/B fixes + setView() refactor"
+    verification: "7-angle integrity battery, advisor-enriched (GPT+OWL+BOAR)"
+  deliverables:
+    - "claim_writer.py (265 lines, 34 tests — end-state ClaimSpec → CLAIM bead)"
+    - "eurusd_claims.db (4.4GB, 564,471 beads — Jan 2021 → Mar 2026)"
+    - "Pipeline dual-write (JSON + beads from same producer run)"
+    - "MIRROR setView() refactor (unified state management)"
+    - "BEAD_FIELD_CALIBRATION_REPORT.md (7 angles, 5 PASS + 2 INVESTIGATE)"
+    - "7 permanent verification scripts (~/dexter/scripts/verification/)"
+  verification_results:
+    angle_7_bar_geometry: "899/900 correct against River candles"
+    angle_4_vlock_compliance: "5/5 core rules, zero violations across 564K beads"
+    angle_3_statistical: "zero anomalies across 63 months, ratios stable ±2-3%"
+    angle_5_temporal: "5/5 bi-temporal tests perfect"
+    angle_6_sensitivity: "13/13 extreme moves detected"
+  named_findings:
+    - "SWEEP_PRODUCER_NEAR_NONFUNCTIONAL: 70 beads / 5 years (pool starvation)"
+    - "WARMUP_BEADS: 9,457 in first 30 days (ATR unreliable)"
+    - "SIGNAL_CHAIN_EMPTY: provenance links not populated"
+
 # ═══════════════════════════════════════════════════════════════
 # FORWARD SPRINT PLANNING
 # ═══════════════════════════════════════════════════════════════
-# S66 marks the pivot from detection pipeline build to
-# constitutional execution wiring. Forward plan is in:
-#   ~/phoenix/docs/build_docs/DEPLOYMENT_ROADMAP.md (v1.1)
+# S67 completes the bead field integrity verification.
+# Forward plan priorities:
 #
-# Phase 0: Foundations (enrichment fix, GateRegistry)
-# Phase 1: ARS canonical path (predicates, orchestrator, paper lease)
-# Phase 2: Signal escalation adapter (Dexter→Phoenix bridge)
-# Phase 3: Operational hardening (daemons, fleet)
+# NEXT_PRIORITIES:
+#   observation_week: "Olya validating via MIRROR (live, in progress)"
+#   sweep_investigation: "Forensic audit of LiquiditySweepProducer (pool starvation confirmed)"
+#   bridge_daemon: "E.1 — governance events → bead field (deferred from S66)"
+#   graduation_metrics: "Tracking shadow mode toward graduation criteria"
+#   canon_architecture: "Claude Channels + agentic layer rethink (design phase)"
 # ═══════════════════════════════════════════════════════════════
 ```
