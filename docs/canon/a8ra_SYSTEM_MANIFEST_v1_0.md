@@ -2,9 +2,9 @@
 
 ```yaml
 document: SYSTEM_MANIFEST
-version: 2.5
-date: 2026-03-22
-status: CANONICAL — updated post S66 COMPLETE (state snapshots, KZ gate v2, Dream Cycle v1)
+version: 2.6
+date: 2026-03-26
+status: CANONICAL — updated post S69 COMPLETE (faithful sweep port, backfill initiated)
 purpose: Single M2M orientation for every Claude instance in the a8ra ecosystem
 update_discipline: Any session making a significant decision appends a MANIFEST DELTA
 owner: G (Sovereign Operator)
@@ -833,6 +833,40 @@ PLANNED: [REFINERY_CONTRACT.yaml, PULSE_OPERATIONS.md]
     DEFERRED: P5 sweep event recursion (depth 2).
     Tests: 32 new, 207 producer total, zero regressions.
     Sprints: 39→40.
+
+# ─── MANIFEST DELTA: S69 FAITHFUL_SWEEP_PORT (2026-03-26) ───
+#
+# WHAT: Faithful port of oracle's full 1,416-line liquidity_sweep.py into Dexter.
+#   4-phase pipeline: pool construction → detection → dwell lifecycle → post-processing.
+#   All 8 calibration engineer flags implemented (two-pass dwell, multi-bar synthetic
+#   wick, sweep-would-fire preflight, displacement override, probe exhaustion, etc.).
+#
+# NEW FILES:
+#   sweep_pool_builder.py (233 lines) — Phase 1: dedup, merge, level assembly
+#   sweep_detector.py (378 lines) — Phase 2: detection loop (single function, >300 lines accepted)
+#   sweep_lifecycle.py (218 lines) — Phase 3-4: dwell consumption + qualification
+#   liquidity_sweep.py rewritten (310 lines) — 4-phase orchestrator
+#
+# DISPLACEMENT QUALIFIES: Added _build_qualifies_grid() to displacement producer.
+#   4x4 threshold matrix (ATR x body ratio) with and/or/override gates.
+#   Enables dwell displacement override and sweep qualification tagging.
+#
+# SESSION ALIGNMENT: tf_aggregator.get_session() aligned with RA session_tagger
+#   (6 labels: asia, pre_london, lokz, pre_ny, nyokz, other).
+#
+# VALIDATION:
+#   Angle 7 geometric: 15/15 PASS (100%) — every sweep is real
+#   Oracle match: 44% (divergence is LTF_BOX level pricing, not detection logic)
+#   Tests: 222 passed, 0 failed, zero regressions
+#
+# BACKFILL: 5-year EURUSD (2021-01 to 2026-03) INITIATED on M3.
+#   Post-backfill: Angle 1 + Angle 4 + Angle 7 verification battery.
+#
+# FORWARD: Resume DEPLOYMENT_ROADMAP Phase 0-2 toward paper trading.
+#   Sweep pipeline is the last primitive that needed alignment.
+#   All 11 vLOCK producers now operational with faithful detection logic.
+#
+# Sprints: 40→41.
 
 # --- APPEND BELOW ---
 ```

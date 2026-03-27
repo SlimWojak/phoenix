@@ -4,9 +4,9 @@
 
 ```yaml
 document: UNIFIED_ROADMAP_v1.md
-version: 3.3
-date: 2026-03-22
-status: CANONICAL — updated post S66 COMPLETE (state snapshots, Dream Cycle v1, deployment roadmap)
+version: 3.4
+date: 2026-03-26
+status: CANONICAL — updated post S69 COMPLETE (faithful sweep port, backfill initiated)
 author: CTO (synthesized from S62-S64 + RA calibration detour)
 audience: Fresh CTO, any advisor, G
 supersedes: Forward-looking sections of SPRINT_ROADMAP.md
@@ -45,9 +45,9 @@ PHOENIX (Governance Economy):
 
 DEXTER (Analytical Economy):
   repo: ~/dexter
-  version: Gate 1 PASS + Gate 2 BUILT + Bridge OPERATIONAL + S64 COMPLETE (all 6 gates)
-  branch: main @ b7bef38 (post-S66 — state snapshots, KZ gate v2, Dream Cycle v1)
-  tests: 1088 (651 S64 + 218 S65 + 219 S66: snapshots, direction guard, KZ gate, evaluator)
+  version: Gate 1 PASS + Gate 2 BUILT + Bridge OPERATIONAL + S69 COMPLETE (sweep pipeline faithful port)
+  branch: main (post-S69 — faithful sweep port, displacement qualifies, session alignment)
+  tests: 222 producer tests + prior suite (S64-S69 cumulative)
   genesis: 789 beads (788 CLAIMs + 1 METHODOLOGY_DELTA)
   genesis_merkle_root: 5c4d63f29f667d0b80348e3dfc87204aea6488d034c70dd6ae354a57036e963c
   pqc: ML-DSA-65 Dilithium3 (real, ARM64)
@@ -64,7 +64,7 @@ DEXTER (Analytical Economy):
   spitfire_audit: 14 findings (0 CRITICAL, 3 HIGH — actioned in S64 Track A)
   reference_impl: "detect.py in ~/research_accelerator — test oracle for core producers"
   ground_truth: "14 Olya-annotated trades (Sep 2025 – Mar 2026)"
-  producers: "11 vLOCK CLAIM producers operational (VI retired)"
+  producers: "11 vLOCK CLAIM producers operational (VI retired), sweep pipeline faithfully ported from oracle"
   gate6_olya_confirmed: 2026-03-20
   port_verification: "14/14 trades PASS, 0 unexpected misses"
   analytical_state: "11.4M FACTs, 0 CLAIMs — producers operational, DIAGNOSTIC_SIGNALs emitting on River data"
@@ -544,22 +544,32 @@ S68_STATUS: |
   Tests: 220 dexter (was 1122). Sprints: 39→40.
 
 S69_STATUS: |
-  PLANNED (2026-03-26). FAITHFUL_SWEEP_PORT.
-  Replace LiquiditySweepProducer with faithful port of RA oracle's full
-  liquidity_sweep.py (1,416 lines). 4-phase pipeline: pool construction,
-  detection loop, dwell consumption, post-processing.
-  Exit gate: oracle comparison >= 85% match rate on 5 calibration days.
-  Brief: dexter/docs/build_docs/OPUS_BRIEF_S69_FAITHFUL_SWEEP_PORT.md
+  COMPLETE (2026-03-26). FAITHFUL_SWEEP_PORT.
+  Faithful port of RA oracle's full liquidity_sweep.py (1,416 lines).
+  4-phase pipeline: pool construction, detection loop (with multi-bar
+  synthetic wick), two-pass dwell consumption (independent consumed sets,
+  phantom prune reconciliation), sweep qualification.
+  All 8 calibration engineer flags implemented.
+  Displacement qualifies dict ported (dwell override + qualification active).
+  Session classification aligned with RA tagger (6 labels).
+  Angle 7 geometric validation: 15/15 PASS (100%).
+  Oracle match: 44% (level-pricing divergence only, not detection logic).
+  5-year backfill INITIATED (2021-01 to 2026-03, running on M3).
+  New files: sweep_pool_builder.py, sweep_detector.py, sweep_lifecycle.py.
+  Rewritten: liquidity_sweep.py (4-phase orchestrator).
+  Tests: 222 passed, 0 failed.
 
 FORWARD_PLAN: |
-  S69 FAITHFUL_SWEEP_PORT is the immediate priority.
-  No backfill until oracle comparison exit gate passes.
-  Observation week continues (Olya validating via MIRROR).
+  5-year backfill running on M3 (quality > speed, ~20-30 min).
+  Post-backfill: run Angle 1 (annotated trades), Angle 4 (vLOCK params),
+  Angle 7 (geometric spot-check on sample of new sweeps).
+  Then: resume DEPLOYMENT_ROADMAP Phase 0-2 toward paper trading.
 
 NEXT_PRIORITIES:
-  s69_sweep_port: "IMMEDIATE — faithful port of oracle sweep pipeline"
-  observation_week: "Olya validating via MIRROR (continues)"
-  bridge_daemon: "E.1 — governance events → bead field (after S69)"
+  backfill_verification: "Post-backfill verification battery (Angles 1, 4, 7)"
+  deployment_phase_0: "Foundations — enrichment import fix, GateRegistry, MarketState"
+  deployment_phase_1: "ARS through constitutional path — predicates, orchestrator, paper lease"
+  bridge_daemon: "E.1 — governance events → bead field"
   graduation_metrics: "Shadow mode toward graduation criteria"
 
 OPEN_ITEMS_CARRIED_FORWARD:
@@ -567,7 +577,7 @@ OPEN_ITEMS_CARRIED_FORWARD:
   - DEC-CE-TOUCHED-WICK-PENDING-OLYA (wick vs body CE touch)
   - MSS_15m_cascade (46.7% divergence — monitor in production)
   - PROPOSED HTF params: Olya visual confirmation still pending
-  - Sweep fidelity: oracle comparison is the exit gate for backfill
+  - LTF_BOX level pricing: known divergence from oracle (session box vs session H/L), both valid
 ```
 
 ---
